@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 D:\GIthub repo\ProcureEase\ProcureEase\App.xaml
-11407045341
+3-1213257408
 
-4-976521012
+6-718321253
 206-941936081
-MainWindow.xaml;
+MainForm.xaml;MainWindow.xaml;RegisterForm.xaml;
 
 False
 

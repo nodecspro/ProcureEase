@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeDatabase();
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
     private void InitializeDatabase()
@@ -45,10 +46,19 @@ public partial class MainWindow : Window
             return;
         }
 
-        MessageBox.Show(ValidateUser(username, password)
-            ? "Авторизация успешна!"
-            // Здесь может быть переход на другое окно или выполнение других действий после успешной авторизации
-            : "Ошибка авторизации. Проверьте правильность введенных данных.");
+        if (ValidateUser(username, password))
+        {
+            MessageBox.Show("Авторизация успешна!");
+            Hide();
+
+            // Открываем новое окно
+            var mainForm = new MainForm();
+            mainForm.Show();
+        }
+        else
+        {
+            MessageBox.Show("Ошибка авторизации. Проверьте правильность введенных данных.");
+        }
     }
 
     private bool ValidateUser(string username, string password)
@@ -76,8 +86,19 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BtnRegister_Click(object sender, RoutedEventArgs e)
+    private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
     {
-        // Логика для кнопки "Регистрация"
+        // Открываем форму регистрации (RegisterForm.xaml)
+        var registerForm = new RegisterForm();
+        registerForm.Show();
+
+        // Скрываем текущее окно авторизации
+        Hide();
+    }
+
+
+    private void OnMainWindowClosed(object sender, EventArgs e)
+    {
+        foreach (var window in Application.Current.Windows) ((Window)window).Close();
     }
 }
