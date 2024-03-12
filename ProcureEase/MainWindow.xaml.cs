@@ -1,78 +1,83 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Text;
+﻿#region
+
+using System.Data;
 using System.Windows;
 using MySql.Data.MySqlClient;
+
+#endregion
 
 namespace ProcureEase;
 
 public partial class MainWindow : Window
 {
+    private MySqlConnection connection;
+    private string database;
+    private string password;
+    private string server;
+    private string uid;
+
     public MainWindow()
     {
         InitializeComponent();
-        try
-        {
-            var connstring = "Server=localhost; database=procureease; UID=root; password=";
-            var conn = new MySqlConnection(connstring);
-            conn.Open();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        InitializeDatabase();
     }
 
-    private string HashPassword(string password)
+    private void InitializeDatabase()
     {
-        using (var sha256Hash = SHA256.Create())
-        {
-            var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+        server = "localhost";
+        database = "procureease";
+        uid = "root";
+        password = "";
 
-            var builder = new StringBuilder();
-            for (var i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2"));
-            return builder.ToString();
-        }
+        var connectionString = $"SERVER={server};DATABASE={database};UID={uid};PASSWORD={password};";
+
+        connection = new MySqlConnection(connectionString);
     }
 
     private void BtnLogin_Click(object sender, RoutedEventArgs e)
     {
         var username = txtUsername.Text;
         var password = txtPassword.Password;
-        var hashedPassword = HashPassword(password);
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            MessageBox.Show("Пожалуйста, введите имя пользователя и пароль.");
+            return;
+        }
+
+        MessageBox.Show(ValidateUser(username, password)
+            ? "Авторизация успешна!"
+            // Здесь может быть переход на другое окно или выполнение других действий после успешной авторизации
+            : "Ошибка авторизации. Проверьте правильность введенных данных.");
+    }
+
+    private bool ValidateUser(string username, string password)
+    {
+        var query = $"SELECT COUNT(*) FROM users WHERE username = '{username}' AND password = '{password}'";
 
         try
         {
-            var connstring = "Server=localhost; database=procureease; UID=root; password=";
-            using (var conn = new MySqlConnection(connstring))
-            {
-                conn.Open();
+            if (connection.State != ConnectionState.Open)
+                connection.Open();
 
-                // Подготовка SQL-запроса для проверки существования пользователя с указанным именем и зашифрованным паролем
-                var query = "SELECT COUNT(*) FROM users WHERE username = @username AND password = @password";
-                using (var cmd = new MySqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@username", username);
-                    cmd.Parameters.AddWithValue("@password", hashedPassword);
-                    var count = Convert.ToInt32(cmd.ExecuteScalar());
+            var cmd = new MySqlCommand(query, connection);
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    if (count > 0)
-                        MessageBox.Show("Вы успешно авторизованы!");
-                    // Дополнительные действия после успешной авторизации, например, переход на другое окно
-                    else
-                        MessageBox.Show("Неверное имя пользователя или пароль!");
-                }
-            }
+            return count > 0;
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Ошибка при попытке авторизации: " + ex.Message);
+            MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            connection.Close();
         }
     }
 
     private void BtnRegister_Click(object sender, RoutedEventArgs e)
     {
-        // Логика регистрации нового пользователя
+        // Логика для кнопки "Регистрация"
     }
 }
