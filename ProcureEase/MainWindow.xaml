@@ -20,9 +20,9 @@
         </Grid>
 
         <!-- Кнопки -->
-        <StackPanel Margin="50,208,50,0" Orientation="Vertical" VerticalAlignment="Top" Height="88">
-            <Button x:Name="btnLogin" Content="Войти" HorizontalAlignment="Stretch" Width="150" Height="35" Background="#FF4D4D4D" BorderBrush="#FF4D4D4D" Foreground="#FFE8E8E8" FontSize="14" Margin="0,0,0,5" Click="btnLogin_Click"/>
-            <Button x:Name="btnRegister" Content="Регистрация" HorizontalAlignment="Stretch" Width="150" Height="35" Background="#FF4D4D4D" BorderBrush="#FF4D4D4D" Foreground="#FFE8E8E8" FontSize="14" Click="btnRegister_Click"/>
+        <StackPanel Margin="50,208,50,0" Orientation="Vertical" VerticalAlignment="Top" Height="76">
+            <Button x:Name="btnLogin" Content="Войти" HorizontalAlignment="Stretch" Width="150" Height="35" Background="#FF4D4D4D" BorderBrush="#FF4D4D4D" Foreground="#FFE8E8E8" FontSize="14" Margin="0,0,0,5" Click="BtnLogin_Click"/>
+            <Button x:Name="btnRegister" Content="Регистрация" HorizontalAlignment="Stretch" Width="150" Height="35" Background="#FF4D4D4D" BorderBrush="#FF4D4D4D" Foreground="#FFE8E8E8" FontSize="14" Click="BtnRegister_Click"/>
         </StackPanel>
     </Grid>
 </Window>
