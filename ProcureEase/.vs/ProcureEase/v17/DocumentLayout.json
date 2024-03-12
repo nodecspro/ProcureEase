@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\registerform.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:registerform.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
@@ -13,14 +21,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainform.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -38,11 +38,11 @@
       "DocumentGroups": [
         {
           "DockedHeight": 259,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "App.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\App.xaml",
               "RelativeDocumentMoniker": "App.xaml",
@@ -54,25 +54,25 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "RegisterForm.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml",
               "RelativeDocumentMoniker": "RegisterForm.xaml",
-              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml*",
-              "RelativeToolTip": "RegisterForm.xaml*",
+              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml",
+              "RelativeToolTip": "RegisterForm.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2024-03-12T12:08:45.41Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "RegisterForm.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeDocumentMoniker": "RegisterForm.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeToolTip": "RegisterForm.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAeAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T12:09:16.232Z",
               "EditorCaption": ""
@@ -97,14 +97,14 @@
               "RelativeDocumentMoniker": "MainForm.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainForm.xaml.cs",
               "RelativeToolTip": "MainForm.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T12:04:47.282Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml",
               "RelativeDocumentMoniker": "MainWindow.xaml",
@@ -116,13 +116,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABYAAAAIAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABUAAAAdAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T10:14:00.006Z",
               "EditorCaption": ""

@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:ProcureEase"
         mc:Ignorable="d"
         Title="Авторизация и Регистрация" Height="350" Width="400"
-        Closed="OnMainWindowClosed">
+        Closed="OnMainWindowClosed"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid Background="#FF1C1C1C">
         <!-- Имя пользователя -->
         <Grid HorizontalAlignment="Center" Height="57" Margin="0,48,0,0" VerticalAlignment="Top" Width="300">
@@ -28,7 +29,5 @@
             </Hyperlink>
         </TextBlock>
         <Button x:Name="btnLogin" Content="Войти" Background="#FF4D4D4D" BorderBrush="#FF4D4D4D" Foreground="#FFE8E8E8" FontSize="14" Margin="136,216,136,0" Click="BtnLogin_Click" Width="128" Height="32" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-
-        <!-- Кнопка "Авторизация" -->
     </Grid>
 </Window>

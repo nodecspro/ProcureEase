@@ -4,11 +4,6 @@
              xmlns:local="clr-namespace:ProcureEase"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <Style TargetType="Window">
-            <Setter Property="Background" Value="#FF1C1C1C" />
-            <Setter Property="Foreground" Value="#FFE8E8E8" />
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <!-- Add more setters for other properties as needed -->
-        </Style>
+
     </Application.Resources>
 </Application>

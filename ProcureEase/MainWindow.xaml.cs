@@ -20,7 +20,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeDatabase();
-        WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
     private void InitializeDatabase()
