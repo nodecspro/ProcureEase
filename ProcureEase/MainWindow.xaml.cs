@@ -1,14 +1,18 @@
 ﻿#region
 
 using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
+using ControlzEx.Theming;
+using MahApps.Metro.Controls;
 using MySql.Data.MySqlClient;
 
 #endregion
 
 namespace ProcureEase;
 
-public partial class MainWindow : Window
+public partial class MainWindow : MetroWindow
 {
     private MySqlConnection connection;
     private string database;
@@ -19,6 +23,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
         InitializeDatabase();
     }
 
@@ -62,7 +67,9 @@ public partial class MainWindow : Window
 
     private bool ValidateUser(string username, string password)
     {
-        var query = $"SELECT COUNT(*) FROM users WHERE username = '{username}' AND password = '{password}'";
+        var hashedPassword = HashPassword(password);
+
+        var query = $"SELECT COUNT(*) FROM users WHERE username = '{username}' AND password = '{hashedPassword}'";
 
         try
         {
@@ -85,6 +92,16 @@ public partial class MainWindow : Window
         }
     }
 
+    private string HashPassword(string password)
+    {
+        using var sha256Hash = SHA256.Create();
+        var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+        var builder = new StringBuilder();
+        for (var i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2"));
+        return builder.ToString();
+    }
+
     private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
     {
         // Открываем форму регистрации (RegisterForm.xaml)
@@ -94,7 +111,6 @@ public partial class MainWindow : Window
         // Скрываем текущее окно авторизации
         Hide();
     }
-
 
     private void OnMainWindowClosed(object sender, EventArgs e)
     {
