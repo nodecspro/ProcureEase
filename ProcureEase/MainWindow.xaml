@@ -7,7 +7,7 @@
                       xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       mc:Ignorable="d"
-                      Title="Авторизация и Регистрация" Height="350" Width="400"
+                      Title="Авторизация и Регистрация" Height="320" Width="400"
                       Closed="OnMainWindowClosed"
                       WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid>

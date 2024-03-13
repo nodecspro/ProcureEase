@@ -131,6 +131,10 @@ public partial class RegisterForm : MetroWindow
             {
                 await this.ShowMessageAsync("Успех", "Регистрация прошла успешно!");
                 ClearFields();
+
+                var mainForm = new MainForm();
+                mainForm.Show();
+                Hide(); // Скрываем текущее окно
             }
             else
             {
