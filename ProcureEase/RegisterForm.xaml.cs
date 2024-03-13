@@ -211,7 +211,7 @@ public partial class RegisterForm : MetroWindow
     {
         var mainWindow = Application.Current.MainWindow as MainWindow;
         mainWindow?.Show();
-        Close();
+        Hide();
     }
 
     #endregion

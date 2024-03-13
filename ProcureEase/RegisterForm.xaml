@@ -6,7 +6,7 @@
                       xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       mc:Ignorable="d"
-                      Title="RegisterForm" Height="580" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+                      Title="RegisterForm" Height="590" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
                       Closed="OnMainWindowClosed"
                       WindowTransitionsEnabled="False">
     <Grid>
@@ -42,8 +42,8 @@
                     <TextBlock Text="Почта:" Margin="0 6 0 2"/>
                     <TextBox x:Name="txtEmail" Margin="0 4" BorderThickness="1" Padding="4" TextChanged="TextBox_TextChanged"/>
                 </StackPanel>
-                <Button Grid.Row="1" Content="Зарегистрироваться" Click="BtnRegister_Click" Margin="0,420,0,16" BorderThickness="1" Padding="4" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                <TextBlock Grid.Row="2" Text="Назад" Margin="0,16" HorizontalAlignment="Center" Cursor="Hand" TextDecorations="Underline" FontWeight="Bold" Foreground="Blue" MouseLeftButtonDown="Back_Click"/>
+                <Button Grid.Row="1" Content="Зарегистрироваться" Click="BtnRegister_Click" Margin="0,427,0,0" BorderThickness="1" Padding="4" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.RowSpan="2"/>
+                <TextBlock Grid.Row="2" Text="Назад" Margin="0,24,0,8" HorizontalAlignment="Center" Cursor="Hand" TextDecorations="Underline" FontWeight="Bold" Foreground="Blue" MouseLeftButtonDown="Back_Click"/>
             </Grid>
         </Border>
     </Grid>

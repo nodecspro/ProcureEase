@@ -15,10 +15,6 @@
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     }
@@ -30,20 +26,8 @@
       "DocumentGroups": [
         {
           "DockedHeight": 259,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "App.xaml",
-              "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\App.xaml",
-              "RelativeDocumentMoniker": "App.xaml",
-              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\App.xaml",
-              "RelativeToolTip": "App.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-13T09:28:36.879Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -62,16 +46,16 @@
               "Title": "RegisterForm.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeDocumentMoniker": "RegisterForm.xaml.cs",
-              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs*",
-              "RelativeToolTip": "RegisterForm.xaml.cs*",
-              "ViewState": "AQIAACEAAAAAAAAAAAAAwCkAAAAFAAAA",
+              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
+              "RelativeToolTip": "RegisterForm.xaml.cs",
+              "ViewState": "AQIAAL0AAAAAAAAAAAAAANUAAAAPAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-12T12:09:16.232Z",
+              "WhenOpened": "2024-03-13T12:45:48.483Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml",
               "RelativeDocumentMoniker": "MainWindow.xaml",
@@ -89,7 +73,7 @@
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AQIAAD8AAAAAAAAAAAAAACEAAAAVAAAA",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAlwBYAAAALAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T10:14:00.006Z",
               "EditorCaption": ""
