@@ -7,11 +7,11 @@ using System.Windows;
 namespace ProcureEase;
 
 /// <summary>
-///     Логика взаимодействия для MainForm.xaml
+///     Логика взаимодействия для Main.xaml
 /// </summary>
-public partial class MainForm : Window
+public partial class Main : Window
 {
-    public MainForm()
+    public Main()
     {
         InitializeComponent();
     }

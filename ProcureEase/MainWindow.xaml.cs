@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using MySql.Data.MySqlClient;
 
 #endregion
@@ -39,29 +40,39 @@ public partial class MainWindow : MetroWindow
         connection = new MySqlConnection(connectionString);
     }
 
-    private void BtnLogin_Click(object sender, RoutedEventArgs e)
+    private async void BtnLogin_Click(object sender, RoutedEventArgs e)
     {
         var username = txtUsername.Text;
         var password = txtPassword.Password;
 
+        var dialogSettings = new MetroDialogSettings
+        {
+            AnimateShow = false // Отключить анимацию
+        };
+
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            MessageBox.Show("Пожалуйста, введите имя пользователя и пароль.");
+            //MessageBox.Show("Пожалуйста, введите имя пользователя и пароль.");
+            await this.ShowMessageAsync("Ошибка авторизации", "Пожалуйста, введите имя пользователя и пароль.",
+                MessageDialogStyle.Affirmative,
+                dialogSettings);
+
             return;
         }
 
         if (ValidateUser(username, password))
         {
-            MessageBox.Show("Авторизация успешна!");
             Hide();
-
             // Открываем новое окно
-            var mainForm = new MainForm();
+            var mainForm = new Main();
             mainForm.Show();
         }
         else
         {
-            MessageBox.Show("Ошибка авторизации. Проверьте правильность введенных данных.");
+            //MessageBox.Show("Ошибка авторизации. Проверьте правильность введенных данных.");
+            await this.ShowMessageAsync("Ошибка авторизации", "Проверьте правильность введенных данных.",
+                MessageDialogStyle.Affirmative,
+                dialogSettings);
         }
     }
 
@@ -81,9 +92,10 @@ public partial class MainWindow : MetroWindow
 
             return count > 0;
         }
-        catch (Exception ex)
+        catch
         {
-            MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
+            //MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
+            this.ShowMessageAsync("Ошибка авторизации", "Ошибка при попытке авторизации");
             return false;
         }
         finally
@@ -94,11 +106,11 @@ public partial class MainWindow : MetroWindow
 
     private string HashPassword(string password)
     {
-        using var sha256Hash = SHA256.Create();
-        var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
 
         var builder = new StringBuilder();
-        for (var i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2"));
+        foreach (var b in bytes) builder.Append(b.ToString("x2"));
         return builder.ToString();
     }
 

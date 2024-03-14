@@ -6,7 +6,7 @@
                       xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       mc:Ignorable="d"
-                      Title="RegisterForm" Height="590" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+                      Title="Регистрация" Height="590" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
                       Closed="OnMainWindowClosed"
                       WindowTransitionsEnabled="False">
     <Grid>
