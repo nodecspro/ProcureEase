@@ -1,6 +1,8 @@
 ﻿#region
 
 using System.Windows;
+using ControlzEx.Theming;
+using MahApps.Metro.Controls;
 
 #endregion
 
@@ -9,11 +11,16 @@ namespace ProcureEase;
 /// <summary>
 ///     Логика взаимодействия для Main.xaml
 /// </summary>
-public partial class Main : Window
+public partial class Main : MetroWindow
 {
     public Main()
     {
         InitializeComponent();
+        ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
+    }
+
+    private void CreateRequest_Click(object sender, RoutedEventArgs e)
+    {
     }
 
     private void OnMainWindowClosed(object sender, EventArgs e)

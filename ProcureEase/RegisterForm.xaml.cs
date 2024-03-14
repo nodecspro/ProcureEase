@@ -1,12 +1,11 @@
 ﻿#region
 
 using System.Net.Mail;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using BCrypt.Net;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -141,11 +140,7 @@ public partial class RegisterForm : MetroWindow
 
     private static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        var builder = new StringBuilder();
-        foreach (var b in hashedBytes) builder.Append(b.ToString("x2"));
-        return builder.ToString();
+        return BCrypt.Net.BCrypt.EnhancedHashPassword(password, hashType:HashType.SHA384);
     }
 
     private void ResetBorders()

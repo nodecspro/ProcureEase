@@ -1,13 +1,47 @@
-﻿<Window x:Class="ProcureEase.Main"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ProcureEase"
-        mc:Ignorable="d"
-        Closed="OnMainWindowClosed"
-        Title="Main" Height="450" Width="800">
+﻿<mah:MetroWindow
+    x:Class="ProcureEase.Main"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ProcureEase"
+    Width="800"
+    Height="450"
+    Closed="OnMainWindowClosed"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
     <Grid>
+        <!-- Верхняя панель -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
+        <!-- Верхняя панель -->
+        <Grid Grid.Row="0">
+            <!-- Аватар пользователя -->
+            <Image Source="user_avatar.png" Width="40" Height="40" Margin="0 0 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <!-- Текст с логином пользователя -->
+            <TextBlock Text="Логин пользователя" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+        
+        <!-- Основное содержимое окна -->
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Заголовок -->
+            <TextBlock Text="Ваши заявки на закупку" FontWeight="Bold" FontSize="20" Margin="0 0 0 20"/>
+
+            <!-- Список заявок пользователя -->
+            <ListView ItemsSource="{Binding UserRequests}" VerticalAlignment="Top" MaxHeight="300">
+                <ListView.View>
+                    <GridView>
+                        <!-- Определите столбцы для отображения информации о заявках -->
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <!-- Кнопка "Создать заявку" -->
+            <Button Content="Создать заявку" Click="CreateRequest_Click" Margin="0 10"/>
+        </StackPanel>
     </Grid>
-</Window>
+</mah:MetroWindow>

@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "YQRhFbJc2NtdFeUEP51nt6kx3eJDL8RrD8HkU6gnbVIKaa0CHGXdiz1NMLDgofiwuXLoMMQPEcaDOPAaBxPnLw==",
+  "dgSpecHash": "vqVOwGtZCZHYiV0/WyrPFy1Z44iiKE4A7HemU2A1PoCj9oDcamaqVPUzwxCSgAWYklr+E8k5Lw7b7k8BDdeu9g==",
   "success": true,
   "projectFilePath": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\ProcureEase.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\node\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\bouncycastle.cryptography\\2.2.1\\bouncycastle.cryptography.2.2.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\controlzex\\4.4.0\\controlzex.4.4.0.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\extended.wpf.toolkit\\4.6.0\\extended.wpf.toolkit.4.6.0.nupkg.sha512",

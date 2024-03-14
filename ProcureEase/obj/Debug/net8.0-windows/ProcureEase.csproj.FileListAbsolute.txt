@@ -60,3 +60,4 @@ D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\de\MahApps.Metro
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\App.baml
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\Main.g.cs
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\Main.baml
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\BCrypt.Net-Next.dll

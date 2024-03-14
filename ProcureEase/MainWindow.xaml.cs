@@ -1,9 +1,8 @@
 ﻿#region
 
 using System.Data;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows;
+using BCrypt.Net;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -15,29 +14,17 @@ namespace ProcureEase;
 
 public partial class MainWindow : MetroWindow
 {
-    private MySqlConnection connection;
-    private string database;
-    private string password;
-    private string server;
-    private string uid;
+    private const string Database = "procureease";
+    private const string Server = "localhost";
+    private new const string Uid = "root";
+    private const string Password = "";
+    private readonly MySqlConnection connection;
 
     public MainWindow()
     {
         InitializeComponent();
         ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
-        InitializeDatabase();
-    }
-
-    private void InitializeDatabase()
-    {
-        server = "localhost";
-        database = "procureease";
-        uid = "root";
-        password = "";
-
-        var connectionString = $"SERVER={server};DATABASE={database};UID={uid};PASSWORD={password};";
-
-        connection = new MySqlConnection(connectionString);
+        connection = new MySqlConnection($"SERVER={Server};DATABASE={Database};UID={Uid};PASSWORD={Password};");
     }
 
     private async void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -45,57 +32,47 @@ public partial class MainWindow : MetroWindow
         var username = txtUsername.Text;
         var password = txtPassword.Password;
 
-        var dialogSettings = new MetroDialogSettings
-        {
-            AnimateShow = false // Отключить анимацию
-        };
+        var dialogSettings = new MetroDialogSettings { AnimateShow = false };
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            //MessageBox.Show("Пожалуйста, введите имя пользователя и пароль.");
             await this.ShowMessageAsync("Ошибка авторизации", "Пожалуйста, введите имя пользователя и пароль.",
-                MessageDialogStyle.Affirmative,
-                dialogSettings);
-
+                MessageDialogStyle.Affirmative, dialogSettings);
             return;
         }
 
         if (ValidateUser(username, password))
         {
             Hide();
-            // Открываем новое окно
             var mainForm = new Main();
             mainForm.Show();
         }
         else
         {
-            //MessageBox.Show("Ошибка авторизации. Проверьте правильность введенных данных.");
             await this.ShowMessageAsync("Ошибка авторизации", "Проверьте правильность введенных данных.",
-                MessageDialogStyle.Affirmative,
-                dialogSettings);
+                MessageDialogStyle.Affirmative, dialogSettings);
         }
     }
 
     private bool ValidateUser(string username, string password)
     {
-        var hashedPassword = HashPassword(password);
-
-        var query = $"SELECT COUNT(*) FROM users WHERE username = '{username}' AND password = '{hashedPassword}'";
+        var query = "SELECT password FROM users WHERE username = @username";
 
         try
         {
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@username", username);
+
             if (connection.State != ConnectionState.Open)
                 connection.Open();
 
-            var cmd = new MySqlCommand(query, connection);
-            var count = Convert.ToInt32(cmd.ExecuteScalar());
-
-            return count > 0;
+            var hashedPasswordFromDb = cmd.ExecuteScalar() as string;
+            return hashedPasswordFromDb != null && // Если пользователь с таким именем не найден
+                   BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb, hashType:HashType.SHA384);
         }
-        catch
+        catch (Exception ex)
         {
-            //MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
-            this.ShowMessageAsync("Ошибка авторизации", "Ошибка при попытке авторизации");
+            MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
             return false;
         }
         finally
@@ -104,23 +81,11 @@ public partial class MainWindow : MetroWindow
         }
     }
 
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-        var builder = new StringBuilder();
-        foreach (var b in bytes) builder.Append(b.ToString("x2"));
-        return builder.ToString();
-    }
 
     private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
     {
-        // Открываем форму регистрации (RegisterForm.xaml)
         var registerForm = new RegisterForm();
         registerForm.Show();
-
-        // Скрываем текущее окно авторизации
         Hide();
     }
 
