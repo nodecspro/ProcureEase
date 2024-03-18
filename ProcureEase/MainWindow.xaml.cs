@@ -2,7 +2,6 @@
 
 using System.Data;
 using System.Windows;
-using BCrypt.Net;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -27,7 +26,12 @@ public partial class MainWindow : MetroWindow
         connection = new MySqlConnection($"SERVER={Server};DATABASE={Database};UID={Uid};PASSWORD={Password};");
     }
 
-    private async void BtnLogin_Click(object sender, RoutedEventArgs e)
+    private void BtnLogin_Click(object sender, RoutedEventArgs e)
+    {
+        LoginUserAsync();
+    }
+
+    private async Task LoginUserAsync()
     {
         var username = txtUsername.Text;
         var password = txtPassword.Password;
@@ -41,44 +45,41 @@ public partial class MainWindow : MetroWindow
             return;
         }
 
-        if (ValidateUser(username, password))
+        try
         {
-            Hide();
-            var mainForm = new Main();
-            mainForm.Show();
+            if (await ValidateUser(username, password))
+            {
+                Hide();
+                var mainForm = new Main();
+                mainForm.Show();
+            }
+            else
+            {
+                await this.ShowMessageAsync("Ошибка авторизации", "Проверьте правильность введенных данных.",
+                    MessageDialogStyle.Affirmative, dialogSettings);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await this.ShowMessageAsync("Ошибка авторизации", "Проверьте правильность введенных данных.",
+            await this.ShowMessageAsync("Ошибка авторизации", $"Ошибка при попытке авторизации: {ex.Message}",
                 MessageDialogStyle.Affirmative, dialogSettings);
         }
     }
 
-    private bool ValidateUser(string username, string password)
+
+    private async Task<bool> ValidateUser(string username, string password)
     {
         var query = "SELECT password FROM users WHERE username = @username";
 
-        try
-        {
-            using var cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@username", username);
+        await using var cmd = new MySqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@username", username);
 
-            if (connection.State != ConnectionState.Open)
-                connection.Open();
+        if (connection.State != ConnectionState.Open)
+            await connection.OpenAsync();
 
-            var hashedPasswordFromDb = cmd.ExecuteScalar() as string;
-            return hashedPasswordFromDb != null && // Если пользователь с таким именем не найден
-                   BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb, hashType:HashType.SHA384);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка при попытке авторизации: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            connection.Close();
-        }
+        var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
+        return hashedPasswordFromDb != null && // Если пользователь с таким именем не найден
+               BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
     }
 
 

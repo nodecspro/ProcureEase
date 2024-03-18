@@ -1,6 +1,9 @@
 ﻿#region
 
-using System.Net.Mail;
+using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,7 +28,12 @@ public partial class RegisterForm : MetroWindow
         ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
     }
 
-    private async void BtnRegister_Click(object sender, RoutedEventArgs e)
+    private void BtnRegister_Click(object sender, RoutedEventArgs e)
+    {
+        _ = RegisterUserAsync();
+    }
+
+    private async Task RegisterUserAsync()
     {
         ResetBorders();
 
@@ -39,24 +47,7 @@ public partial class RegisterForm : MetroWindow
 
         try
         {
-            await using var connection = new MySqlConnection(ConnectionString);
-            const string query =
-                "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email, role) " +
-                "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email, 'User')";
-            var command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@username", txtUsername.Text);
-            var hashedPassword = HashPassword(txtPassword.Password);
-            command.Parameters.AddWithValue("@password", hashedPassword);
-            command.Parameters.AddWithValue("@firstName", txtFirstName.Text);
-            command.Parameters.AddWithValue("@lastName", txtLastName.Text);
-            command.Parameters.AddWithValue("@patronymic",
-                string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text);
-            var phoneNumber = new string(Array.FindAll(txtPhoneNumber.Text.ToCharArray(), char.IsDigit));
-            command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
-            command.Parameters.AddWithValue("@email", txtEmail.Text);
-
-            connection.Open();
-            var rowsAffected = command.ExecuteNonQuery();
+            var rowsAffected = await RegisterUser();
             if (rowsAffected > 0)
             {
                 ClearFields();
@@ -71,65 +62,164 @@ public partial class RegisterForm : MetroWindow
         }
         catch (Exception ex)
         {
+            // Consider logging the error here
             MessageBox.Show("Произошла ошибка: " + ex.Message);
         }
     }
 
+    private async Task<int> RegisterUser()
+    {
+        await using var connection = new MySqlConnection(ConnectionString);
+        const string query =
+            "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email, role) " +
+            "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email, 'User')";
+        var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@username", txtUsername.Text);
+        var hashedPassword = HashPassword(txtPassword.Password);
+        command.Parameters.AddWithValue("@password", hashedPassword);
+        command.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
+        command.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
+        command.Parameters.AddWithValue("@patronymic",
+            string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
+        var phoneNumber = new string(Array.FindAll(txtPhoneNumber.Text.ToCharArray(), char.IsDigit));
+        command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
+        command.Parameters.AddWithValue("@email", txtEmail.Text);
+
+        connection.Open();
+        return command.ExecuteNonQuery();
+    }
+
     private string ValidateFields()
     {
-        var errorMessage = "";
+        var errorMessage = new StringBuilder();
 
+        ValidateUsername(errorMessage);
+        ValidatePassword(errorMessage);
+        ValidateFirstName(errorMessage);
+        ValidateLastName(errorMessage);
+        ValidatePhoneNumber(errorMessage);
+        ValidateEmail(errorMessage);
+
+        return errorMessage.ToString();
+    }
+
+    private void ValidateUsername(StringBuilder errorMessage)
+    {
         if (string.IsNullOrWhiteSpace(txtUsername.Text))
         {
-            errorMessage += "Имя пользователя не может быть пустым.\n";
+            errorMessage.AppendLine("Имя пользователя не может быть пустым.");
             txtUsername.BorderBrush = Brushes.Red;
         }
+    }
 
+    private void ValidatePassword(StringBuilder errorMessage)
+    {
         if (string.IsNullOrWhiteSpace(txtPassword.Password))
         {
-            errorMessage += "Пароль не может быть пустым.\n";
+            errorMessage.AppendLine("Пароль не может быть пустым.");
             txtPassword.BorderBrush = Brushes.Red;
         }
+    }
 
+    private void ValidateFirstName(StringBuilder errorMessage)
+    {
         if (string.IsNullOrWhiteSpace(txtFirstName.Text) || !IsValidName(txtFirstName.Text))
         {
-            errorMessage += "Имя не может быть пустым и должно содержать только буквы.\n";
+            errorMessage.AppendLine("Имя не может быть пустым и должно содержать только буквы.");
             txtFirstName.BorderBrush = Brushes.Red;
         }
+    }
 
+    private void ValidateLastName(StringBuilder errorMessage)
+    {
         if (string.IsNullOrWhiteSpace(txtLastName.Text) || !IsValidName(txtLastName.Text))
         {
-            errorMessage += "Фамилия не может быть пустой и должна содержать только буквы.\n";
+            errorMessage.AppendLine("Фамилия не может быть пустой и должна содержать только буквы.");
             txtLastName.BorderBrush = Brushes.Red;
         }
+    }
 
+    private void ValidatePhoneNumber(StringBuilder errorMessage)
+    {
         if (!txtPhoneNumber.IsMaskCompleted)
         {
-            errorMessage += "Номер телефона не может быть пустым.\n";
+            errorMessage.AppendLine("Номер телефона не может быть пустым.");
             txtPhoneNumber.BorderBrush = Brushes.Red;
         }
+        else
+        {
+            // Проверка формата номера телефона
+            var phoneNumber = txtPhoneNumber.Text;
+            var regex = new Regex(@"^\+?[1-9]\d{1,14}$"); // Простой шаблон для проверки международного номера телефона
+            if (!regex.IsMatch(phoneNumber))
+            {
+                errorMessage.AppendLine("Номер телефона имеет неверный формат.");
+                txtPhoneNumber.BorderBrush = Brushes.Red;
+            }
+        }
+    }
 
+
+    private void ValidateEmail(StringBuilder errorMessage)
+    {
         if (!IsValidEmail(txtEmail.Text))
         {
-            errorMessage += "Неправильный формат адреса электронной почты.\n";
+            errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
             txtEmail.BorderBrush = Brushes.Red;
         }
-
-        return errorMessage;
     }
+
 
     private static bool IsValidEmail(string email)
     {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
         try
         {
-            var addr = new MailAddress(email);
-            return addr.Address == email;
+            // Normalize the domain
+            email = Regex.Replace(email, @"(@)(.+)$", DomainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
+
+            // Examining if it is in the correct email format.
+            if (Regex.IsMatch(email,
+                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                    RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
+            {
+                var domain = email.Split('@')[1];
+                var host = Dns.GetHostEntry(domain);
+
+                foreach (var ip in host.AddressList)
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                        return true;
+            }
         }
-        catch
+        catch (RegexMatchTimeoutException)
         {
             return false;
         }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+
+        return false;
     }
+
+    private static string DomainMapper(Match match)
+    {
+        // Use IdnMapping class to convert Unicode domain names.
+        var idn = new IdnMapping();
+
+        // Pull out and process domain name (throws ArgumentException on invalid)
+        var domainName = idn.GetAscii(match.Groups[2].Value);
+
+        return match.Groups[1].Value + domainName;
+    }
+
 
     private static bool IsValidName(string name)
     {
@@ -140,7 +230,7 @@ public partial class RegisterForm : MetroWindow
 
     private static string HashPassword(string password)
     {
-        return BCrypt.Net.BCrypt.EnhancedHashPassword(password, hashType:HashType.SHA384);
+        return BCrypt.Net.BCrypt.EnhancedHashPassword(password, HashType.SHA384);
     }
 
     private void ResetBorders()

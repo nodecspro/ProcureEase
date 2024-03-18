@@ -8,9 +8,6 @@ using MahApps.Metro.Controls;
 
 namespace ProcureEase;
 
-/// <summary>
-///     Логика взаимодействия для Main.xaml
-/// </summary>
 public partial class Main : MetroWindow
 {
     public Main()

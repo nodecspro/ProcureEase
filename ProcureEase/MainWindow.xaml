@@ -13,64 +13,41 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>
-        <!--  Имя пользователя  -->
-        <Grid
+        <StackPanel
             Width="300"
-            Height="57"
             Margin="0,48,0,0"
             HorizontalAlignment="Center"
             VerticalAlignment="Top">
-            <Label
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Имя пользователя" />
+            <!--  Имя пользователя  -->
+            <Label Content="Имя пользователя" />
             <TextBox
                 x:Name="txtUsername"
                 Width="300"
                 Height="30"
-                Margin="0,27,0,0"
                 Padding="5"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
+                AutomationProperties.Name="Имя пользователя"
                 TextWrapping="Wrap" />
-        </Grid>
 
-        <!--  Пароль  -->
-        <Grid
-            Width="300"
-            Height="57"
-            Margin="0,122,0,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top">
-            <Label
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Пароль" />
+            <!--  Пароль  -->
+            <Label Content="Пароль" />
             <PasswordBox
                 x:Name="txtPassword"
                 Width="300"
                 Height="30"
-                Margin="0,27,0,0"
                 Padding="5"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top" />
-        </Grid>
+                AutomationProperties.Name="Пароль" />
+            <TextBlock FontSize="10"><Run Text="Нет аккаунта? " /><Run Text=" " /><Hyperlink Click="RegisterHyperlink_Click">
+                    <InlineUIContainer>
+                        <TextBlock Text="Зарегистрироваться" TextDecorations="Underline" />
+                    </InlineUIContainer>
+                </Hyperlink></TextBlock>
 
-        <!--  Текст "Нет аккаунта? Зарегистрироваться"  -->
-        <TextBlock
-            Margin="54,179,0,0"
-            VerticalAlignment="Top"
-            FontSize="10">
-            <Run Text="Нет аккаунта? " />
-            <Hyperlink Click="RegisterHyperlink_Click">
-                <TextBlock Text="Зарегистрироваться" TextDecorations="Underline" />
-            </Hyperlink>
-        </TextBlock>
-        <Button
-            x:Name="btnLogin"
-            Margin="136,216,136,0"
-            VerticalAlignment="Top"
-            Click="BtnLogin_Click"
-            Content="Войти" />
+            <!--  Текст "Нет аккаунта? Зарегистрироваться"  -->
+            <Button
+                Margin="0,24,0,0"
+                Click="BtnLogin_Click"
+                Content="Войти"
+                IsDefault="True" />
+        </StackPanel>
     </Grid>
 </mah:MetroWindow>
