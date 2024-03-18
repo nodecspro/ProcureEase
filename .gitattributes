@@ -1,4 +1,4 @@
-# Обрабатывать файлы как двоичные и отключить автоматическое преобразование конца строки
+# Handle files as binary and disable automatic line ending conversion
 *.png binary
 *.jpg binary
 *.jpeg binary
@@ -19,12 +19,12 @@
 *.pyc binary
 *.pdf binary
 
-# Отключить автоматическое преобразование конца строки
+# Disable automatic line ending conversion
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.sh text eol=lf
 
-# Дифф настройки
+# Diff settings
 *.cs diff=csharp
 *.sln merge=union
 *.csproj merge=union
@@ -32,5 +32,5 @@
 *.fsproj merge=union
 *.dbproj merge=union
 
-# Конфигурация Git LFS
+# Git LFS configuration
 *.psd filter=lfs diff=lfs merge=lfs -text
