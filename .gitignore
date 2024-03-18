@@ -1,4 +1,48 @@
+# Игнорировать все файлы в папке bin и obj
+**/bin/
+**/obj/
 
-*.vsidx
+# Игнорировать файлы конфигурации Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Игнорировать файлы сборки и отладки
+*.dll
+*.exe
+*.pdb
 *.cache
-*.cache
+*.bak
+*.swp
+*~.nib
+*.log
+*.DS_Store
+*.sys
+*.old
+*.bak
+
+# Игнорировать файлы Resharper
+/_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Игнорировать файлы TeamCity
+/_TeamCity*
+
+# Игнорировать файлы от NuGet
+*.nupkg
+# Исключить папку, но включить специфические файлы
+!nuget.exe
+!NuGet.CommandLine.*
+!NuGet.VisualStudio.*
+
+# Игнорировать файлы от NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+
+# Игнорировать файлы от Azure DevOps
+.azure/
+
+# Игнорировать файлы от JetBrains Rider
+.idea/
+*.DotSettings.user
