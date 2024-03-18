@@ -45,8 +45,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml",
               "RelativeToolTip": "Main.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-14T17:03:06.399Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-14T17:03:06.399Z"
             },
             {
               "$type": "Document",
@@ -58,8 +57,7 @@
               "RelativeToolTip": "Main.xaml.cs",
               "ViewState": "AQIAAAMAAAAAAAAAAAAAAAkAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-14T17:03:03.895Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-14T17:03:03.895Z"
             },
             {
               "$type": "Document",
@@ -70,8 +68,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml",
               "RelativeToolTip": "RegisterForm.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-12T12:08:45.41Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T12:08:45.41Z"
             },
             {
               "$type": "Document",
@@ -81,7 +78,7 @@
               "RelativeDocumentMoniker": "RegisterForm.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeToolTip": "RegisterForm.xaml.cs",
-              "ViewState": "AQIAAIcAAAAAAAAAAAAAAJQAAAAMAAAA",
+              "ViewState": "AQIAAH8AAAAAAAAAAAAAAIwAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-13T12:45:48.483Z",
               "EditorCaption": ""
@@ -95,8 +92,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-12T10:14:10.691Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T10:14:10.691Z"
             },
             {
               "$type": "Document",
@@ -108,8 +104,7 @@
               "RelativeToolTip": "MainWindow.xaml.cs",
               "ViewState": "AQIAABsAAAAAAAAAAAAAACIAAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-12T10:14:00.006Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T10:14:00.006Z"
             }
           ]
         }

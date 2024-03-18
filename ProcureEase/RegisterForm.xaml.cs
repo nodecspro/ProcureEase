@@ -146,17 +146,6 @@ public partial class RegisterForm : MetroWindow
             errorMessage.AppendLine("Номер телефона не может быть пустым.");
             txtPhoneNumber.BorderBrush = Brushes.Red;
         }
-        else
-        {
-            // Проверка формата номера телефона
-            var phoneNumber = txtPhoneNumber.Text;
-            var regex = new Regex(@"^\+?[1-9]\d{1,14}$"); // Простой шаблон для проверки международного номера телефона
-            if (!regex.IsMatch(phoneNumber))
-            {
-                errorMessage.AppendLine("Номер телефона имеет неверный формат.");
-                txtPhoneNumber.BorderBrush = Brushes.Red;
-            }
-        }
     }
 
 
