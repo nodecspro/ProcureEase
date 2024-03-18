@@ -7,7 +7,7 @@
 *.suo
 *.userosscache
 *.sln.docstates
-*.vsdix
+*.vsidx
 
 # Ignore build and debug files
 *.dll
@@ -47,3 +47,4 @@ _NCrunch_*
 # Ignore JetBrains Rider files
 .idea/
 *.DotSettings.user
+*.vsidx
