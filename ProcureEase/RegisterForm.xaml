@@ -105,7 +105,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             Click="BtnRegister_Click"
-            Content="Зарегистрироваться" />
+            Content="Зарегистрироваться" 
+            IsDefault="True" />
         <TextBlock
             Grid.Row="2"
             Margin="0,24,0,8"

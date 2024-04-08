@@ -67,7 +67,8 @@ public partial class RegisterForm : MetroWindow
         catch
         {
             // Показ пользователю общего сообщения об ошибке
-            await this.ShowMessageAsync("Ошибка", "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            await this.ShowMessageAsync("Ошибка",
+                "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Configuration;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
@@ -11,31 +12,26 @@ namespace ProcureEase;
 
 public partial class Main : MetroWindow
 {
-    private const string Database = "procureease";
-    private const string Server = "localhost";
-    private const string Uid = "root";
-    private const string Password = "";
-    private readonly string _login; // Хранит значение логина
+    private static readonly string ConnectionString =
+        ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 
     public Main(string login)
     {
-        _login = login; // Сохранить значение логина
+        // Сохранить значение логина
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
 
         // Загрузить имя пользователя из базы данных
-        UsernameTextBlock.Text = GetUserByUsername(_login);
+        UsernameTextBlock.Text = GetUserByUsername(login);
     }
 
-    private string GetUserByUsername(string username)
+    private static string GetUserByUsername(string username)
     {
-        var connectionString = $"server={Server};database={Database};uid={Uid};password={Password}";
-
-        using var connection = new MySqlConnection(connectionString);
+        using var connection = new MySqlConnection(ConnectionString);
         connection.Open();
 
-        var query = "SELECT username FROM users WHERE username = @username"; // Измените запрос при необходимости
+        const string query = "SELECT username FROM users WHERE username = @username"; // Измените запрос при необходимости
 
         using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@username", username);
