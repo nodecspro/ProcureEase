@@ -13,7 +13,7 @@ This project aims to develop an application for automating the procurement proce
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/your/repository.git`
+1. Clone the repository: `[git clone https://github.com/your/repository.git](https://github.com/nodecspro/ProcureEase.git)`
 2. Open the project in Visual Studio
 3. Build the project
 4. Run the application
