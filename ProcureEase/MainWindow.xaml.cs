@@ -1,9 +1,9 @@
 ﻿#region
 
+using System.Configuration;
 using System.Data;
 using System.Windows;
 using ControlzEx.Theming;
-using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using MySql.Data.MySqlClient;
 
@@ -11,24 +11,30 @@ using MySql.Data.MySqlClient;
 
 namespace ProcureEase;
 
-public partial class MainWindow : MetroWindow
+public partial class MainWindow
 {
-    private const string Database = "procureease";
-    private const string Server = "localhost";
-    private new const string Uid = "root";
-    private const string Password = "";
+    // Connection string moved to a separate configuration file
+    private static readonly string ConnectionString =
+        ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
+
     private readonly MySqlConnection connection;
 
     public MainWindow()
     {
         InitializeComponent();
-        ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
-        connection = new MySqlConnection($"SERVER={Server};DATABASE={Database};UID={Uid};PASSWORD={Password};");
+        ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+        ThemeManager.Current.SyncTheme();
+
+        // Initialize connection with connection string from configuration
+        connection = new MySqlConnection(ConnectionString);
+
+        // Subscribe to main window closed event
+        Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
-    private void BtnLogin_Click(object sender, RoutedEventArgs e)
+    private async void BtnLogin_Click(object sender, RoutedEventArgs e)
     {
-        LoginUserAsync();
+        await LoginUserAsync();
     }
 
     private async Task LoginUserAsync()
@@ -50,7 +56,7 @@ public partial class MainWindow : MetroWindow
             if (await ValidateUser(username, password))
             {
                 Hide();
-                var mainForm = new Main();
+                var mainForm = new Main(username);
                 mainForm.Show();
             }
             else
@@ -66,7 +72,6 @@ public partial class MainWindow : MetroWindow
         }
     }
 
-
     private async Task<bool> ValidateUser(string username, string password)
     {
         var query = "SELECT password FROM users WHERE username = @username";
@@ -78,10 +83,9 @@ public partial class MainWindow : MetroWindow
             await connection.OpenAsync();
 
         var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
-        return hashedPasswordFromDb != null && // Если пользователь с таким именем не найден
+        return hashedPasswordFromDb != null && // If user with that username is not found
                BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
     }
-
 
     private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
     {
@@ -92,6 +96,7 @@ public partial class MainWindow : MetroWindow
 
     private void OnMainWindowClosed(object sender, EventArgs e)
     {
+        // Close all open windows
         foreach (var window in Application.Current.Windows) ((Window)window).Close();
     }
 }

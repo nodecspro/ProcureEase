@@ -1,14 +1,14 @@
-﻿using System.Configuration;
-using System.Data;
+﻿#region
+
 using System.Windows;
 
-namespace ProcureEase
-{
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-    }
+#endregion
 
+namespace ProcureEase;
+
+/// <summary>
+///     Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
+{
 }

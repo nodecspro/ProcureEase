@@ -61,6 +61,10 @@
               "target": "Package",
               "version": "[2.4.10, )"
             },
+            "Microsoft.Extensions.Configuration.UserSecrets": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
             "MySql.Data": {
               "target": "Package",
               "version": "[8.3.0, )"

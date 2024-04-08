@@ -9,39 +9,220 @@
     Width="800"
     Height="450"
     Closed="OnMainWindowClosed"
+    Icon="pack://application:,,,/Source/AppIcon.png"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>
-        <!-- Верхняя панель -->
+        <!--  Верхняя панель  -->
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
-        <!-- Верхняя панель -->
-        <Grid Grid.Row="0">
-            <!-- Аватар пользователя -->
-            <Image Source="user_avatar.png" Width="40" Height="40" Margin="0 0 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-            <!-- Текст с логином пользователя -->
-            <TextBlock Text="Логин пользователя" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+        <!--  Top Panel  -->
+        <DockPanel Grid.Row="0">
+            <!--  Username Text  -->
+            <!--  User Avatar  -->
+            <TextBlock
+                x:Name="UsernameTextBlock"
+                Margin="4,4,8,4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Cursor="Hand"
+                DockPanel.Dock="Right"
+                FontSize="16"
+                FontWeight="Bold"
+                MouseLeftButtonUp="UsernameTextBlock_Click"
+                Text="{Binding UserLogin}"
+                TextAlignment="Right"
+                TextWrapping="NoWrap" />
+            <Image
+                x:Name="UserAvatarImage"
+                Width="34"
+                Margin="4,4,4,4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                Source="/UserAvatarDefaultWhite_30x30.png" />
+        </DockPanel>
+
+        <!--  Основное содержимое окна  -->
+        <Grid Grid.Row="1">
+            <!--  Requests Grid (initially visible)  -->
+            <Grid x:Name="RequestsGrid" Visibility="Collapsed">
+                <StackPanel
+                    Width="780"
+                    Height="372"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <!--  Заголовок  -->
+                    <TextBlock
+                        Margin="0,0,0,20"
+                        HorizontalAlignment="Center"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Text="Ваши заявки на закупку" />
+
+                    <!--  Список заявок пользователя  -->
+                    <ListView
+                        MaxHeight="300"
+                        VerticalAlignment="Top"
+                        d:ItemsSource="{d:SampleData ItemCount=5}"
+                        ItemsSource="{Binding UserRequests}">
+                        <ListView.View>
+                            <GridView>
+                                <!--  Определите столбцы для отображения информации о заявках  -->
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!--  Кнопка "Создать заявку"  -->
+                    <Button
+                        Margin="0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Click="CreateRequest_Click"
+                        Content="Создать заявку" />
+                </StackPanel>
+            </Grid>
+
+            <!--  User Data Grid  -->
+            <Grid
+                x:Name="UserDataGrid"
+                Width="780"
+                Height="372"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <StackPanel
+                    Width="565"
+                    Height="188"
+                    Margin="205,16,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+                    <!--  User Data Form  -->
+                    <Grid HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <!--  Имя пользователя  -->
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Content="Имя пользователя:" />
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="{Binding User.Username}" />
+
+                        <!--  Пароль  -->
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Content="Пароль:" />
+                        <PasswordBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Width="154"
+                            HorizontalAlignment="Left" />
+
+                        <!--  Электронная почта  -->
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Content="Электронная почта:" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Text="{Binding User.Email}" />
+
+                        <!--  Имя  -->
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Content="Имя:" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Text="{Binding User.FirstName}" />
+
+                        <!--  Фамилия  -->
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Content="Фамилия:" />
+                        <TextBox
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Text="{Binding User.LastName}" />
+
+                        <!--  Отчество  -->
+                        <Label
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            Content="Отчество:" />
+                        <TextBox
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            Text="{Binding User.Patronymic}" />
+
+                        <!--  Номер телефона  -->
+                        <Label
+                            Grid.Row="6"
+                            Grid.Column="0"
+                            Content="Номер телефона:" />
+                        <TextBox
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            Text="{Binding User.PhoneNumber}" />
+
+                    </Grid>
+                </StackPanel>
+                <Image
+                    Width="100"
+                    Height="100"
+                    Margin="32,16,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Source="/UserAvatarDefaultBlack_60x60.png" />
+                <TextBox
+                    Width="120"
+                    Margin="22,131,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Text="TextBox"
+                    TextWrapping="Wrap" />
+                <Button
+                    Margin="448,303,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Content="Изменить" />
+                <Separator
+                    Width="392"
+                    Margin="-8,190,0,182"
+                    HorizontalAlignment="Left"
+                    Background="White"
+                    Foreground="{x:Null}"
+                    RenderTransformOrigin="0.5,0.5">
+                    <Separator.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                            <SkewTransform />
+                            <RotateTransform Angle="90" />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </Separator.RenderTransform>
+                </Separator>
+            </Grid>
         </Grid>
-        
-        <!-- Основное содержимое окна -->
-        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Заголовок -->
-            <TextBlock Text="Ваши заявки на закупку" FontWeight="Bold" FontSize="20" Margin="0 0 0 20"/>
-
-            <!-- Список заявок пользователя -->
-            <ListView ItemsSource="{Binding UserRequests}" VerticalAlignment="Top" MaxHeight="300">
-                <ListView.View>
-                    <GridView>
-                        <!-- Определите столбцы для отображения информации о заявках -->
-                    </GridView>
-                </ListView.View>
-            </ListView>
-
-            <!-- Кнопка "Создать заявку" -->
-            <Button Content="Создать заявку" Click="CreateRequest_Click" Margin="0 10"/>
-        </StackPanel>
     </Grid>
 </mah:MetroWindow>

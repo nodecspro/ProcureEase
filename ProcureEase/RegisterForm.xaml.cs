@@ -1,8 +1,6 @@
 ﻿#region
 
-using System.Globalization;
-using System.Net;
-using System.Net.Sockets;
+using System.Configuration;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -20,17 +18,23 @@ namespace ProcureEase;
 
 public partial class RegisterForm : MetroWindow
 {
-    private const string ConnectionString = "Server=localhost;Database=procureease;Uid=root;Pwd=;";
+    // Строка подключения к БД вынесена в отдельный файл конфигурации
+    private static readonly string ConnectionString =
+        ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 
     public RegisterForm()
     {
         InitializeComponent();
-        ThemeManager.Current.ChangeTheme(this, "Dark.Purple");
+        ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+        ThemeManager.Current.SyncTheme();
+
+        // Подписка на событие закрытия главного окна
+        Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
-    private void BtnRegister_Click(object sender, RoutedEventArgs e)
+    private async void BtnRegister_Click(object sender, RoutedEventArgs e)
     {
-        _ = RegisterUserAsync();
+        await RegisterUserAsync();
     }
 
     private async Task RegisterUserAsync()
@@ -38,7 +42,7 @@ public partial class RegisterForm : MetroWindow
         ResetBorders();
 
         var errorMessage = ValidateFields();
-        if (!string.IsNullOrWhiteSpace(errorMessage))
+        if (!string.IsNullOrEmpty(errorMessage))
         {
             await this.ShowMessageAsync("Ошибка регистрации", errorMessage, MessageDialogStyle.Affirmative,
                 new MetroDialogSettings { AnimateShow = false });
@@ -51,7 +55,7 @@ public partial class RegisterForm : MetroWindow
             if (rowsAffected > 0)
             {
                 ClearFields();
-                var mainForm = new Main();
+                var mainForm = new Main(txtUsername.Text);
                 mainForm.Show();
                 Hide();
             }
@@ -60,33 +64,35 @@ public partial class RegisterForm : MetroWindow
                 await this.ShowMessageAsync("Ошибка", "Регистрация не удалась. Пожалуйста, попробуйте позже.");
             }
         }
-        catch (Exception ex)
+        catch
         {
-            // Consider logging the error here
-            MessageBox.Show("Произошла ошибка: " + ex.Message);
+            // Показ пользователю общего сообщения об ошибке
+            await this.ShowMessageAsync("Ошибка", "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
         }
     }
 
     private async Task<int> RegisterUser()
     {
-        await using var connection = new MySqlConnection(ConnectionString);
+        using var connection = new MySqlConnection(ConnectionString);
         const string query =
-            "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email, role) " +
-            "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email, 'User')";
+            "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email) " +
+            "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email)";
         var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@username", txtUsername.Text);
-        var hashedPassword = HashPassword(txtPassword.Password);
-        command.Parameters.AddWithValue("@password", hashedPassword);
+        command.Parameters.AddWithValue("@password", HashPassword(txtPassword.Password));
         command.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
         command.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
         command.Parameters.AddWithValue("@patronymic",
             string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
-        var phoneNumber = new string(Array.FindAll(txtPhoneNumber.Text.ToCharArray(), char.IsDigit));
+
+        // Улучшенная обработка номера телефона
+        var phoneNumber = Regex.Replace(txtPhoneNumber.Text, "[^0-9]", "");
         command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
+
         command.Parameters.AddWithValue("@email", txtEmail.Text);
 
-        connection.Open();
-        return command.ExecuteNonQuery();
+        await connection.OpenAsync();
+        return await command.ExecuteNonQueryAsync();
     }
 
     private string ValidateFields()
@@ -148,7 +154,6 @@ public partial class RegisterForm : MetroWindow
         }
     }
 
-
     private void ValidateEmail(StringBuilder errorMessage)
     {
         if (!IsValidEmail(txtEmail.Text))
@@ -158,63 +163,19 @@ public partial class RegisterForm : MetroWindow
         }
     }
 
-
     private static bool IsValidEmail(string email)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            return false;
+        if (string.IsNullOrWhiteSpace(email)) return false;
 
-        try
-        {
-            // Normalize the domain
-            email = Regex.Replace(email, @"(@)(.+)$", DomainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
-
-            // Examining if it is in the correct email format.
-            if (Regex.IsMatch(email,
-                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                    RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
-            {
-                var domain = email.Split('@')[1];
-                var host = Dns.GetHostEntry(domain);
-
-                foreach (var ip in host.AddressList)
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                        return true;
-            }
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return false;
-        }
-        catch (ArgumentException)
-        {
-            return false;
-        }
-        catch (SocketException)
-        {
-            return false;
-        }
-
-        return false;
+        // Use a single regex with optimized timeout and case-insensitive flag
+        const string emailRegex = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        return Regex.IsMatch(email, emailRegex, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
     }
-
-    private static string DomainMapper(Match match)
-    {
-        // Use IdnMapping class to convert Unicode domain names.
-        var idn = new IdnMapping();
-
-        // Pull out and process domain name (throws ArgumentException on invalid)
-        var domainName = idn.GetAscii(match.Groups[2].Value);
-
-        return match.Groups[1].Value + domainName;
-    }
-
 
     private static bool IsValidName(string name)
     {
-        var pattern = @"^[a-zA-Zа-яА-ЯёЁ]+$";
-        var regex = new Regex(pattern);
-        return regex.IsMatch(name);
+        const string pattern = @"^[a-zA-Zа-яА-ЯёЁ]+$";
+        return Regex.IsMatch(name, pattern);
     }
 
     private static string HashPassword(string password)
@@ -257,8 +218,7 @@ public partial class RegisterForm : MetroWindow
 
     private void Back_Click(object sender, RoutedEventArgs e)
     {
-        var mainWindow = Application.Current.MainWindow as MainWindow;
-        mainWindow?.Show();
+        Application.Current.MainWindow.Show();
         Hide();
     }
 

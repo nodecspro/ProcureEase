@@ -10,110 +10,111 @@
     Width="400"
     Height="590"
     Closed="OnMainWindowClosed"
+    Icon="pack://application:,,,/Source/AppIcon.png"
     ResizeMode="NoResize"
+    Style="{DynamicResource MahApps.Metro.Styles.MetroWindow}"
     WindowStartupLocation="CenterScreen"
     WindowTransitionsEnabled="False"
     mc:Ignorable="d">
-    <Grid>
-        <Border
-            Margin="15"
-            BorderThickness="1"
-            CornerRadius="5">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-                <TextBlock
-                    Margin="0,8"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="18"
-                    FontWeight="Bold">
-                    Регистрация
-                </TextBlock>
+        <TextBlock
+            Margin="0,8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="18"
+            FontWeight="Bold">
+            Регистрация
+        </TextBlock>
 
-                <StackPanel Grid.Row="1" Margin="8,8,8,8">
-                    <TextBlock Margin="0,2" Text="Имя пользователя:" />
-                    <TextBox
-                        x:Name="txtUsername"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        TextChanged="TextBox_TextChanged" />
+        <StackPanel Grid.Row="1" Margin="8">
+            <TextBlock Margin="0,2" Text="Имя пользователя:" />
+            <TextBox
+                x:Name="txtUsername"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Пароль:" />
-                    <PasswordBox
-                        x:Name="txtPassword"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        PasswordChanged="PasswordBox_PasswordChanged" />
+            <TextBlock Margin="0,6,0,2" Text="Пароль:" />
+            <PasswordBox
+                x:Name="txtPassword"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                PasswordChanged="PasswordBox_PasswordChanged"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Имя:" />
-                    <TextBox
-                        x:Name="txtFirstName"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        TextChanged="TextBox_TextChanged" />
+            <TextBlock Margin="0,6,0,2" Text="Имя:" />
+            <TextBox
+                x:Name="txtFirstName"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Фамилия:" />
-                    <TextBox
-                        x:Name="txtLastName"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        TextChanged="TextBox_TextChanged" />
+            <TextBlock Margin="0,6,0,2" Text="Фамилия:" />
+            <TextBox
+                x:Name="txtLastName"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Отчество (если есть):" />
-                    <TextBox
-                        x:Name="txtPatronymic"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        TextChanged="TextBox_TextChanged" />
+            <TextBlock Margin="0,6,0,2" Text="Отчество (если есть):" />
+            <TextBox
+                x:Name="txtPatronymic"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Номер телефона:" />
-                    <xctk:MaskedTextBox
-                        x:Name="txtPhoneNumber"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        Mask="+7(000)000-00-00"
-                        TextChanged="TextBox_TextChanged" />
+            <TextBlock Margin="0,6,0,2" Text="Номер телефона:" />
+            <xctk:MaskedTextBox
+                x:Name="txtPhoneNumber"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Mask="+7(000)000-00-00"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
 
-                    <TextBlock Margin="0,6,0,2" Text="Почта:" />
-                    <TextBox
-                        x:Name="txtEmail"
-                        Margin="0,4"
-                        Padding="4"
-                        BorderThickness="1"
-                        TextChanged="TextBox_TextChanged" />
-                </StackPanel>
-                <Button
-                    Grid.Row="1"
-                    Grid.RowSpan="2"
-                    Margin="0,427,0,0"
-                    Padding="4"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    BorderThickness="1"
-                    Click="BtnRegister_Click"
-                    Content="Зарегистрироваться" />
-                <TextBlock
-                    Grid.Row="2"
-                    Margin="0,24,0,8"
-                    HorizontalAlignment="Center"
-                    Cursor="Hand"
-                    FontWeight="Bold"
-                    Foreground="Blue"
-                    MouseLeftButtonDown="Back_Click"
-                    Text="Назад"
-                    TextDecorations="Underline" />
-            </Grid>
-        </Border>
+            <TextBlock Margin="0,6,0,2" Text="Почта:" />
+            <TextBox
+                x:Name="txtEmail"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
+        </StackPanel>
+        <Button
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Margin="0,427,0,0"
+            Padding="4"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Click="BtnRegister_Click"
+            Content="Зарегистрироваться" />
+        <TextBlock
+            Grid.Row="2"
+            Margin="0,24,0,8"
+            HorizontalAlignment="Center"
+            Cursor="Hand"
+            FontWeight="Bold"
+            Foreground="#5CA7E5"
+            MouseLeftButtonDown="Back_Click"
+            Text="Назад"
+            TextDecorations="Underline" />
     </Grid>
 </Controls:MetroWindow>

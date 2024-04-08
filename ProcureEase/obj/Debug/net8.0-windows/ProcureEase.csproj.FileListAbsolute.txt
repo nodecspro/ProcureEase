@@ -6,7 +6,6 @@ D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\ProcureEase.pdb
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\MainWindow.g.cs
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\App.g.cs
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\ProcureEase_MarkupCompile.cache
-D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\ProcureEase_MarkupCompile.lref
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\MainWindow.baml
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\ProcureEase.g.resources
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\ProcureEase.GeneratedMSBuildEditorConfig.editorconfig
@@ -61,3 +60,13 @@ D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\App.baml
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\Main.g.cs
 D:\GIthub repo\ProcureEase\ProcureEase\obj\Debug\net8.0-windows\Main.baml
 D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\BCrypt.Net-Next.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.FileExtensions.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.Json.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.UserSecrets.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.FileProviders.Abstractions.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.FileProviders.Physical.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.FileSystemGlobbing.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Primitives.dll
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\ProcureEase.dll.config
