@@ -1,7 +1,6 @@
 ﻿#region
 
 using System.Configuration;
-using System.Data;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
@@ -76,15 +75,18 @@ public partial class MainWindow
     {
         var query = "SELECT password FROM users WHERE username = @username";
 
-        await using var cmd = new MySqlCommand(query, connection);
-        cmd.Parameters.AddWithValue("@username", username);
+        using (var cmd = new MySqlCommand(query, connection))
+        {
+            cmd.Parameters.AddWithValue("@username", username);
 
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync();
-
-        var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
-        return hashedPasswordFromDb != null && // If user with that username is not found
-               BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
+            await using (connection)
+            {
+                await connection.OpenAsync();
+                var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
+                return hashedPasswordFromDb != null &&
+                       BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
+            }
+        }
     }
 
     private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
