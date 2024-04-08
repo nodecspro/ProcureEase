@@ -94,9 +94,9 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <StackPanel
-                    Width="565"
+                    Width="282"
                     Height="188"
-                    Margin="205,16,0,0"
+                    Margin="343,74,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
                     <!--  User Data Form  -->
@@ -187,20 +187,28 @@
 
                     </Grid>
                 </StackPanel>
-                <Image
-                    Width="100"
-                    Height="100"
-                    Margin="32,16,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Source="/UserAvatarDefaultBlack_60x60.png" />
-                <TextBox
+                <Grid
                     Width="120"
-                    Margin="22,131,0,0"
+                    Height="140"
+                    Margin="86,98,0,0"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Text="TextBox"
-                    TextWrapping="Wrap" />
+                    VerticalAlignment="Top">
+                    <Image
+                        Width="100"
+                        Height="100"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Source="/UserAvatarDefaultBlack_60x60.png" />
+                    <TextBox
+                        Width="120"
+                        Height="15"
+                        Margin="0,114,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Text="TextBox"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </Grid>
                 <Button
                     Margin="448,303,0,0"
                     HorizontalAlignment="Left"
@@ -222,6 +230,14 @@
                         </TransformGroup>
                     </Separator.RenderTransform>
                 </Separator>
+                <Label
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Content="Профиль"
+                    FontFamily="Arial Black"
+                    FontSize="18"
+                    FontWeight="Bold" />
             </Grid>
         </Grid>
     </Grid>
