@@ -21,8 +21,12 @@
 
         <!--  Top Panel  -->
         <DockPanel Grid.Row="0">
-            <!--  Username Text  -->
-            <!--  User Avatar  -->
+            <Button
+                Margin="10,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Click="HomeButton_Click"
+                Content="На главную" />
             <TextBlock
                 x:Name="UsernameTextBlock"
                 Margin="4,4,8,4"
@@ -94,19 +98,18 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <StackPanel
-                    Width="282"
-                    Height="188"
-                    Margin="343,74,0,0"
+                    Width="368"
+                    Height="164"
+                    Margin="347,86,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
                     <!--  User Data Form  -->
-                    <Grid HorizontalAlignment="Center">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -122,69 +125,70 @@
                         <TextBox
                             Grid.Row="0"
                             Grid.Column="1"
-                            Text="{Binding User.Username}" />
-
-                        <!--  Пароль  -->
-                        <Label
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Content="Пароль:" />
-                        <PasswordBox
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Width="154"
-                            HorizontalAlignment="Left" />
+                            BorderBrush="#FFABADB3"
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding Username}" />
 
                         <!--  Электронная почта  -->
                         <Label
-                            Grid.Row="2"
+                            Grid.Row="1"
                             Grid.Column="0"
                             Content="Электронная почта:" />
                         <TextBox
-                            Grid.Row="2"
+                            Grid.Row="1"
                             Grid.Column="1"
-                            Text="{Binding User.Email}" />
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding Email}" />
 
                         <!--  Имя  -->
                         <Label
-                            Grid.Row="3"
+                            Grid.Row="2"
                             Grid.Column="0"
                             Content="Имя:" />
                         <TextBox
-                            Grid.Row="3"
+                            Grid.Row="2"
                             Grid.Column="1"
-                            Text="{Binding User.FirstName}" />
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding FirstName}" />
 
                         <!--  Фамилия  -->
                         <Label
-                            Grid.Row="4"
+                            Grid.Row="3"
                             Grid.Column="0"
                             Content="Фамилия:" />
                         <TextBox
-                            Grid.Row="4"
+                            Grid.Row="3"
                             Grid.Column="1"
-                            Text="{Binding User.LastName}" />
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding LastName}" />
 
                         <!--  Отчество  -->
                         <Label
-                            Grid.Row="5"
+                            Grid.Row="4"
                             Grid.Column="0"
                             Content="Отчество:" />
                         <TextBox
-                            Grid.Row="5"
+                            Grid.Row="4"
                             Grid.Column="1"
-                            Text="{Binding User.Patronymic}" />
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding Patronymic}" />
 
                         <!--  Номер телефона  -->
                         <Label
-                            Grid.Row="6"
+                            Grid.Row="5"
                             Grid.Column="0"
                             Content="Номер телефона:" />
                         <TextBox
-                            Grid.Row="6"
+                            Grid.Row="5"
                             Grid.Column="1"
-                            Text="{Binding User.PhoneNumber}" />
-
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            Text="{Binding PhoneNumber}" />
                     </Grid>
                 </StackPanel>
                 <Grid
@@ -199,21 +203,23 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Top"
                         Source="/UserAvatarDefaultBlack_60x60.png" />
-                    <TextBox
-                        Width="120"
-                        Height="15"
-                        Margin="0,114,0,0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top"
-                        Text="TextBox"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
                 </Grid>
                 <Button
+                    x:Name="EditButton"
                     Margin="448,303,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
+                    Click="EditButton_Click"
                     Content="Изменить" />
+                <Button
+                    x:Name="CancelButton"
+                    Margin="520,303,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Background="Red"
+                    Click="CancelButton_Click"
+                    Content="Отменить"
+                    Visibility="Collapsed" />
                 <Separator
                     Width="392"
                     Margin="-8,190,0,182"
