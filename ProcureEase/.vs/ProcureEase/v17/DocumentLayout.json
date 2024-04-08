@@ -7,20 +7,20 @@
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\main.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:main.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\main.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:main.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\registerform.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:registerform.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\registerform.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:registerform.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\registerform.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:registerform.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\main.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:main.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\main.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|solutionrelative:main.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DF5C7658-4D66-4B52-BE7F-85373A93363B}|ProcureEase.csproj|d:\\github repo\\procureease\\procureease\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
@@ -38,7 +38,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "Main.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml",
               "RelativeDocumentMoniker": "Main.xaml",
@@ -50,20 +50,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Main.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml.cs",
               "RelativeDocumentMoniker": "Main.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml.cs",
               "RelativeToolTip": "Main.xaml.cs",
-              "ViewState": "AQIAABUAAAAAAAAAAAAAABIAAAArAAAA",
+              "ViewState": "AQIAABMAAAAAAAAAAABBwBIAAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-14T17:03:03.895Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "RegisterForm.xaml",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml",
               "RelativeDocumentMoniker": "RegisterForm.xaml",
@@ -75,13 +75,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "RegisterForm.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeDocumentMoniker": "RegisterForm.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml.cs",
               "RelativeToolTip": "RegisterForm.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABUAAAAAAAAA",
+              "ViewState": "AQIAALIAAAAAAAAAAAAIwNIAAAAzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-13T12:45:48.483Z",
               "EditorCaption": ""
@@ -95,7 +95,8 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-12T10:14:10.691Z"
+              "WhenOpened": "2024-03-12T10:14:10.691Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -105,7 +106,7 @@
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AQIAADUAAAAAAAAAAAAAAFMAAAAtAAAA",
+              "ViewState": "AQIAAEgAAAAAAAAAAAAAAFsAAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-12T10:14:00.006Z",
               "EditorCaption": ""

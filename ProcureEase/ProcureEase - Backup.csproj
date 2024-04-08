@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UserSecretsId>992049d5-f9dc-4db1-9cd9-fe7234b5704b</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Source\AppIcon.png" />
+    <None Remove="Source\UserAvatarDefaultBlack.png" />
+    <None Remove="Source\UserAvatarDefaultBlack_30x30.png" />
+    <None Remove="Source\UserAvatarDefaultBlack_60x60.png" />
+    <None Remove="Source\UserAvatarDefaultWhite.png" />
+    <None Remove="Source\UserAvatarDefaultWhite_30x30.png" />
+    <None Remove="UserAvatarDefaultBlack_60x60.png" />
+    <None Remove="UserAvatarDefaultWhite.png" />
+    <None Remove="UserAvatarDefaultWhite_30x30.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.6.0" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageReference Include="MySql.Data" Version="8.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Source\AppIcon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Source\UserAvatarDefaultBlack_30x30.png" />
+    <Resource Include="Source\UserAvatarDefaultBlack_60x60.png" />
+    <Resource Include="Source\UserAvatarDefaultWhite_30x30.png" />
+    <Resource Include="UserAvatarDefaultBlack_60x60.png" />
+    <Resource Include="UserAvatarDefaultWhite.png" />
+    <Resource Include="UserAvatarDefaultWhite_30x30.png" />
+  </ItemGroup>
+
+</Project>

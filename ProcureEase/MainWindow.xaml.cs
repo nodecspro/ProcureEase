@@ -73,19 +73,26 @@ public partial class MainWindow
 
     private async Task<bool> ValidateUser(string username, string password)
     {
-        var query = "SELECT password FROM users WHERE username = @username";
+        const string query = "SELECT password FROM users WHERE username = @username";
 
-        using (var cmd = new MySqlCommand(query, connection))
+        await using var cmd = new MySqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@username", username);
+
+        try
         {
-            cmd.Parameters.AddWithValue("@username", username);
-
-            await using (connection)
-            {
-                await connection.OpenAsync();
-                var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
-                return hashedPasswordFromDb != null &&
-                       BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
-            }
+            await connection.OpenAsync();
+            var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
+            return hashedPasswordFromDb != null &&
+                   BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
+        }
+        catch (MySqlException ex)
+        {
+            await this.ShowMessageAsync("Ошибка авторизации", $"Ошибка базы данных: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            await connection.CloseAsync();
         }
     }
 
