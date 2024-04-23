@@ -27,6 +27,7 @@ public partial class Main : MetroWindow
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
         UsernameTextBlock.Text = GetUserByUsername(login);
+        UserRequestsListView.ItemsSource = GetUserRequests(login); 
     }
 
     // Use prepared statements for better performance and security
@@ -48,7 +49,7 @@ public partial class Main : MetroWindow
     }
 
     // Load user data using prepared statements
-    private static User LoadUserData(string username)
+    private static User? LoadUserData(string username)
     {
         if (string.IsNullOrEmpty(username)) return null;
 
@@ -89,7 +90,6 @@ public partial class Main : MetroWindow
 
     private void OnMainWindowClosed(object sender, EventArgs e)
     {
-        // Close all windows when main window is closed
         foreach (var window in Application.Current.Windows) ((Window)window).Close();
     }
 
@@ -135,6 +135,47 @@ public partial class Main : MetroWindow
         UserDataGrid.Visibility = Visibility.Collapsed;
     }
 
+    private List<UserRequest> GetUserRequests(string username)
+    {
+        using var connection = new MySqlConnection(ConnectionString);
+        connection.Open();
+
+        // Сначала получите ID пользователя по username
+        const string getUserIdQuery = "SELECT user_id FROM users WHERE username = @username";
+        using var getUserIdCommand = new MySqlCommand(getUserIdQuery, connection);
+        getUserIdCommand.Parameters.AddWithValue("@username", username);
+        int userId = Convert.ToInt32(getUserIdCommand.ExecuteScalar());
+
+        // Затем получите заявки пользователя
+        const string query = @"SELECT r.request_id, r.request_name, rt.name as request_type, 
+                           rs.name as request_status, r.notes, r.file 
+                           FROM requests r
+                           JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                           JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                           WHERE r.user_id = @userId";
+
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@userId", userId);
+
+        var requests = new List<UserRequest>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            requests.Add(new UserRequest
+            {
+                RequestId = reader.GetInt32("request_id"),
+                RequestName = reader.GetString("request_name"),
+                RequestTypeId = reader.GetString("request_type"),
+                RequestStatusId = reader.GetString("request_status"),
+                Notes = reader.GetString("notes"),
+                // Обработка информации о файле (например, имени файла)
+                FileName = reader.IsDBNull(reader.GetOrdinal("file")) ? null : "file.ext"
+            });
+        }
+
+        return requests;
+    }
+
     public class User
     {
         public string Username { get; set; }
@@ -143,5 +184,15 @@ public partial class Main : MetroWindow
         public string LastName { get; set; }
         public string Patronymic { get; set; }
         public string PhoneNumber { get; set; }
+    }
+
+    public class UserRequest
+    {
+        public int RequestId { get; set; }
+        public string RequestName { get; set; }
+        public string RequestTypeId { get; set; }
+        public string RequestStatusId { get; set; }
+        public string Notes { get; set; }
+        public string FileName { get; set; }
     }
 }

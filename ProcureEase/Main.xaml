@@ -69,13 +69,21 @@
 
                     <!--  Список заявок пользователя  -->
                     <ListView
+                        x:Name="UserRequestsListView"
                         MaxHeight="300"
                         VerticalAlignment="Top"
                         d:ItemsSource="{d:SampleData ItemCount=5}"
                         ItemsSource="{Binding UserRequests}">
                         <ListView.View>
                             <GridView>
-                                <!--  Определите столбцы для отображения информации о заявках  -->
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestId}" Header="ID" />
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestName}" Header="Название" />
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestTypeId}" Header="Тип заявки" />
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestStatusId}" Header="Статус" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Notes}" Header="Примечания" />
+                                <GridViewColumn Header="Файл">
+                                    <!--  Здесь нужно реализовать отображение информации о файле  -->
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                     </ListView>
