@@ -103,9 +103,8 @@ public partial class MainWindow
         Hide();
     }
 
-    private void OnMainWindowClosed(object sender, EventArgs e)
+    private void OnMainWindowClosed(object? sender, EventArgs e)
     {
-        // Close all open windows
-        foreach (var window in Application.Current.Windows) ((Window)window).Close();
+        Application.Current.Shutdown();
     }
 }

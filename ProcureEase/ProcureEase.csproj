@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Source\AppIcon.png" />
     <None Remove="Source\UserAvatarDefaultBlack.png" />
     <None Remove="Source\UserAvatarDefaultBlack_30x30.png" />

@@ -5,9 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="metroWindow"
     Title="ProcureEase"
     Width="800"
     Height="450"
+    MinWidth="500"
     Closed="OnMainWindowClosed"
     Icon="pack://application:,,,/Source/AppIcon.png"
     WindowStartupLocation="CenterScreen"
@@ -53,12 +55,11 @@
         <!--  Основное содержимое окна  -->
         <Grid Grid.Row="1">
             <!--  Requests Grid (initially visible)  -->
-            <Grid x:Name="RequestsGrid" Visibility="Collapsed">
+            <Grid x:Name="RequestsGrid">
                 <StackPanel
-                    Width="780"
-                    Height="372"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    Width="Auto"
+                    Height="Auto"
+                    VerticalAlignment="Top">
                     <!--  Заголовок  -->
                     <TextBlock
                         Margin="0,0,0,20"
@@ -70,19 +71,36 @@
                     <!--  Список заявок пользователя  -->
                     <ListView
                         x:Name="UserRequestsListView"
-                        MaxHeight="300"
-                        VerticalAlignment="Top"
+                        Margin="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
                         d:ItemsSource="{d:SampleData ItemCount=5}"
                         ItemsSource="{Binding UserRequests}">
                         <ListView.View>
-                            <GridView>
+                            <GridView x:Name="UserRequestsGridView">
                                 <GridViewColumn DisplayMemberBinding="{Binding RequestId}" Header="ID" />
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestName}" Header="Название" />
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestTypeId}" Header="Тип заявки" />
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestStatusId}" Header="Статус" />
-                                <GridViewColumn DisplayMemberBinding="{Binding Notes}" Header="Примечания" />
+                                <GridViewColumn Header="Название">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestType}" Header="Тип заявки" />
+                                <GridViewColumn DisplayMemberBinding="{Binding RequestStatus}" Header="Статус" />
+                                <GridViewColumn Header="Примечания">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                                 <GridViewColumn Header="Файл">
-                                    <!--  Здесь нужно реализовать отображение информации о файле  -->
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding File}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                             </GridView>
                         </ListView.View>
@@ -104,7 +122,8 @@
                 Width="780"
                 Height="372"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center">
+                VerticalAlignment="Center"
+                Visibility="Collapsed">
                 <StackPanel
                     Width="368"
                     Height="164"
@@ -252,6 +271,122 @@
                     FontFamily="Arial Black"
                     FontSize="18"
                     FontWeight="Bold" />
+            </Grid>
+
+            <!--  New Request Grid (initially hidden)  -->
+            <Grid x:Name="NewRequestGrid" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="0,0,0,20"
+                    HorizontalAlignment="Center"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Text="Новая заявка" />
+
+                <Grid Grid.Row="1" Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Название  -->
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="0,0,10,5"
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Text="Название:" />
+                    <TextBox
+                        x:Name="RequestNameTextBox"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,10"
+                        VerticalContentAlignment="Center"
+                        MaxLength="48" />
+
+                    <!--  Тип заявки  -->
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="0,0,10,5"
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Text="Тип заявки:" />
+                    <ComboBox
+                        x:Name="RequestTypeComboBox"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0,0,0,10"
+                        VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="Товар" />
+                        <ComboBoxItem Content="Услуга" />
+                        <ComboBoxItem Content="Работа" />
+                    </ComboBox>
+
+                    <!--  Примечания  -->
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Margin="0,0,10,5"
+                        VerticalAlignment="Top"
+                        FontWeight="Bold"
+                        Text="Примечание:" />
+                    <TextBox
+                        x:Name="RequestNotesTextBox"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Height="100"
+                        Margin="0,0,0,10"
+                        AcceptsReturn="True"
+                        MaxLength="512"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto" />
+
+                    <!--  Файл  -->
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Text="Файл:" />
+                    <Button
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Padding="10,5"
+                        HorizontalAlignment="Left"
+                        Content="Выбрать файл" />
+                </Grid>
+
+                <StackPanel
+                    Grid.Row="2"
+                    Margin="0,20"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,10,0"
+                        Padding="20,10"
+                        Click="SaveRequestButton_Click"
+                        Content="Сохранить" />
+                    <Button
+                        x:Name="BackButton"
+                        Padding="20,10"
+                        Click="BackButton_Click"
+                        Content="Назад" />
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>

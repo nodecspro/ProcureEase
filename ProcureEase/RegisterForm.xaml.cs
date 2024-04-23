@@ -223,8 +223,8 @@ public partial class RegisterForm : MetroWindow
         Hide();
     }
 
-    private void OnMainWindowClosed(object sender, EventArgs e)
+    private void OnMainWindowClosed(object? sender, EventArgs e)
     {
-        foreach (var window in Application.Current.Windows) ((Window)window).Close();
+        Application.Current.Shutdown();
     }
 }
