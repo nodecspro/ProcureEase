@@ -1,17 +1,20 @@
 ﻿#region
 
+using ControlzEx.Theming;
+using GalaSoft.MvvmLight.Command;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
-using ControlzEx.Theming;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using Microsoft.Win32;
-using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Asn1.Ocsp;
+using System.Windows.Navigation;
 using Xceed.Wpf.AvalonDock.Controls;
 
 #endregion
@@ -319,18 +322,44 @@ public static class RequestRepository
                 {
                     while (reader.Read())
                     {
-                        requests.Add(new Request
+                        var request = new Request
                         {
                             RequestId = reader.GetInt32("request_id"),
                             RequestName = reader.GetString("request_name"),
                             RequestType = reader.GetString("request_type"),
                             RequestStatus = reader.GetString("request_status"),
                             Notes = reader.GetString("notes")
-                        });
+                        };
+                        request.RequestFiles = GetRequestFiles(request.RequestId);
+
+                        requests.Add(request);
                     }
                 }
 
                 return requests;
+            }
+        }
+    }
+
+    // Новый метод для получения списка файлов по ID заявки
+    private static List<RequestFile> GetRequestFiles(int requestId)
+    {
+        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
+        {
+            connection.Open();
+            const string query = "SELECT file_name FROM request_files WHERE request_id = @RequestId";
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@RequestId", requestId);
+                var files = new List<RequestFile>();
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        files.Add(new RequestFile { FileName = reader.GetString("file_name") });
+                    }
+                }
+                return files;
             }
         }
     }

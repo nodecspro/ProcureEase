@@ -98,10 +98,14 @@
                                 <GridViewColumn Header="Файлы">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ItemsControl ItemsSource="{Binding FileNames}">
+                                            <ItemsControl ItemsSource="{Binding RequestFiles}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                                        <ContentControl>
+                                                            <Hyperlink Command="{Binding DownloadFileCommand}">
+                                                                <TextBlock Text="{Binding FileName}" TextWrapping="Wrap" />
+                                                            </Hyperlink>
+                                                        </ContentControl>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
