@@ -70,3 +70,4 @@ D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extens
 D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.FileSystemGlobbing.dll
 D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Microsoft.Extensions.Primitives.dll
 D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\ProcureEase.dll.config
+D:\GIthub repo\ProcureEase\ProcureEase\bin\Debug\net8.0-windows\Ookii.Dialogs.Wpf.dll

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "FwaTyU0PxVN8+MKyIOye/rr0cedIwOpdoXj/vhvkLeJWGRCEjRmxjEnSo/MaFLaTb0YbiPrY4b6js5PfEBjZAA==",
+  "dgSpecHash": "r6+YNHo92q+H/zQdlqAgHeeS6BMlDOCGNKRinSlrGOW+IohDkPd8jQ9Noy8rWwEfrV8ATh8rcKBvwrlEmLL9fw==",
   "success": true,
   "projectFilePath": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\ProcureEase.csproj",
   "expectedPackageFiles": [
@@ -27,6 +27,7 @@
     "C:\\Users\\node\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\microsoft.xaml.behaviors.wpf\\1.1.19\\microsoft.xaml.behaviors.wpf.1.1.19.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\mysql.data\\8.3.0\\mysql.data.8.3.0.nupkg.sha512",
+    "C:\\Users\\node\\.nuget\\packages\\ookii.dialogs.wpf\\5.0.1\\ookii.dialogs.wpf.5.0.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\system.configuration.configurationmanager\\4.4.1\\system.configuration.configurationmanager.4.4.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\system.diagnostics.diagnosticsource\\7.0.2\\system.diagnostics.diagnosticsource.7.0.2.nupkg.sha512",

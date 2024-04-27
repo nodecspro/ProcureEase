@@ -8,7 +8,7 @@
     x:Name="metroWindow"
     Title="ProcureEase"
     Width="800"
-    Height="450"
+    Height="500"
     MinWidth="500"
     Closed="OnMainWindowClosed"
     Icon="pack://application:,,,/Source/AppIcon.png"
@@ -55,7 +55,7 @@
         <!--  Основное содержимое окна  -->
         <Grid Grid.Row="1">
             <!--  Requests Grid (initially visible)  -->
-            <Grid x:Name="RequestsGrid">
+            <Grid x:Name="RequestsGrid" Visibility="Collapsed">
                 <StackPanel
                     Width="Auto"
                     Height="Auto"
@@ -95,10 +95,16 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Файл">
+                                <GridViewColumn Header="Файлы">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding File}" TextWrapping="Wrap" />
+                                            <ItemsControl ItemsSource="{Binding FileNames}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -274,7 +280,7 @@
             </Grid>
 
             <!--  New Request Grid (initially hidden)  -->
-            <Grid x:Name="NewRequestGrid" Visibility="Collapsed">
+            <Grid x:Name="NewRequestGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -289,7 +295,10 @@
                     FontWeight="Bold"
                     Text="Новая заявка" />
 
-                <Grid Grid.Row="1" Margin="20">
+                <Grid
+                    Grid.Row="1"
+                    Grid.RowSpan="2"
+                    Margin="20,20,20,63">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -298,7 +307,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <!--  Название  -->
@@ -359,16 +368,53 @@
                     <TextBlock
                         Grid.Row="3"
                         Grid.Column="0"
-                        Margin="0,0,10,0"
-                        VerticalAlignment="Center"
+                        Margin="0,6,10,0"
+                        VerticalAlignment="Top"
                         FontWeight="Bold"
                         Text="Файл:" />
-                    <Button
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        Padding="10,5"
-                        HorizontalAlignment="Left"
-                        Content="Выбрать файл" />
+                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Button
+                            Grid.Row="0"
+                            Padding="10,5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Click="btnOpenFile_Click"
+                            Content="Выбрать файл" />
+                        <ScrollViewer
+                            Grid.Row="1"
+                            Margin="0,5,0,0"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding SelectedFiles}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding}" />
+                                            <Button
+                                                Grid.Column="1"
+                                                Margin="5,0,0,0"
+                                                Padding="5,2"
+                                                Background="#FFFF4444"
+                                                Click="RemoveFileButton_Click"
+                                                Content="Удалить" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
                 </Grid>
 
                 <StackPanel

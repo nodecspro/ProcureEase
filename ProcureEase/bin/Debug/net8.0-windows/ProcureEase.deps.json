@@ -12,7 +12,8 @@
           "Extended.Wpf.Toolkit": "4.6.0",
           "MahApps.Metro": "2.4.10",
           "Microsoft.Extensions.Configuration.UserSecrets": "6.0.1",
-          "MySql.Data": "8.3.0"
+          "MySql.Data": "8.3.0",
+          "Ookii.Dialogs.Wpf": "5.0.1"
         },
         "runtime": {
           "ProcureEase.dll": {}
@@ -336,6 +337,14 @@
           }
         }
       },
+      "Ookii.Dialogs.Wpf/5.0.1": {
+        "runtime": {
+          "lib/net6.0-windows7.0/Ookii.Dialogs.Wpf.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.1.0"
+          }
+        }
+      },
       "System.Buffers/4.5.1": {},
       "System.Configuration.ConfigurationManager/4.4.1": {
         "dependencies": {
@@ -617,6 +626,13 @@
       "sha512": "sha512-bAQlkLYvTYt5MtXAgHGURSBSUWynIvyN2FVQFUg51I2grxsOfnJSyGvO7YsDRnU7IvUNfMdxq8rNXiP5P4hMlw==",
       "path": "mysql.data/8.3.0",
       "hashPath": "mysql.data.8.3.0.nupkg.sha512"
+    },
+    "Ookii.Dialogs.Wpf/5.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iZNnZwqTpK0cfR0vkotncP1c025/PHlIdzc7iEKBYwhVv1V0zXp9/RT/O0kMhsmlwXqRxxbE4pdhfinbJXtjPg==",
+      "path": "ookii.dialogs.wpf/5.0.1",
+      "hashPath": "ookii.dialogs.wpf.5.0.1.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",

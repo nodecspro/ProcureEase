@@ -1,5 +1,7 @@
 ﻿#region
 
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,7 +9,9 @@ using System.Windows.Media;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using Microsoft.Win32;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Xceed.Wpf.AvalonDock.Controls;
 
 #endregion
@@ -18,13 +22,16 @@ public partial class Main : MetroWindow
 {
     private User? currentUser;
     private bool isEditing;
+    public ObservableCollection<string> SelectedFiles { get; set; }
 
     public Main(string login)
     {
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
+        SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
+        DataContext = this;
         LoadUserData();
         LoadUserRequests();
     }
@@ -43,7 +50,7 @@ public partial class Main : MetroWindow
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
         ToggleVisibility(NewRequestGrid, Visibility.Collapsed);
-        ToggleVisibility(RequestsGrid);
+        ToggleVisibility(RequestsGrid, Visibility.Collapsed);
         ToggleVisibility(UserDataGrid);
     }
 
@@ -71,6 +78,49 @@ public partial class Main : MetroWindow
     {
         ToggleEditing(false);
         LoadUserData();
+    }
+
+    private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*";
+        openFileDialog.Multiselect = true;
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            List<string> invalidFiles = new List<string>();
+
+            foreach (string filePath in openFileDialog.FileNames)
+            {
+                string extension = System.IO.Path.GetExtension(filePath).ToLower();
+
+                if (extension == ".doc" || extension == ".docx" ||
+                    extension == ".xls" || extension == ".xlsx" ||
+                    extension == ".txt" ||
+                    extension == ".dwg" || extension == ".dxf")
+                {
+                    string fileName = System.IO.Path.GetFileName(filePath);
+                    SelectedFiles.Add(filePath);
+                }
+                else
+                {
+                    invalidFiles.Add(System.IO.Path.GetFileName(filePath));
+                }
+            }
+
+            if (invalidFiles.Count > 0)
+            {
+                string message = "Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n";
+                message += string.Join("\n", invalidFiles);
+                await this.ShowErrorMessageAsync("Недопустимые файлы", message);
+            }
+        }
+    }
+
+    private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
+    {
+        string file = (string)((Button)sender).DataContext;
+        SelectedFiles.Remove(file);
     }
 
     private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -128,8 +178,26 @@ public partial class Main : MetroWindow
             UserId = currentUser.UserId
         };
 
-        if (RequestRepository.AddRequest(request))
+        if (SelectedFiles.Count > 0)
         {
+            foreach (string filePath in SelectedFiles)
+            {
+                byte[] fileData = File.ReadAllBytes(filePath);
+
+                var requestFile = new RequestFile
+                {
+                    FileName = Path.GetFileName(filePath),
+                    FileData = fileData
+                };
+
+                request.RequestFiles.Add(requestFile);
+            }
+        }
+
+        int requestId = RequestRepository.AddRequest(request);
+        if (requestId > 0)
+        {
+            RequestRepository.AddRequestFiles(requestId, request.RequestFiles);
             ClearRequestForm();
             ShowSingleGrid(RequestsGrid);
             LoadUserRequests();
@@ -267,14 +335,15 @@ public static class RequestRepository
         }
     }
 
-    public static bool AddRequest(Request request)
+    public static int AddRequest(Request request)
     {
         using (var connection = new MySqlConnection(AppSettings.ConnectionString))
         {
             connection.Open();
 
             const string query = @"INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
-                               VALUES (@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId)";
+                               VALUES (@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
+                               SELECT LAST_INSERT_ID();";
 
             using (var command = new MySqlCommand(query, connection))
             {
@@ -284,7 +353,30 @@ public static class RequestRepository
                 command.Parameters.AddWithValue("@RequestStatusId", GetRequestStatusId("В обработке"));
                 command.Parameters.AddWithValue("@RequestTypeId", GetRequestTypeId(request.RequestType));
 
-                return command.ExecuteNonQuery() > 0;
+                return Convert.ToInt32(command.ExecuteScalar());
+            }
+        }
+    }
+
+    public static void AddRequestFiles(int requestId, List<RequestFile> requestFiles)
+    {
+        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
+        {
+            connection.Open();
+
+            const string query = @"INSERT INTO request_files (request_id, file_name, file_data)
+                               VALUES (@RequestId, @FileName, @FileData)";
+
+            foreach (var requestFile in requestFiles)
+            {
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@RequestId", requestId);
+                    command.Parameters.AddWithValue("@FileName", requestFile.FileName);
+                    command.Parameters.AddWithValue("@FileData", requestFile.FileData);
+
+                    command.ExecuteNonQuery();
+                }
             }
         }
     }
@@ -341,4 +433,18 @@ public class Request
     public string? RequestStatus { get; set; }
     public string? Notes { get; set; }
     public int UserId { get; set; }
+    public List<RequestFile> RequestFiles { get; set; }
+
+    public Request()
+    {
+        RequestFiles = new List<RequestFile>();
+    }
+}
+
+public class RequestFile
+{
+    public int RequestFileId { get; set; }
+    public int RequestId { get; set; }
+    public string FileName { get; set; }
+    public byte[] FileData { get; set; }
 }
