@@ -45,8 +45,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml",
               "RelativeToolTip": "Main.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-14T17:03:06.399Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-14T17:03:06.399Z"
             },
             {
               "$type": "Document",
@@ -54,9 +53,9 @@
               "Title": "Main.xaml.cs",
               "DocumentMoniker": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml.cs",
               "RelativeDocumentMoniker": "Main.xaml.cs",
-              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml.cs",
-              "RelativeToolTip": "Main.xaml.cs",
-              "ViewState": "AQIAADABAAAAAAAAAAAAAKgBAAANAAAA",
+              "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\Main.xaml.cs*",
+              "RelativeToolTip": "Main.xaml.cs*",
+              "ViewState": "AQIAAFUAAAAAAAAAAAAAAGkAAAAwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-14T17:03:03.895Z",
               "EditorCaption": ""
@@ -70,8 +69,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\RegisterForm.xaml",
               "RelativeToolTip": "RegisterForm.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-04-08T09:16:35.092Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-08T09:16:35.092Z"
             },
             {
               "$type": "Document",
@@ -83,8 +81,7 @@
               "RelativeToolTip": "RegisterForm.xaml.cs",
               "ViewState": "AQIAANEAAAAAAAAAAABBwOIAAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-13T12:45:48.483Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-13T12:45:48.483Z"
             },
             {
               "$type": "Document",
@@ -95,8 +92,7 @@
               "ToolTip": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-03-12T10:14:10.691Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T10:14:10.691Z"
             },
             {
               "$type": "Document",
@@ -108,8 +104,7 @@
               "RelativeToolTip": "MainWindow.xaml.cs",
               "ViewState": "AQIAAC8AAAAAAAAAAAAmwDoAAAAQAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-12T10:14:00.006Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-12T10:14:00.006Z"
             }
           ]
         }

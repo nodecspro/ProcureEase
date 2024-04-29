@@ -25,7 +25,11 @@ public partial class Main : MetroWindow
 {
     private User? currentUser;
     private bool isEditing;
-    public ObservableCollection<string> SelectedFiles { get; set; }
+    public ObservableCollection<string> SelectedFiles
+    {
+        get;
+        set;
+    }
 
     public Main(string login)
     {
@@ -85,24 +89,26 @@ public partial class Main : MetroWindow
 
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog openFileDialog = new OpenFileDialog();
-        openFileDialog.Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*";
-        openFileDialog.Multiselect = true;
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            Multiselect = true
+        };
 
         if (openFileDialog.ShowDialog() == true)
         {
-            List<string> invalidFiles = new List<string>();
+            var validExtensions = new HashSet<string> {
+        ".doc",
+        ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf"
+      };
+            var invalidFiles = new List<string>();
 
             foreach (string filePath in openFileDialog.FileNames)
             {
                 string extension = System.IO.Path.GetExtension(filePath).ToLower();
 
-                if (extension == ".doc" || extension == ".docx" ||
-                    extension == ".xls" || extension == ".xlsx" ||
-                    extension == ".txt" ||
-                    extension == ".dwg" || extension == ".dxf")
+                if (validExtensions.Contains(extension))
                 {
-                    string fileName = System.IO.Path.GetFileName(filePath);
                     SelectedFiles.Add(filePath);
                 }
                 else
@@ -113,8 +119,7 @@ public partial class Main : MetroWindow
 
             if (invalidFiles.Count > 0)
             {
-                string message = "Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n";
-                message += string.Join("\n", invalidFiles);
+                string message = $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n ", invalidFiles)}";
                 await this.ShowErrorMessageAsync("Недопустимые файлы", message);
             }
         }
@@ -133,7 +138,10 @@ public partial class Main : MetroWindow
 
     private async Task ShowErrorMessageAsync(string title, string message)
     {
-        var dialogSettings = new MetroDialogSettings { AnimateShow = false };
+        var dialogSettings = new MetroDialogSettings
+        {
+            AnimateShow = false
+        };
         await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative, dialogSettings);
     }
 
@@ -243,13 +251,11 @@ public partial class Main : MetroWindow
     {
         foreach (var textBox in grid.FindVisualChildren
 
-<TextBox>())
+        <TextBox>())
         {
             textBox.IsReadOnly = !isEditing;
             textBox.BorderThickness = isEditing ? new Thickness(1) : new Thickness(0);
-            textBox.BorderBrush = isEditing
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
-                : Brushes.Transparent;
+            textBox.BorderBrush = isEditing ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3")) : Brushes.Transparent;
         }
     }
 
@@ -298,26 +304,24 @@ public static class UserRepository
 
 public static class RequestRepository
 {
-    public static List
-    <Request> GetUserRequests(int userId)
+    public static List<Request> GetUserRequests(int userId)
     {
         using (var connection = new MySqlConnection(AppSettings.ConnectionString))
         {
             connection.Open();
 
             const string query = @"SELECT r.request_id, r.request_name, rt.name as request_type, 
-                               rs.name as request_status, r.notes
-                               FROM requests r
-                               JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                               JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                               WHERE r.user_id = @userId";
+                rs.name as request_status, r.notes
+                FROM requests r
+                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                WHERE r.user_id = @userId ";
 
             using (var command = new MySqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
 
-                var requests = new List
-        <Request>();
+                var requests = new List<Request>();
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -356,7 +360,10 @@ public static class RequestRepository
                 {
                     while (reader.Read())
                     {
-                        files.Add(new RequestFile { FileName = reader.GetString("file_name") });
+                        files.Add(new RequestFile
+                        {
+                            FileName = reader.GetString("file_name")
+                        });
                     }
                 }
                 return files;
@@ -371,8 +378,9 @@ public static class RequestRepository
             connection.Open();
 
             const string query = @"INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
-                               VALUES (@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
-                               SELECT LAST_INSERT_ID();";
+            VALUES(@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
+            SELECT LAST_INSERT_ID();
+            ";
 
             using (var command = new MySqlCommand(query, connection))
             {
@@ -394,7 +402,8 @@ public static class RequestRepository
             connection.Open();
 
             const string query = @"INSERT INTO request_files (request_id, file_name, file_data)
-                               VALUES (@RequestId, @FileName, @FileData)";
+            VALUES(@RequestId, @FileName, @FileData)
+            ";
 
             foreach (var requestFile in requestFiles)
             {
@@ -445,24 +454,80 @@ public static class RequestRepository
 
 public class User
 {
-    public int UserId { get; set; }
-    public string? Username { get; set; }
-    public string? Email { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public string? Patronymic { get; set; }
-    public string? PhoneNumber { get; set; }
+    public int UserId
+    {
+        get;
+        set;
+    }
+    public string? Username
+    {
+        get;
+        set;
+    }
+    public string? Email
+    {
+        get;
+        set;
+    }
+    public string? FirstName
+    {
+        get;
+        set;
+    }
+    public string? LastName
+    {
+        get;
+        set;
+    }
+    public string? Patronymic
+    {
+        get;
+        set;
+    }
+    public string? PhoneNumber
+    {
+        get;
+        set;
+    }
 }
 
 public class Request
 {
-    public int RequestId { get; set; }
-    public string? RequestName { get; set; }
-    public string? RequestType { get; set; }
-    public string? RequestStatus { get; set; }
-    public string? Notes { get; set; }
-    public int UserId { get; set; }
-    public List<RequestFile> RequestFiles { get; set; }
+    public int RequestId
+    {
+        get;
+        set;
+    }
+    public string? RequestName
+    {
+        get;
+        set;
+    }
+    public string? RequestType
+    {
+        get;
+        set;
+    }
+    public string? RequestStatus
+    {
+        get;
+        set;
+    }
+    public string? Notes
+    {
+        get;
+        set;
+    }
+    public int UserId
+    {
+        get;
+        set;
+    }
+    public List<RequestFile> RequestFiles
+    {
+        get;
+        set;
+    }
 
     public Request()
     {
@@ -472,8 +537,24 @@ public class Request
 
 public class RequestFile
 {
-    public int RequestFileId { get; set; }
-    public int RequestId { get; set; }
-    public string FileName { get; set; }
-    public byte[] FileData { get; set; }
+    public int RequestFileId
+    {
+        get;
+        set;
+    }
+    public int RequestId
+    {
+        get;
+        set;
+    }
+    public string FileName
+    {
+        get;
+        set;
+    }
+    public byte[] FileData
+    {
+        get;
+        set;
+    }
 }
