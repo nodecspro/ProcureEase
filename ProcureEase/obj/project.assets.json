@@ -8883,11 +8883,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\ProcureEase.csproj",
+      "projectUniqueName": "D:\\JetBrains Rider 2024.1.1\\RiderProjects\\ProcureEase\\ProcureEase.csproj",
       "projectName": "ProcureEase",
-      "projectPath": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\ProcureEase.csproj",
+      "projectPath": "D:\\JetBrains Rider 2024.1.1\\RiderProjects\\ProcureEase\\ProcureEase.csproj",
       "packagesPath": "C:\\Users\\node\\.nuget\\packages\\",
-      "outputPath": "D:\\GIthub repo\\ProcureEase\\ProcureEase\\obj\\",
+      "outputPath": "D:\\JetBrains Rider 2024.1.1\\RiderProjects\\ProcureEase\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -8914,11 +8914,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -8986,7 +8981,7 @@
       "code": "NU1701",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Пакет \"MvvmLightLibs 5.4.1.1\" был восстановлен с помощью \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\", а не целевой платформы проекта \"net8.0-windows7.0\". Этот пакет может быть не полностью совместим с вашим проектом.",
+      "message": "Package 'MvvmLightLibs 5.4.1.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0-windows7.0'. This package may not be fully compatible with your project.",
       "libraryId": "MvvmLightLibs",
       "targetGraphs": [
         "net8.0-windows7.0"

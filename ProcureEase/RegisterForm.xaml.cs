@@ -8,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using BCrypt.Net;
 using ControlzEx.Theming;
-using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using MySql.Data.MySqlClient;
 
@@ -16,7 +15,7 @@ using MySql.Data.MySqlClient;
 
 namespace ProcureEase;
 
-public partial class RegisterForm : MetroWindow
+public partial class RegisterForm
 {
     // Строка подключения к БД вынесена в отдельный файл конфигурации
     private static readonly string ConnectionString =
@@ -29,7 +28,7 @@ public partial class RegisterForm : MetroWindow
         ThemeManager.Current.SyncTheme();
 
         // Подписка на событие закрытия главного окна
-        Application.Current.MainWindow.Closed += OnMainWindowClosed;
+        if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
     private async void BtnRegister_Click(object sender, RoutedEventArgs e)
@@ -74,7 +73,7 @@ public partial class RegisterForm : MetroWindow
 
     private async Task<int> RegisterUser()
     {
-        using var connection = new MySqlConnection(ConnectionString);
+        await using var connection = new MySqlConnection(ConnectionString);
         const string query =
             "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email) " +
             "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email)";
@@ -112,56 +111,44 @@ public partial class RegisterForm : MetroWindow
 
     private void ValidateUsername(StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtUsername.Text))
-        {
-            errorMessage.AppendLine("Имя пользователя не может быть пустым.");
-            txtUsername.BorderBrush = Brushes.Red;
-        }
+        if (!string.IsNullOrWhiteSpace(txtUsername.Text)) return;
+        errorMessage.AppendLine("Имя пользователя не может быть пустым.");
+        txtUsername.BorderBrush = Brushes.Red;
     }
 
     private void ValidatePassword(StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtPassword.Password))
-        {
-            errorMessage.AppendLine("Пароль не может быть пустым.");
-            txtPassword.BorderBrush = Brushes.Red;
-        }
+        if (!string.IsNullOrWhiteSpace(txtPassword.Password)) return;
+        errorMessage.AppendLine("Пароль не может быть пустым.");
+        txtPassword.BorderBrush = Brushes.Red;
     }
 
     private void ValidateFirstName(StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtFirstName.Text) || !IsValidName(txtFirstName.Text))
-        {
-            errorMessage.AppendLine("Имя не может быть пустым и должно содержать только буквы.");
-            txtFirstName.BorderBrush = Brushes.Red;
-        }
+        if (!string.IsNullOrWhiteSpace(txtFirstName.Text) && IsValidName(txtFirstName.Text)) return;
+        errorMessage.AppendLine("Имя не может быть пустым и должно содержать только буквы.");
+        txtFirstName.BorderBrush = Brushes.Red;
     }
 
     private void ValidateLastName(StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtLastName.Text) || !IsValidName(txtLastName.Text))
-        {
-            errorMessage.AppendLine("Фамилия не может быть пустой и должна содержать только буквы.");
-            txtLastName.BorderBrush = Brushes.Red;
-        }
+        if (!string.IsNullOrWhiteSpace(txtLastName.Text) && IsValidName(txtLastName.Text)) return;
+        errorMessage.AppendLine("Фамилия не может быть пустой и должна содержать только буквы.");
+        txtLastName.BorderBrush = Brushes.Red;
     }
 
     private void ValidatePhoneNumber(StringBuilder errorMessage)
     {
-        if (!txtPhoneNumber.IsMaskCompleted)
-        {
-            errorMessage.AppendLine("Номер телефона не может быть пустым.");
-            txtPhoneNumber.BorderBrush = Brushes.Red;
-        }
+        if (txtPhoneNumber.IsMaskCompleted) return;
+        errorMessage.AppendLine("Номер телефона не может быть пустым.");
+        txtPhoneNumber.BorderBrush = Brushes.Red;
     }
 
     private void ValidateEmail(StringBuilder errorMessage)
     {
-        if (!IsValidEmail(txtEmail.Text))
-        {
-            errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
-            txtEmail.BorderBrush = Brushes.Red;
-        }
+        if (IsValidEmail(txtEmail.Text)) return;
+        errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
+        txtEmail.BorderBrush = Brushes.Red;
     }
 
     private static bool IsValidEmail(string email)
@@ -175,7 +162,7 @@ public partial class RegisterForm : MetroWindow
 
     private static bool IsValidName(string name)
     {
-        const string pattern = @"^[a-zA-Zа-яА-ЯёЁ]+$";
+        const string pattern = @"^[a-zA-Z-яА-ЯёЁ]+$";
         return Regex.IsMatch(name, pattern);
     }
 
@@ -219,7 +206,7 @@ public partial class RegisterForm : MetroWindow
 
     private void Back_Click(object sender, RoutedEventArgs e)
     {
-        Application.Current.MainWindow.Show();
+        if (Application.Current.MainWindow != null) Application.Current.MainWindow.Show();
         Hide();
     }
 

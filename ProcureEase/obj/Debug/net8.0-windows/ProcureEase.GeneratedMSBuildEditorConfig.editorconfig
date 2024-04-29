@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = ProcureEase
-build_property.ProjectDir = D:\GIthub repo\ProcureEase\ProcureEase\
+build_property.ProjectDir = D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

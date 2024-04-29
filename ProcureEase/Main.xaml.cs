@@ -1,35 +1,24 @@
 ﻿#region
 
-using ControlzEx.Theming;
-using GalaSoft.MvvmLight.Command;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using Microsoft.Win32;
-using MySql.Data.MySqlClient;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Navigation;
+using ControlzEx.Theming;
+using MahApps.Metro.Controls.Dialogs;
+using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using Xceed.Wpf.AvalonDock.Controls;
 
 #endregion
 
 namespace ProcureEase;
 
-public partial class Main : MetroWindow
+public partial class Main
 {
-    private User? currentUser;
-    private bool isEditing;
-    public ObservableCollection<string> SelectedFiles
-    {
-        get;
-        set;
-    }
+    private User? _currentUser;
 
     public Main(string login)
     {
@@ -43,22 +32,28 @@ public partial class Main : MetroWindow
         LoadUserRequests();
     }
 
+    public ObservableCollection<string> SelectedFiles { get; }
+
     private void LoadUserData()
     {
-        currentUser = UserRepository.GetUserByUsername(UsernameTextBlock.Text);
-        UserDataGrid.DataContext = currentUser;
+        _currentUser = UserRepository.GetUserByUsername(UsernameTextBlock.Text);
+        UserDataGrid.DataContext = _currentUser;
     }
 
     private void LoadUserRequests()
     {
-        UserRequestsListView.ItemsSource = RequestRepository.GetUserRequests(currentUser.UserId);
+        if (_currentUser != null)
+            UserRequestsListView.ItemsSource = RequestRepository.GetUserRequests(_currentUser.UserId);
     }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
         ToggleVisibility(NewRequestGrid, Visibility.Collapsed);
         ToggleVisibility(RequestsGrid, Visibility.Collapsed);
-        ToggleVisibility(UserDataGrid);
+        if (UserDataGrid.Visibility == Visibility.Collapsed)
+        {
+            ToggleVisibility(UserDataGrid, Visibility.Visible);
+        }
     }
 
     private void CreateRequest_Click(object sender, RoutedEventArgs e)
@@ -87,6 +82,35 @@ public partial class Main : MetroWindow
         LoadUserData();
     }
 
+    private async void DownloadFileCommand(object sender, RoutedEventArgs e)
+    {
+        // Получение контекста данных из строки таблицы
+        var request = (sender as FrameworkElement)?.DataContext as Request;
+        if (request == null)
+        {
+            await ShowErrorMessageAsync("Ошибка", "Не удалось определить заявку.");
+            return;
+        }
+
+        // Получаем имя файла из DataContext кнопки
+        var fileName = (string)((Button)sender).DataContext;
+
+        // Поиск файла в списке файлов заявки
+        var requestFile = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
+        if (requestFile == null)
+        {
+            await ShowErrorMessageAsync("Ошибка", "Файл не найден в заявке.");
+            return;
+        }
+
+        // Сохранение файла на рабочий стол (остальная часть кода остается такой же)
+        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        var filePath = Path.Combine(desktopPath, fileName);
+        await File.WriteAllBytesAsync(filePath, requestFile.FileData);
+
+        await ShowErrorMessageAsync("Файл скачан", $"Файл '{fileName}' успешно скачан на рабочий стол.");
+    }
+
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
         var openFileDialog = new OpenFileDialog
@@ -95,39 +119,29 @@ public partial class Main : MetroWindow
             Multiselect = true
         };
 
-        if (openFileDialog.ShowDialog() == true)
+        if (openFileDialog.ShowDialog() != true) return;
+
+        var invalidFiles = new List<string>();
+
+        foreach (var filePath in openFileDialog.FileNames)
         {
-            var validExtensions = new HashSet<string> {
-        ".doc",
-        ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf"
-      };
-            var invalidFiles = new List<string>();
+            var extension = Path.GetExtension(filePath);
 
-            foreach (string filePath in openFileDialog.FileNames)
-            {
-                string extension = System.IO.Path.GetExtension(filePath).ToLower();
-
-                if (validExtensions.Contains(extension))
-                {
-                    SelectedFiles.Add(filePath);
-                }
-                else
-                {
-                    invalidFiles.Add(System.IO.Path.GetFileName(filePath));
-                }
-            }
-
-            if (invalidFiles.Count > 0)
-            {
-                string message = $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n ", invalidFiles)}";
-                await this.ShowErrorMessageAsync("Недопустимые файлы", message);
-            }
+            if (extension is ".doc" or ".docx" or ".xls" or ".xlsx" or ".txt" or ".dwg" or ".dxf")
+                SelectedFiles.Add(filePath);
+            else
+                invalidFiles.Add(Path.GetFileName(filePath));
         }
+
+        if (invalidFiles.Count <= 0) return;
+        var message =
+            $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles)}";
+        await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
     private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
     {
-        string file = (string)((Button)sender).DataContext;
+        var file = (string)((Button)sender).DataContext;
         SelectedFiles.Remove(file);
     }
 
@@ -145,23 +159,22 @@ public partial class Main : MetroWindow
         await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative, dialogSettings);
     }
 
-    private bool IsValidRequestName(string requestName)
+    private static bool IsValidRequestName(string requestName)
     {
-        string pattern = @"^[a-zA-Zа-яА-Я0-9\s\-\.,#№()]+$";
-        return Regex.IsMatch(requestName, pattern);
+        return MyRegex().IsMatch(requestName);
     }
 
-    private bool IsValidRequestNotes(string requestNotes)
+    private static bool IsValidRequestNotes(string requestNotes)
     {
-        string pattern = @"^[a-zA-Zа-яА-Я0-9\s\-\.,#№()]+$";
-        return string.IsNullOrEmpty(requestNotes) || (Regex.IsMatch(requestNotes, pattern));
+        const string pattern = @"^[a-zA-Z-яА-Я0-9\s\-\.,#№()]+$";
+        return string.IsNullOrEmpty(requestNotes) || Regex.IsMatch(requestNotes, pattern);
     }
 
     private async void SaveRequestButton_Click(object sender, RoutedEventArgs e)
     {
-        string requestName = RequestNameTextBox.Text;
-        string requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-        string requestNotes = RequestNotesTextBox.Text;
+        var requestName = RequestNameTextBox.Text;
+        var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+        var requestNotes = RequestNotesTextBox.Text;
 
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
         {
@@ -181,31 +194,32 @@ public partial class Main : MetroWindow
             return;
         }
 
+        if (_currentUser == null) return;
+
         var request = new Request
         {
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = currentUser.UserId
+            UserId = _currentUser.UserId
         };
 
         if (SelectedFiles.Count > 0)
         {
-            foreach (string filePath in SelectedFiles)
+            var tasks = SelectedFiles.Select(async filePath =>
             {
-                byte[] fileData = File.ReadAllBytes(filePath);
-
-                var requestFile = new RequestFile
+                var fileData = await File.ReadAllBytesAsync(filePath);
+                return new RequestFile
                 {
                     FileName = Path.GetFileName(filePath),
                     FileData = fileData
                 };
+            });
 
-                request.RequestFiles.Add(requestFile);
-            }
+            request.RequestFiles.AddRange(await Task.WhenAll(tasks));
         }
 
-        int requestId = RequestRepository.AddRequest(request);
+        var requestId = RequestRepository.AddRequest(request);
         if (requestId > 0)
         {
             RequestRepository.AddRequestFiles(requestId, request.RequestFiles);
@@ -219,17 +233,12 @@ public partial class Main : MetroWindow
         }
     }
 
-    private void ToggleVisibility(Grid grid)
-    {
-        grid.Visibility = grid.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private void ToggleVisibility(Grid grid, Visibility visibility)
+    private static void ToggleVisibility(UIElement grid, Visibility visibility)
     {
         grid.Visibility = visibility;
     }
 
-    private void ShowSingleGrid(Grid gridToShow)
+    private void ShowSingleGrid(UIElement gridToShow)
     {
         RequestsGrid.Visibility = Visibility.Collapsed;
         UserDataGrid.Visibility = Visibility.Collapsed;
@@ -240,22 +249,22 @@ public partial class Main : MetroWindow
 
     private void ToggleEditing(bool isEditing = true)
     {
-        this.isEditing = isEditing;
         SetEditMode(UserDataGrid, isEditing);
         EditButton.Content = isEditing ? "Сохранить" : "Изменить";
         EditButton.Background = isEditing ? Brushes.Green : Brushes.Transparent;
         CancelButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void SetEditMode(Grid grid, bool isEditing)
+    private static void SetEditMode(DependencyObject grid, bool isEditing)
     {
         foreach (var textBox in grid.FindVisualChildren
-
-        <TextBox>())
+                     <TextBox>())
         {
             textBox.IsReadOnly = !isEditing;
             textBox.BorderThickness = isEditing ? new Thickness(1) : new Thickness(0);
-            textBox.BorderBrush = isEditing ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3")) : Brushes.Transparent;
+            textBox.BorderBrush = isEditing
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
+                : Brushes.Transparent;
         }
     }
 
@@ -265,38 +274,35 @@ public partial class Main : MetroWindow
         RequestTypeComboBox.SelectedIndex = -1;
         RequestNotesTextBox.Text = string.Empty;
     }
+
+    [GeneratedRegex(@"^[a-zA-Z-яА-Я0-9\s\-\.,#№()]+$")]
+    private static partial Regex MyRegex();
 }
 
 public static class UserRepository
 {
     public static User? GetUserByUsername(string username)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
-        {
-            connection.Open();
-            const string query = "SELECT * FROM users WHERE username = @username";
-            using (var command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@username", username);
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
+        const string query = "SELECT * FROM users WHERE username = @username";
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@username", username);
 
-                using (var reader = command.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        return new User
-                        {
-                            UserId = reader.GetInt32("user_id"),
-                            Username = reader.GetString("username"),
-                            Email = reader.GetString("email"),
-                            FirstName = reader.GetString("first_name"),
-                            LastName = reader.GetString("last_name"),
-                            Patronymic = reader.IsDBNull(reader.GetOrdinal("patronymic")) ? null : reader.GetString("patronymic"),
-                            PhoneNumber = reader.GetString("phone_number")
-                        };
-                    }
-                }
-            }
-        }
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+            return new User
+            {
+                UserId = reader.GetInt32("user_id"),
+                Username = reader.GetString("username"),
+                Email = reader.GetString("email"),
+                FirstName = reader.GetString("first_name"),
+                LastName = reader.GetString("last_name"),
+                Patronymic = reader.IsDBNull(reader.GetOrdinal("patronymic"))
+                    ? null
+                    : reader.GetString("patronymic"),
+                PhoneNumber = reader.GetString("phone_number")
+            };
 
         return null;
     }
@@ -304,257 +310,173 @@ public static class UserRepository
 
 public static class RequestRepository
 {
-    public static List<Request> GetUserRequests(int userId)
+    public static IEnumerable<Request> GetUserRequests(int userId)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
+
+        const string query = """
+                             SELECT r.request_id, r.request_name, rt.name as request_type,
+                                             rs.name as request_status, r.notes
+                                             FROM requests r
+                                             JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                                             JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                                             WHERE r.user_id = @userId
+                             """;
+
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@userId", userId);
+
+        var requests = new List<Request>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            connection.Open();
-
-            const string query = @"SELECT r.request_id, r.request_name, rt.name as request_type, 
-                rs.name as request_status, r.notes
-                FROM requests r
-                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                WHERE r.user_id = @userId ";
-
-            using (var command = new MySqlCommand(query, connection))
+            var request = new Request
             {
-                command.Parameters.AddWithValue("@userId", userId);
+                RequestId = reader.GetInt32("request_id"),
+                RequestName = reader.GetString("request_name"),
+                RequestType = reader.GetString("request_type"),
+                RequestStatus = reader.GetString("request_status"),
+                Notes = reader.GetString("notes")
+            };
+            request.RequestFiles = GetRequestFiles(request.RequestId);
 
-                var requests = new List<Request>();
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var request = new Request
-                        {
-                            RequestId = reader.GetInt32("request_id"),
-                            RequestName = reader.GetString("request_name"),
-                            RequestType = reader.GetString("request_type"),
-                            RequestStatus = reader.GetString("request_status"),
-                            Notes = reader.GetString("notes")
-                        };
-                        request.RequestFiles = GetRequestFiles(request.RequestId);
-
-                        requests.Add(request);
-                    }
-                }
-
-                return requests;
-            }
+            requests.Add(request);
         }
+
+        return requests;
     }
 
     // Новый метод для получения списка файлов по ID заявки
     private static List<RequestFile> GetRequestFiles(int requestId)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
-        {
-            connection.Open();
-            const string query = "SELECT file_name FROM request_files WHERE request_id = @RequestId";
-            using (var command = new MySqlCommand(query, connection))
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
+        const string query = "SELECT file_name FROM request_files WHERE request_id = @RequestId";
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@RequestId", requestId);
+        var files = new List<RequestFile>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+            files.Add(new RequestFile
             {
-                command.Parameters.AddWithValue("@RequestId", requestId);
-                var files = new List<RequestFile>();
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        files.Add(new RequestFile
-                        {
-                            FileName = reader.GetString("file_name")
-                        });
-                    }
-                }
-                return files;
-            }
-        }
+                FileName = reader.GetString("file_name")
+            });
+
+        return files;
     }
 
     public static int AddRequest(Request request)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
-        {
-            connection.Open();
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
 
-            const string query = @"INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
-            VALUES(@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
-            SELECT LAST_INSERT_ID();
-            ";
+        const string query =
+            """
+            INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
+                        VALUES(@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
+                        SELECT LAST_INSERT_ID();
+                        
+            """;
 
-            using (var command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@RequestName", request.RequestName);
-                command.Parameters.AddWithValue("@Notes", request.Notes);
-                command.Parameters.AddWithValue("@UserId", request.UserId);
-                command.Parameters.AddWithValue("@RequestStatusId", GetRequestStatusId("В обработке"));
-                command.Parameters.AddWithValue("@RequestTypeId", GetRequestTypeId(request.RequestType));
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@RequestName", request.RequestName);
+        command.Parameters.AddWithValue("@Notes", request.Notes);
+        command.Parameters.AddWithValue("@UserId", request.UserId);
+        command.Parameters.AddWithValue("@RequestStatusId", GetRequestStatusId("В обработке"));
+        command.Parameters.AddWithValue("@RequestTypeId", GetRequestTypeId(request.RequestType));
 
-                return Convert.ToInt32(command.ExecuteScalar());
-            }
-        }
+        return Convert.ToInt32(command.ExecuteScalar());
     }
 
     public static void AddRequestFiles(int requestId, List<RequestFile> requestFiles)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
+
+        const string query = """
+                             INSERT INTO request_files (request_id, file_name, file_data)
+                                         VALUES(@RequestId, @FileName, @FileData)
+                                         
+                             """;
+
+        foreach (var requestFile in requestFiles)
         {
-            connection.Open();
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@RequestId", requestId);
+            command.Parameters.AddWithValue("@FileName", requestFile.FileName);
+            command.Parameters.AddWithValue("@FileData", requestFile.FileData);
 
-            const string query = @"INSERT INTO request_files (request_id, file_name, file_data)
-            VALUES(@RequestId, @FileName, @FileData)
-            ";
-
-            foreach (var requestFile in requestFiles)
-            {
-                using (var command = new MySqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@RequestId", requestId);
-                    command.Parameters.AddWithValue("@FileName", requestFile.FileName);
-                    command.Parameters.AddWithValue("@FileData", requestFile.FileData);
-
-                    command.ExecuteNonQuery();
-                }
-            }
+            command.ExecuteNonQuery();
         }
     }
 
     private static int GetRequestStatusId(string requestStatusName)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
-        {
-            connection.Open();
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
 
-            const string query = "SELECT idRequestStatus FROM request_status WHERE name = @RequestStatusName";
+        const string query = "SELECT idRequestStatus FROM request_status WHERE name = @RequestStatusName";
 
-            using (var command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@RequestStatusName", requestStatusName);
-                return Convert.ToInt32(command.ExecuteScalar());
-            }
-        }
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@RequestStatusName", requestStatusName);
+        return Convert.ToInt32(command.ExecuteScalar());
     }
 
-    private static int GetRequestTypeId(string requestTypeName)
+    private static int GetRequestTypeId(string? requestTypeName)
     {
-        using (var connection = new MySqlConnection(AppSettings.ConnectionString))
-        {
-            connection.Open();
+        using var connection = new MySqlConnection(AppSettings.ConnectionString);
+        connection.Open();
 
-            const string query = "SELECT idRequestType FROM request_type WHERE name = @RequestTypeName";
+        const string query = "SELECT idRequestType FROM request_type WHERE name = @RequestTypeName";
 
-            using (var command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@RequestTypeName", requestTypeName);
-                return Convert.ToInt32(command.ExecuteScalar());
-            }
-        }
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@RequestTypeName", requestTypeName);
+        return Convert.ToInt32(command.ExecuteScalar());
     }
 }
 
 public class User
 {
-    public int UserId
-    {
-        get;
-        set;
-    }
-    public string? Username
-    {
-        get;
-        set;
-    }
-    public string? Email
-    {
-        get;
-        set;
-    }
-    public string? FirstName
-    {
-        get;
-        set;
-    }
-    public string? LastName
-    {
-        get;
-        set;
-    }
-    public string? Patronymic
-    {
-        get;
-        set;
-    }
-    public string? PhoneNumber
-    {
-        get;
-        set;
-    }
+    public int UserId { get; init; }
+
+    public string? Username { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? FirstName { get; set; }
+
+    public string? LastName { get; set; }
+
+    public string? Patronymic { get; set; }
+
+    public string? PhoneNumber { get; set; }
 }
 
 public class Request
 {
-    public int RequestId
-    {
-        get;
-        set;
-    }
-    public string? RequestName
-    {
-        get;
-        set;
-    }
-    public string? RequestType
-    {
-        get;
-        set;
-    }
-    public string? RequestStatus
-    {
-        get;
-        set;
-    }
-    public string? Notes
-    {
-        get;
-        set;
-    }
-    public int UserId
-    {
-        get;
-        set;
-    }
-    public List<RequestFile> RequestFiles
-    {
-        get;
-        set;
-    }
+    public int RequestId { get; init; }
 
-    public Request()
-    {
-        RequestFiles = new List<RequestFile>();
-    }
+    public string? RequestName { get; init; }
+
+    public string? RequestType { get; init; }
+
+    public string? RequestStatus { get; set; }
+
+    public string? Notes { get; init; }
+
+    public int UserId { get; init; }
+
+    public List<RequestFile> RequestFiles { get; set; } = [];
 }
 
 public class RequestFile
 {
-    public int RequestFileId
-    {
-        get;
-        set;
-    }
-    public int RequestId
-    {
-        get;
-        set;
-    }
-    public string FileName
-    {
-        get;
-        set;
-    }
-    public byte[] FileData
-    {
-        get;
-        set;
-    }
+    public int RequestFileId { get; set; }
+
+    public int RequestId { get; set; }
+
+    public string FileName { get; init; }
+
+    public byte[] FileData { get; init; }
 }

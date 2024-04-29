@@ -16,7 +16,7 @@ public partial class MainWindow
     private static readonly string ConnectionString =
         ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 
-    private readonly MySqlConnection connection;
+    private readonly MySqlConnection _connection;
 
     public MainWindow()
     {
@@ -25,10 +25,10 @@ public partial class MainWindow
         ThemeManager.Current.SyncTheme();
 
         // Initialize connection with connection string from configuration
-        connection = new MySqlConnection(ConnectionString);
+        _connection = new MySqlConnection(ConnectionString);
 
         // Subscribe to main window closed event
-        Application.Current.MainWindow.Closed += OnMainWindowClosed;
+        if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
     private async void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -75,12 +75,12 @@ public partial class MainWindow
     {
         const string query = "SELECT password FROM users WHERE username = @username";
 
-        await using var cmd = new MySqlCommand(query, connection);
+        await using var cmd = new MySqlCommand(query, _connection);
         cmd.Parameters.AddWithValue("@username", username);
 
         try
         {
-            await connection.OpenAsync();
+            await _connection.OpenAsync();
             var hashedPasswordFromDb = await cmd.ExecuteScalarAsync() as string;
             return hashedPasswordFromDb != null &&
                    BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPasswordFromDb);
@@ -92,7 +92,7 @@ public partial class MainWindow
         }
         finally
         {
-            await connection.CloseAsync();
+            await _connection.CloseAsync();
         }
     }
 

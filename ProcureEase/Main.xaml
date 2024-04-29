@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Name="metroWindow"
+    x:Name="MetroWindow"
     Title="ProcureEase"
     Width="800"
     Height="500"
@@ -55,7 +55,7 @@
         <!--  Основное содержимое окна  -->
         <Grid Grid.Row="1">
             <!--  Requests Grid (initially visible)  -->
-            <Grid x:Name="RequestsGrid" Visibility="Collapsed">
+            <Grid x:Name="RequestsGrid">
                 <StackPanel
                     Width="Auto"
                     Height="Auto"
@@ -75,14 +75,15 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         d:ItemsSource="{d:SampleData ItemCount=5}"
-                        ItemsSource="{Binding UserRequests}">
+                        ItemsSource="{Binding UserRequests}" d:DataContext="{d:DesignInstance }">
                         <ListView.View>
                             <GridView x:Name="UserRequestsGridView">
                                 <GridViewColumn DisplayMemberBinding="{Binding RequestId}" Header="ID" />
                                 <GridViewColumn Header="Название">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap"
+                                                       d:DataContext="{d:DesignInstance }" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -91,19 +92,22 @@
                                 <GridViewColumn Header="Примечания">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Notes}" TextWrapping="Wrap"
+                                                       d:DataContext="{d:DesignInstance }" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Файлы">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ItemsControl ItemsSource="{Binding RequestFiles}">
+                                            <ItemsControl ItemsSource="{Binding RequestFiles}"
+                                                          d:DataContext="{d:DesignInstance }">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <ContentControl>
+                                                        <ContentControl d:DataContext="{d:DesignInstance }">
                                                             <Hyperlink Command="{Binding DownloadFileCommand}">
-                                                                <TextBlock Text="{Binding FileName}" TextWrapping="Wrap" />
+                                                                <TextBlock Text="{Binding FileName}"
+                                                                           TextWrapping="Wrap" />
                                                             </Hyperlink>
                                                         </ContentControl>
                                                     </DataTemplate>
@@ -284,7 +288,7 @@
             </Grid>
 
             <!--  New Request Grid (initially hidden)  -->
-            <Grid x:Name="NewRequestGrid">
+            <Grid x:Name="NewRequestGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -392,7 +396,7 @@
                             Grid.Row="1"
                             Margin="0,5,0,0"
                             VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding SelectedFiles}">
+                            <ItemsControl ItemsSource="{Binding SelectedFiles}" d:DataContext="{d:DesignInstance }">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel />
