@@ -9,7 +9,8 @@
     Title="ProcureEase"
     Width="800"
     Height="500"
-    MinWidth="500"
+    MinWidth="800"
+    MinHeight="500"
     Closed="OnMainWindowClosed"
     Icon="pack://application:,,,/Source/AppIcon.png"
     WindowStartupLocation="CenterScreen"
@@ -54,7 +55,7 @@
 
         <!--  Основное содержимое окна  -->
         <Grid Grid.Row="1">
-            <!--  Requests Grid (initially visible)  -->
+            <!--  Requests Grid  -->
             <Grid x:Name="RequestsGrid">
                 <StackPanel
                     Width="Auto"
@@ -69,64 +70,98 @@
                         Text="Ваши заявки на закупку" />
 
                     <!--  Список заявок пользователя  -->
-                    <ListView
-                        x:Name="UserRequestsListView"
-                        Margin="10"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        d:ItemsSource="{d:SampleData ItemCount=5}"
-                        ItemsSource="{Binding UserRequests}" d:DataContext="{d:DesignInstance }">
-                        <ListView.View>
-                            <GridView x:Name="UserRequestsGridView">
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestId}" Header="ID" />
-                                <GridViewColumn Header="Название">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap"
-                                                       d:DataContext="{d:DesignInstance }" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestType}" Header="Тип заявки" />
-                                <GridViewColumn DisplayMemberBinding="{Binding RequestStatus}" Header="Статус" />
-                                <GridViewColumn Header="Примечания">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Notes}" TextWrapping="Wrap"
-                                                       d:DataContext="{d:DesignInstance }" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Файлы">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ItemsControl ItemsSource="{Binding RequestFiles}"
-                                                          d:DataContext="{d:DesignInstance }">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <ContentControl d:DataContext="{d:DesignInstance }">
-                                                            <TextBlock Text="{Binding FileName}"
-                                                                       TextWrapping="Wrap"
-                                                                       Foreground="LightBlue"
-                                                                       TextDecorations="Underline"
-                                                                       Cursor="Hand"
-                                                                       MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />
-                                                        </ContentControl>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                    <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Height="300">
+                        <DataGrid.Columns>
+                            <!-- ID -->
+                            <DataGridTextColumn Binding="{Binding RequestId}" Header="ID" MinWidth="50"
+                                                MaxWidth="50">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Название заявки -->
+                            <DataGridTemplateColumn Header="Название" MinWidth="100" MaxWidth="150">
+                                <DataGridTemplateColumn.CellStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                                    </Style>
+                                </DataGridTemplateColumn.CellStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap"
+                                                   d:DataContext="{d:DesignInstance }" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Тип заявки -->
+                            <DataGridTextColumn Binding="{Binding RequestType}" Header="Тип заявки" MinWidth="100"
+                                                MaxWidth="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Статус заявки -->
+                            <DataGridTextColumn Binding="{Binding RequestStatus}" Header="Статус" MinWidth="100"
+                                                MaxWidth="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Примечание к заявке -->
+                            <DataGridTemplateColumn Header="Примечания" MinWidth="150" Width="200" MaxWidth="250">
+                                <DataGridTemplateColumn.CellStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                                    </Style>
+                                </DataGridTemplateColumn.CellStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Notes}" TextWrapping="Wrap"
+                                                   d:DataContext="{d:DesignInstance }" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Прикреплённые файлы к заявке -->
+                            <DataGridTemplateColumn Header="Файлы" MinWidth="150" Width="200" MaxWidth="250">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding RequestFiles}"
+                                                      d:DataContext="{d:DesignInstance }">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <ContentControl d:DataContext="{d:DesignInstance }">
+                                                        <TextBlock Text="{Binding FileName}"
+                                                                   TextWrapping="Wrap"
+                                                                   Foreground="LightBlue"
+                                                                   TextDecorations="Underline"
+                                                                   Cursor="Hand"
+                                                                   MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />
+                                                    </ContentControl>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
                     <!--  Кнопка "Создать заявку"  -->
                     <Button
                         Margin="0,10"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
+                        VerticalAlignment="Bottom"
                         Click="CreateRequest_Click"
                         Content="Создать заявку" />
                 </StackPanel>

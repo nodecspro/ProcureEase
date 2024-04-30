@@ -75,6 +75,10 @@
             "RelayCommand": {
               "target": "Package",
               "version": "[1.0.2, )"
+            },
+            "WPF-UI": {
+              "target": "Package",
+              "version": "[3.0.4, )"
             }
           },
           "imports": [

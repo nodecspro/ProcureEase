@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "9w5TcUSG4f+CmfcoUiLRZgqDfus7e64wcv8OMGAZeBExVfN3EXVaaLtxhYqCsqVS/x8XkIt46CgHZbquDYCehg==",
+  "dgSpecHash": "aJWuunft/GQP+rVyM9fboK4TIS/0KBEQ/NX8fkIdIiEpwI3CT57XcfY9xWdsH4yfHRsYTl8Q6Bn7i+PfcpHZ5g==",
   "success": true,
   "projectFilePath": "D:\\JetBrains Rider 2024.1.1\\RiderProjects\\ProcureEase\\ProcureEase.csproj",
   "expectedPackageFiles": [
@@ -149,6 +149,7 @@
     "C:\\Users\\node\\.nuget\\packages\\system.xml.xmldocument\\4.0.1\\system.xml.xmldocument.4.0.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\system.xml.xpath\\4.0.1\\system.xml.xpath.4.0.1.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\system.xml.xpath.xdocument\\4.0.1\\system.xml.xpath.xdocument.4.0.1.nupkg.sha512",
+    "C:\\Users\\node\\.nuget\\packages\\wpf-ui\\3.0.4\\wpf-ui.3.0.4.nupkg.sha512",
     "C:\\Users\\node\\.nuget\\packages\\zstdsharp.port\\0.7.1\\zstdsharp.port.0.7.1.nupkg.sha512"
   ],
   "logs": [

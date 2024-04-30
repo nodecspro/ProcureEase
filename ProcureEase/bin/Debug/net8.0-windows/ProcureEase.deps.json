@@ -15,7 +15,8 @@
           "MvvmLightLibs": "5.4.1.1",
           "MySql.Data": "8.3.0",
           "Ookii.Dialogs.Wpf": "5.0.1",
-          "RelayCommand": "1.0.2"
+          "RelayCommand": "1.0.2",
+          "WPF-UI": "3.0.4"
         },
         "runtime": {
           "ProcureEase.dll": {}
@@ -1704,6 +1705,14 @@
           "System.Xml.XPath": "4.0.1"
         }
       },
+      "WPF-UI/3.0.4": {
+        "runtime": {
+          "lib/net8.0-windows7.0/Wpf.Ui.dll": {
+            "assemblyVersion": "3.0.4.0",
+            "fileVersion": "3.0.4.0"
+          }
+        }
+      },
       "ZstdSharp.Port/0.7.1": {
         "runtime": {
           "lib/net7.0/ZstdSharp.dll": {
@@ -2734,6 +2743,13 @@
       "sha512": "sha512-FLhdYJx4331oGovQypQ8JIw2kEmNzCsjVOVYY/16kZTUoquZG85oVn7yUhBE2OZt1yGPSXAL0HTEfzjlbNpM7Q==",
       "path": "system.xml.xpath.xdocument/4.0.1",
       "hashPath": "system.xml.xpath.xdocument.4.0.1.nupkg.sha512"
+    },
+    "WPF-UI/3.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Jbt8nJ4MSC/WBhqx6iXOW06Rt2UUNVxA8+23AOSM63jlOIhU6e6P4BIw8rL/UnRPycOdA2vntYl5i7k53E0AGg==",
+      "path": "wpf-ui/3.0.4",
+      "hashPath": "wpf-ui.3.0.4.nupkg.sha512"
     },
     "ZstdSharp.Port/0.7.1": {
       "type": "package",

@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -10,6 +11,7 @@ using System.Windows.Media;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
+using ProcureEase.Classes;
 using Xceed.Wpf.AvalonDock.Controls;
 
 #endregion
@@ -26,6 +28,13 @@ public partial class Main
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
+
+        // Установка сортировки по умолчанию по столбцу "ID"
+        var idColumn = UserRequestsDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "ID");
+        if (idColumn != null)
+            UserRequestsDataGrid.Items.SortDescriptions.Add(new SortDescription(idColumn.SortMemberPath,
+                ListSortDirection.Ascending));
+
         SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
         DataContext = this;
@@ -44,7 +53,7 @@ public partial class Main
     private void LoadUserRequests()
     {
         if (_currentUser != null)
-            UserRequestsListView.ItemsSource = RequestRepository.GetUserRequests(_currentUser.UserId);
+            UserRequestsDataGrid.ItemsSource = RequestRepository.GetUserRequests(_currentUser.UserId);
     }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)

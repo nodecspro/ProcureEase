@@ -1,4 +1,4 @@
-﻿namespace ProcureEase;
+﻿namespace ProcureEase.Classes;
 
 public class Request
 {

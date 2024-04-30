@@ -4,7 +4,7 @@ using MySql.Data.MySqlClient;
 
 #endregion
 
-namespace ProcureEase;
+namespace ProcureEase.Classes;
 
 public static class RequestRepository
 {
