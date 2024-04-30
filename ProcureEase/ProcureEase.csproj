@@ -34,7 +34,7 @@
         <PackageReference Include="MySql.Data" Version="8.3.0"/>
         <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1"/>
         <PackageReference Include="RelayCommand" Version="1.0.2"/>
-        <PackageReference Include="WPF-UI" Version="3.0.4" />
+        <PackageReference Include="WPF-UI" Version="3.0.4"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -42,6 +42,7 @@ public static class RequestRepository
             requests.Add(request);
         }
 
+        Console.WriteLine(requests);
         return requests;
     }
 

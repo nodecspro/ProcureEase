@@ -83,19 +83,15 @@
                             </DataGridTextColumn>
 
                             <!-- Название заявки -->
-                            <DataGridTemplateColumn Header="Название" MinWidth="100" MaxWidth="150">
-                                <DataGridTemplateColumn.CellStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                            <DataGridTextColumn Header="Название" Binding="{Binding RequestName}" MinWidth="100"
+                                                MaxWidth="150">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Left" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
                                     </Style>
-                                </DataGridTemplateColumn.CellStyle>
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding RequestName}" TextWrapping="Wrap"
-                                                   d:DataContext="{d:DesignInstance }" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                             <!-- Тип заявки -->
                             <DataGridTextColumn Binding="{Binding RequestType}" Header="Тип заявки" MinWidth="100"
@@ -118,19 +114,15 @@
                             </DataGridTextColumn>
 
                             <!-- Примечание к заявке -->
-                            <DataGridTemplateColumn Header="Примечания" MinWidth="150" Width="200" MaxWidth="250">
-                                <DataGridTemplateColumn.CellStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                            <DataGridTextColumn Header="Примечания" Binding="{Binding Notes}" MinWidth="150"
+                                                Width="200" MaxWidth="250">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Left" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
                                     </Style>
-                                </DataGridTemplateColumn.CellStyle>
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Notes}" TextWrapping="Wrap"
-                                                   d:DataContext="{d:DesignInstance }" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                             <!-- Прикреплённые файлы к заявке -->
                             <DataGridTemplateColumn Header="Файлы" MinWidth="150" Width="200" MaxWidth="250">
