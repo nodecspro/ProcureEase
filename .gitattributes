@@ -1,36 +1,32 @@
-# Handle files as binary and disable automatic line ending conversion
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.cs text
+*.xaml text
+*.sql text
+*.md text
+
+# Denote all files that are truly binary and should not be modified.
 *.png binary
 *.jpg binary
-*.jpeg binary
 *.gif binary
 *.ico binary
-*.mov binary
-*.mp4 binary
-*.mp3 binary
-*.flv binary
-*.fla binary
-*.swf binary
-*.gz binary
-*.zip binary
-*.7z binary
-*.ttf binary
-*.eot binary
-*.woff binary
-*.pyc binary
-*.pdf binary
 
-# Disable automatic line ending conversion
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# Custom for Visual Studio
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.xproj text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.proj text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+*.nuspec text eol=crlf
+
+# Standardize on native EOL for shell scripts
 *.sh text eol=lf
 
-# Diff settings
+# Define diff method for specific files.
 *.cs diff=csharp
-*.sln merge=union
-*.csproj merge=union
-*.vbproj merge=union
-*.fsproj merge=union
-*.dbproj merge=union
-
-# Git LFS configuration
-*.psd filter=lfs diff=lfs merge=lfs -text
