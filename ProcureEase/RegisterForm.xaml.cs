@@ -147,7 +147,7 @@ public partial class RegisterForm
         errorMessage.AppendLine("Номер телефона не может быть пустым.");
         txtPhoneNumber.BorderBrush = Brushes.Red;
     }
-    
+
     private void ValidateEmail(StringBuilder errorMessage)
     {
         if (IsValidEmail(txtEmail.Text)) return;

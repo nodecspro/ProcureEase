@@ -39,7 +39,7 @@
                 FontSize="16"
                 FontWeight="Bold"
                 MouseLeftButtonUp="UsernameTextBlock_Click"
-                Text="{Binding UserLogin}"    
+                Text="{Binding UserLogin}"
                 TextAlignment="Right"
                 TextWrapping="NoWrap" />
             <Image
@@ -105,9 +105,9 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <ContentControl d:DataContext="{d:DesignInstance }">
-                                                            <TextBlock Text="{Binding FileName}" 
+                                                            <TextBlock Text="{Binding FileName}"
                                                                        TextWrapping="Wrap"
-                                                                       Foreground="LightBlue" 
+                                                                       Foreground="LightBlue"
                                                                        TextDecorations="Underline"
                                                                        Cursor="Hand"
                                                                        MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />

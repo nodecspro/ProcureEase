@@ -1,10 +1,13 @@
-﻿using System.Configuration;
+﻿#region
 
-namespace ProcureEase
+using System.Configuration;
+
+#endregion
+
+namespace ProcureEase;
+
+public static class AppSettings
 {
-    public static class AppSettings
-    {
-        public static readonly string ConnectionString =
-            ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
-    }
+    public static readonly string ConnectionString =
+        ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 }
