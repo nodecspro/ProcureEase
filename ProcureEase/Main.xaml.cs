@@ -152,7 +152,7 @@ public partial class Main
         var requestNotes = RequestNotesTextBox.Text;
 
         // Validate input
-        if (!await ValidateInput(requestName, requestType, requestNotes)) return;
+        if (requestType != null && !await ValidateInput(requestName, requestType, requestNotes)) return;
 
         if (_currentUser == null) return;
 
@@ -161,11 +161,10 @@ public partial class Main
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = _currentUser.UserId
+            UserId = _currentUser.UserId,
+            // Handle file attachments
+            RequestFiles = await ProcessFileAttachments()
         };
-
-        // Handle file attachments
-        request.RequestFiles = await ProcessFileAttachments();
 
         // Add request and handle the result
         if (!await AddRequestWithFiles(request))
@@ -175,16 +174,13 @@ public partial class Main
     private Task<bool> AddRequestWithFiles(Request request)
     {
         var requestId = RequestRepository.AddRequest(request);
-        if (requestId > 0)
-        {
-            RequestRepository.AddRequestFiles(requestId, request.RequestFiles);
-            ClearRequestForm();
-            ShowSingleGrid(RequestsGrid);
-            LoadUserRequests();
-            return Task.FromResult(true);
-        }
+        if (requestId <= 0) return Task.FromResult(false);
+        RequestRepository.AddRequestFiles(requestId, request.RequestFiles);
+        ClearRequestForm();
+        ShowSingleGrid(RequestsGrid);
+        LoadUserRequests();
+        return Task.FromResult(true);
 
-        return Task.FromResult(false);
     }
 
     private async Task<List<RequestFile>> ProcessFileAttachments()
