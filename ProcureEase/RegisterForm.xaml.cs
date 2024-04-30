@@ -111,16 +111,20 @@ public partial class RegisterForm
 
     private void ValidateUsername(StringBuilder errorMessage)
     {
-        if (!string.IsNullOrWhiteSpace(txtUsername.Text)) return;
-        errorMessage.AppendLine("Имя пользователя не может быть пустым.");
-        txtUsername.BorderBrush = Brushes.Red;
+        if (string.IsNullOrWhiteSpace(txtUsername.Text))
+        {
+            errorMessage.AppendLine("Имя пользователя не может быть пустым.");
+            txtUsername.BorderBrush = Brushes.Red;
+        }
     }
 
     private void ValidatePassword(StringBuilder errorMessage)
     {
-        if (!string.IsNullOrWhiteSpace(txtPassword.Password)) return;
-        errorMessage.AppendLine("Пароль не может быть пустым.");
-        txtPassword.BorderBrush = Brushes.Red;
+        if (string.IsNullOrWhiteSpace(txtPassword.Password))
+        {
+            errorMessage.AppendLine("Пароль не может быть пустым.");
+            txtPassword.BorderBrush = Brushes.Red;
+        }
     }
 
     private void ValidateFirstName(StringBuilder errorMessage)
@@ -143,7 +147,7 @@ public partial class RegisterForm
         errorMessage.AppendLine("Номер телефона не может быть пустым.");
         txtPhoneNumber.BorderBrush = Brushes.Red;
     }
-
+    
     private void ValidateEmail(StringBuilder errorMessage)
     {
         if (IsValidEmail(txtEmail.Text)) return;
@@ -162,8 +166,7 @@ public partial class RegisterForm
 
     private static bool IsValidName(string name)
     {
-        const string pattern = @"^[a-zA-Z-яА-ЯёЁ]+$";
-        return Regex.IsMatch(name, pattern);
+        return Regex.IsMatch(name, @"^[a-zA-Zа-яА-ЯёЁ]+$");
     }
 
     private static string HashPassword(string password)

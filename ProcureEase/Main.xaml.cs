@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
@@ -18,6 +19,7 @@ namespace ProcureEase;
 
 public partial class Main
 {
+    private static readonly Regex RequestNameRegex = new(@"^[a-zA-Zа-яА-ЯёЁ0-9\s\-\.,#№()]+$");
     private User? _currentUser;
 
     public Main(string login)
@@ -50,10 +52,7 @@ public partial class Main
     {
         ToggleVisibility(NewRequestGrid, Visibility.Collapsed);
         ToggleVisibility(RequestsGrid, Visibility.Collapsed);
-        if (UserDataGrid.Visibility == Visibility.Collapsed)
-        {
-            ToggleVisibility(UserDataGrid, Visibility.Visible);
-        }
+        if (UserDataGrid.Visibility == Visibility.Collapsed) ToggleVisibility(UserDataGrid, Visibility.Visible);
     }
 
     private void CreateRequest_Click(object sender, RoutedEventArgs e)
@@ -80,35 +79,6 @@ public partial class Main
     {
         ToggleEditing(false);
         LoadUserData();
-    }
-
-    private async void DownloadFileCommand(object sender, RoutedEventArgs e)
-    {
-        // Получение контекста данных из строки таблицы
-        var request = (sender as FrameworkElement)?.DataContext as Request;
-        if (request == null)
-        {
-            await ShowErrorMessageAsync("Ошибка", "Не удалось определить заявку.");
-            return;
-        }
-
-        // Получаем имя файла из DataContext кнопки
-        var fileName = (string)((Button)sender).DataContext;
-
-        // Поиск файла в списке файлов заявки
-        var requestFile = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
-        if (requestFile == null)
-        {
-            await ShowErrorMessageAsync("Ошибка", "Файл не найден в заявке.");
-            return;
-        }
-
-        // Сохранение файла на рабочий стол (остальная часть кода остается такой же)
-        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        var filePath = Path.Combine(desktopPath, fileName);
-        await File.WriteAllBytesAsync(filePath, requestFile.FileData);
-
-        await ShowErrorMessageAsync("Файл скачан", $"Файл '{fileName}' успешно скачан на рабочий стол.");
     }
 
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -152,22 +122,18 @@ public partial class Main
 
     private async Task ShowErrorMessageAsync(string title, string message)
     {
-        var dialogSettings = new MetroDialogSettings
-        {
-            AnimateShow = false
-        };
-        await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative, dialogSettings);
+        await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative,
+            new MetroDialogSettings { AnimateShow = false });
     }
 
     private static bool IsValidRequestName(string requestName)
     {
-        return MyRegex().IsMatch(requestName);
+        return !string.IsNullOrEmpty(requestName) && RequestNameRegex.IsMatch(requestName);
     }
 
     private static bool IsValidRequestNotes(string requestNotes)
     {
-        const string pattern = @"^[a-zA-Z-яА-Я0-9\s\-\.,#№()]+$";
-        return string.IsNullOrEmpty(requestNotes) || Regex.IsMatch(requestNotes, pattern);
+        return string.IsNullOrEmpty(requestNotes) || RequestNameRegex.IsMatch(requestNotes);
     }
 
     private async void SaveRequestButton_Click(object sender, RoutedEventArgs e)
@@ -240,11 +206,9 @@ public partial class Main
 
     private void ShowSingleGrid(UIElement gridToShow)
     {
-        RequestsGrid.Visibility = Visibility.Collapsed;
-        UserDataGrid.Visibility = Visibility.Collapsed;
-        NewRequestGrid.Visibility = Visibility.Collapsed;
-
-        gridToShow.Visibility = Visibility.Visible;
+        RequestsGrid.Visibility = gridToShow == RequestsGrid ? Visibility.Visible : Visibility.Collapsed;
+        UserDataGrid.Visibility = gridToShow == UserDataGrid ? Visibility.Visible : Visibility.Collapsed;
+        NewRequestGrid.Visibility = gridToShow == NewRequestGrid ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ToggleEditing(bool isEditing = true)
@@ -270,13 +234,17 @@ public partial class Main
 
     private void ClearRequestForm()
     {
-        RequestNameTextBox.Text = string.Empty;
+        RequestNameTextBox.Clear();
         RequestTypeComboBox.SelectedIndex = -1;
-        RequestNotesTextBox.Text = string.Empty;
+        RequestNotesTextBox.Clear();
     }
 
-    [GeneratedRegex(@"^[a-zA-Z-яА-Я0-9\s\-\.,#№()]+$")]
-    private static partial Regex MyRegex();
+    private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var textBlock = (TextBlock)sender;
+        var fileName = textBlock.Text;
+        _ = ShowErrorMessageAsync("File Clicked", $"You clicked on file: {fileName}");
+    }
 }
 
 public static class UserRepository
