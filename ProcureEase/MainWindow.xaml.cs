@@ -1,6 +1,8 @@
 ﻿#region
 
+using System;
 using System.Configuration;
+using System.Threading.Tasks;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
@@ -31,6 +33,9 @@ public partial class MainWindow
         if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
+// Consider moving these dialog settings to a class field if they don't change.
+    private readonly MetroDialogSettings _dialogSettings = new MetroDialogSettings { AnimateShow = false };
+
     private async void BtnLogin_Click(object sender, RoutedEventArgs e)
     {
         await LoginUserAsync();
@@ -41,34 +46,48 @@ public partial class MainWindow
         var username = txtUsername.Text;
         var password = txtPassword.Password;
 
-        var dialogSettings = new MetroDialogSettings { AnimateShow = false };
-
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await this.ShowMessageAsync("Ошибка авторизации", "Пожалуйста, введите имя пользователя и пароль.",
-                MessageDialogStyle.Affirmative, dialogSettings);
+            await this.ShowLoginError("Пожалуйста, введите имя пользователя и пароль.");
             return;
         }
 
+        var loginSuccess = await ValidateAndLoginUser(username, password);
+        if (!loginSuccess)
+        {
+            await this.ShowLoginError("Проверьте правильность введенных данных.");
+        }
+    }
+
+    private async Task<bool> ValidateAndLoginUser(string username, string password)
+    {
+        var isValidUser = false;
         try
         {
-            if (await ValidateUser(username, password))
+            isValidUser = await ValidateUser(username, password);
+            if (isValidUser)
             {
-                Hide();
-                var mainForm = new Main(username);
-                mainForm.Show();
-            }
-            else
-            {
-                await this.ShowMessageAsync("Ошибка авторизации", "Проверьте правильность введенных данных.",
-                    MessageDialogStyle.Affirmative, dialogSettings);
+                OpenMainForm(username);
             }
         }
         catch (Exception ex)
         {
-            await this.ShowMessageAsync("Ошибка авторизации", $"Ошибка при попытке авторизации: {ex.Message}",
-                MessageDialogStyle.Affirmative, dialogSettings);
+            await this.ShowLoginError($"Ошибка при попытке авторизации: {ex.Message}");
         }
+
+        return isValidUser;
+    }
+
+    private void OpenMainForm(string username)
+    {
+        Hide();
+        var mainForm = new Main(username);
+        mainForm.Show();
+    }
+
+    private async Task ShowLoginError(string message)
+    {
+        await this.ShowMessageAsync("Ошибка авторизации", message, MessageDialogStyle.Affirmative, _dialogSettings);
     }
 
     private async Task<bool> ValidateUser(string username, string password)

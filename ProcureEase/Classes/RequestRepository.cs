@@ -1,5 +1,8 @@
 ﻿#region
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
 #endregion
@@ -8,7 +11,7 @@ namespace ProcureEase.Classes;
 
 public static class RequestRepository
 {
-    public static IEnumerable<Request> GetUserRequests(int userId)
+    public static IEnumerable GetUserRequests(int userId)
     {
         using var connection = new MySqlConnection(AppSettings.ConnectionString);
         connection.Open();

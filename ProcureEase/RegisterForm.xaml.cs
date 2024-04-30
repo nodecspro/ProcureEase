@@ -1,8 +1,12 @@
 ﻿#region
 
+using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -21,9 +25,36 @@ public partial class RegisterForm
     private static readonly string ConnectionString =
         ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 
+    // Store compiled Regex as static to improve performance
+    private static readonly Regex EmailRegex = new(
+        @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled,
+        TimeSpan.FromMilliseconds(250)
+    );
+
+    private static readonly Regex NameRegex = new(
+        @"^[a-zA-Zа-яА-ЯёЁ]+$",
+        RegexOptions.Compiled
+    );
+
+    private readonly Brush _defaultBorderBrush = Brushes.Gray;
+
+    // Dialog settings can be a field if they are reused across methods.
+    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false };
+    private readonly List<Control> _inputControls;
+
     public RegisterForm()
     {
         InitializeComponent();
+        _inputControls = new List<Control>
+        {
+            txtUsername,
+            txtPassword,
+            txtFirstName,
+            txtLastName,
+            txtPhoneNumber,
+            txtEmail
+        };
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
 
@@ -43,56 +74,71 @@ public partial class RegisterForm
         var errorMessage = ValidateFields();
         if (!string.IsNullOrEmpty(errorMessage))
         {
-            await this.ShowMessageAsync("Ошибка регистрации", errorMessage, MessageDialogStyle.Affirmative,
-                new MetroDialogSettings { AnimateShow = false });
+            await ShowRegistrationError(errorMessage);
             return;
         }
 
+        var registrationSuccess = await TryRegisterUser();
+        if (registrationSuccess)
+        {
+            ClearFields();
+            OpenMainForm(txtUsername.Text);
+        }
+        else
+        {
+            await ShowRegistrationError("Регистрация не удалась. Пожалуйста, попробуйте позже.");
+        }
+    }
+
+    private async Task<bool> TryRegisterUser()
+    {
         try
         {
             var rowsAffected = await RegisterUser();
-            if (rowsAffected > 0)
-            {
-                ClearFields();
-                var mainForm = new Main(txtUsername.Text);
-                mainForm.Show();
-                Hide();
-            }
-            else
-            {
-                await this.ShowMessageAsync("Ошибка", "Регистрация не удалась. Пожалуйста, попробуйте позже.");
-            }
+            return rowsAffected > 0;
         }
         catch
         {
-            // Показ пользователю общего сообщения об ошибке
-            await this.ShowMessageAsync("Ошибка",
-                "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            // Log the exception details to a file or other logging infrastructure
+            await ShowRegistrationError("Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            return false;
         }
     }
 
     private async Task<int> RegisterUser()
     {
         await using var connection = new MySqlConnection(ConnectionString);
-        const string query =
-            "INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email) " +
-            "VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email)";
-        var command = new MySqlCommand(query, connection);
+        const string query = """
+                             
+                                     INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email)
+                                     VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email)
+                             """;
+
+        await using var command = new MySqlCommand(query, connection);
+        // Assuming HashPassword is a method that hashes the password properly.
         command.Parameters.AddWithValue("@username", txtUsername.Text);
         command.Parameters.AddWithValue("@password", HashPassword(txtPassword.Password));
         command.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
         command.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
         command.Parameters.AddWithValue("@patronymic",
             string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
-
-        // Улучшенная обработка номера телефона
-        var phoneNumber = Regex.Replace(txtPhoneNumber.Text, "[^0-9]", "");
-        command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
-
+        command.Parameters.AddWithValue("@phoneNumber", Regex.Replace(txtPhoneNumber.Text, "[^0-9]", ""));
         command.Parameters.AddWithValue("@email", txtEmail.Text);
 
         await connection.OpenAsync();
         return await command.ExecuteNonQueryAsync();
+    }
+
+    private async Task ShowRegistrationError(string message)
+    {
+        await this.ShowMessageAsync("Ошибка регистрации", message, MessageDialogStyle.Affirmative, _dialogSettings);
+    }
+
+    private void OpenMainForm(string username)
+    {
+        Hide();
+        var mainForm = new Main(username);
+        mainForm.Show();
     }
 
     private string ValidateFields()
@@ -101,8 +147,8 @@ public partial class RegisterForm
 
         ValidateUsername(errorMessage);
         ValidatePassword(errorMessage);
-        ValidateFirstName(errorMessage);
-        ValidateLastName(errorMessage);
+        ValidateName(txtFirstName, "Имя", errorMessage);
+        ValidateName(txtLastName, "Фамилия", errorMessage);
         ValidatePhoneNumber(errorMessage);
         ValidateEmail(errorMessage);
 
@@ -116,6 +162,10 @@ public partial class RegisterForm
             errorMessage.AppendLine("Имя пользователя не может быть пустым.");
             txtUsername.BorderBrush = Brushes.Red;
         }
+        else
+        {
+            txtUsername.BorderBrush = Brushes.Gray; // Or the default color
+        }
     }
 
     private void ValidatePassword(StringBuilder errorMessage)
@@ -125,48 +175,56 @@ public partial class RegisterForm
             errorMessage.AppendLine("Пароль не может быть пустым.");
             txtPassword.BorderBrush = Brushes.Red;
         }
+        else
+        {
+            txtPassword.BorderBrush = Brushes.Gray; // Or the default color
+        }
     }
 
-    private void ValidateFirstName(StringBuilder errorMessage)
+    private static void ValidateName(TextBox textBox, string fieldName, StringBuilder errorMessage)
     {
-        if (!string.IsNullOrWhiteSpace(txtFirstName.Text) && IsValidName(txtFirstName.Text)) return;
-        errorMessage.AppendLine("Имя не может быть пустым и должно содержать только буквы.");
-        txtFirstName.BorderBrush = Brushes.Red;
-    }
+        if (!string.IsNullOrWhiteSpace(textBox.Text) && IsValidName(textBox.Text))
+        {
+            textBox.BorderBrush = Brushes.Gray; // Or the default color
+            return;
+        }
 
-    private void ValidateLastName(StringBuilder errorMessage)
-    {
-        if (!string.IsNullOrWhiteSpace(txtLastName.Text) && IsValidName(txtLastName.Text)) return;
-        errorMessage.AppendLine("Фамилия не может быть пустой и должна содержать только буквы.");
-        txtLastName.BorderBrush = Brushes.Red;
+        errorMessage.AppendLine($"{fieldName} не может быть пустым и должно содержать только буквы.");
+        textBox.BorderBrush = Brushes.Red;
     }
 
     private void ValidatePhoneNumber(StringBuilder errorMessage)
     {
-        if (txtPhoneNumber.IsMaskCompleted) return;
+        if (txtPhoneNumber.IsMaskCompleted)
+        {
+            txtPhoneNumber.BorderBrush = Brushes.Gray; // Or the default color
+            return;
+        }
+
         errorMessage.AppendLine("Номер телефона не может быть пустым.");
         txtPhoneNumber.BorderBrush = Brushes.Red;
     }
 
     private void ValidateEmail(StringBuilder errorMessage)
     {
-        if (IsValidEmail(txtEmail.Text)) return;
+        if (IsValidEmail(txtEmail.Text))
+        {
+            txtEmail.BorderBrush = Brushes.Gray; // Or the default color
+            return;
+        }
+
         errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
         txtEmail.BorderBrush = Brushes.Red;
     }
 
     private static bool IsValidEmail(string email)
     {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-
-        // Use a single regex with optimized timeout and case-insensitive flag
-        const string emailRegex = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-        return Regex.IsMatch(email, emailRegex, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        return !string.IsNullOrWhiteSpace(email) && EmailRegex.IsMatch(email);
     }
 
     private static bool IsValidName(string name)
     {
-        return Regex.IsMatch(name, @"^[a-zA-Zа-яА-ЯёЁ]+$");
+        return NameRegex.IsMatch(name);
     }
 
     private static string HashPassword(string password)
@@ -176,23 +234,15 @@ public partial class RegisterForm
 
     private void ResetBorders()
     {
-        txtUsername.BorderBrush = Brushes.Gray;
-        txtPassword.BorderBrush = Brushes.Gray;
-        txtFirstName.BorderBrush = Brushes.Gray;
-        txtLastName.BorderBrush = Brushes.Gray;
-        txtPhoneNumber.BorderBrush = Brushes.Gray;
-        txtEmail.BorderBrush = Brushes.Gray;
+        foreach (var control in _inputControls) control.BorderBrush = _defaultBorderBrush;
     }
 
     private void ClearFields()
     {
-        txtUsername.Clear();
-        txtPassword.Clear();
-        txtFirstName.Clear();
-        txtLastName.Clear();
-        txtPatronymic.Clear();
-        txtPhoneNumber.Clear();
-        txtEmail.Clear();
+        foreach (var control in _inputControls.OfType<TextBox>()) control.Clear();
+
+        txtPassword.Clear(); // Assuming txtPassword is a PasswordBox and not included in _inputControls
+        txtPatronymic.Clear(); // Assuming txtPatronymic is a TextBox
     }
 
     private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -209,7 +259,7 @@ public partial class RegisterForm
 
     private void Back_Click(object sender, RoutedEventArgs e)
     {
-        if (Application.Current.MainWindow != null) Application.Current.MainWindow.Show();
+        Application.Current.MainWindow?.Show();
         Hide();
     }
 

@@ -1,9 +1,13 @@
 ﻿#region
 
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -99,21 +103,18 @@ public partial class Main
 
         if (openFileDialog.ShowDialog() != true) return;
 
-        var invalidFiles = new List<string>();
+        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
 
-        foreach (var filePath in openFileDialog.FileNames)
-        {
-            var extension = Path.GetExtension(filePath);
+        var (validFiles, invalidFiles) = openFileDialog.FileNames
+            .Partition(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()));
 
-            if (extension is ".doc" or ".docx" or ".xls" or ".xlsx" or ".txt" or ".dwg" or ".dxf")
-                SelectedFiles.Add(filePath);
-            else
-                invalidFiles.Add(Path.GetFileName(filePath));
-        }
+        foreach (var validFile in validFiles)
+            // Replace this line with the appropriate method to add to your SelectedFiles collection
+            SelectedFiles.Add(validFile);
 
-        if (invalidFiles.Count <= 0) return;
+        if (invalidFiles.Count == 0) return;
         var message =
-            $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles)}";
+            $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
@@ -150,23 +151,8 @@ public partial class Main
         var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
         var requestNotes = RequestNotesTextBox.Text;
 
-        if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Пожалуйста, заполните все обязательные поля.");
-            return;
-        }
-
-        if (!IsValidRequestName(requestName))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Название заявки содержит недопустимые символы.");
-            return;
-        }
-
-        if (!IsValidRequestNotes(requestNotes))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Примечания содержат недопустимые символы.");
-            return;
-        }
+        // Validate input
+        if (!await ValidateInput(requestName, requestType, requestNotes)) return;
 
         if (_currentUser == null) return;
 
@@ -178,21 +164,16 @@ public partial class Main
             UserId = _currentUser.UserId
         };
 
-        if (SelectedFiles.Count > 0)
-        {
-            var tasks = SelectedFiles.Select(async filePath =>
-            {
-                var fileData = await File.ReadAllBytesAsync(filePath);
-                return new RequestFile
-                {
-                    FileName = Path.GetFileName(filePath),
-                    FileData = fileData
-                };
-            });
+        // Handle file attachments
+        request.RequestFiles = await ProcessFileAttachments();
 
-            request.RequestFiles.AddRange(await Task.WhenAll(tasks));
-        }
+        // Add request and handle the result
+        if (!await AddRequestWithFiles(request))
+            await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
+    }
 
+    private Task<bool> AddRequestWithFiles(Request request)
+    {
         var requestId = RequestRepository.AddRequest(request);
         if (requestId > 0)
         {
@@ -200,11 +181,47 @@ public partial class Main
             ClearRequestForm();
             ShowSingleGrid(RequestsGrid);
             LoadUserRequests();
+            return Task.FromResult(true);
         }
-        else
+
+        return Task.FromResult(false);
+    }
+
+    private async Task<List<RequestFile>> ProcessFileAttachments()
+    {
+        if (SelectedFiles.Count == 0) return new List<RequestFile>();
+
+        var tasks = SelectedFiles.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
+        var fileBytes = await Task.WhenAll(tasks);
+
+        return SelectedFiles.Select((filePath, index) => new RequestFile
         {
-            await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
+            FileName = Path.GetFileName(filePath),
+            FileData = fileBytes[index]
+        }).ToList();
+    }
+
+    private async Task<bool> ValidateInput(string requestName, string requestType, string requestNotes)
+    {
+        if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Пожалуйста, заполните все обязательные поля.");
+            return false;
         }
+
+        if (!IsValidRequestName(requestName))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Название заявки содержит недопустимые символы.");
+            return false;
+        }
+
+        if (!IsValidRequestNotes(requestNotes))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Примечания содержат недопустимые символы.");
+            return false;
+        }
+
+        return true;
     }
 
     private static void ToggleVisibility(UIElement grid, Visibility visibility)
