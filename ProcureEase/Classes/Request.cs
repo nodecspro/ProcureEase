@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ProcureEase.Classes;
+﻿namespace ProcureEase.Classes;
 
 public class Request
 {

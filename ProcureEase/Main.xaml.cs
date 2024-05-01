@@ -50,10 +50,19 @@ public partial class Main
         UserDataGrid.DataContext = _currentUser;
     }
 
-    private void LoadUserRequests()
+    private async void LoadUserRequests()
     {
         if (_currentUser != null)
-            UserRequestsDataGrid.ItemsSource = RequestRepository.GetUserRequests(_currentUser.UserId);
+            try
+            {
+                var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
+                UserRequestsDataGrid.ItemsSource = requests;
+            }
+            catch (Exception ex)
+            {
+                // Handle or log the exception as needed
+                Console.WriteLine("Failed to load user requests: " + ex.Message);
+            }
     }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
@@ -167,15 +176,16 @@ public partial class Main
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
     }
 
-    private Task<bool> AddRequestWithFiles(Request request)
+    private async Task<bool> AddRequestWithFiles(Request request)
     {
-        var requestId = RequestRepository.AddRequest(request);
-        if (requestId <= 0) return Task.FromResult(false);
-        RequestRepository.AddRequestFiles(requestId, request.RequestFiles);
+        var requestId = await RequestRepository.AddRequestAsync(request);
+        if (requestId <= 0) return false;
+
+        await RequestRepository.AddRequestFilesAsync(requestId, request.RequestFiles);
         ClearRequestForm();
         ShowSingleGrid(RequestsGrid);
         LoadUserRequests();
-        return Task.FromResult(true);
+        return true;
     }
 
     private async Task<List<RequestFile>> ProcessFileAttachments()

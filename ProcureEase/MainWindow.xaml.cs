@@ -1,8 +1,6 @@
 ﻿#region
 
-using System;
 using System.Configuration;
-using System.Threading.Tasks;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
@@ -20,6 +18,9 @@ public partial class MainWindow
 
     private readonly MySqlConnection _connection;
 
+// Consider moving these dialog settings to a class field if they don't change.
+    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false };
+
     public MainWindow()
     {
         InitializeComponent();
@@ -33,9 +34,6 @@ public partial class MainWindow
         if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
-// Consider moving these dialog settings to a class field if they don't change.
-    private readonly MetroDialogSettings _dialogSettings = new MetroDialogSettings { AnimateShow = false };
-
     private async void BtnLogin_Click(object sender, RoutedEventArgs e)
     {
         await LoginUserAsync();
@@ -48,15 +46,12 @@ public partial class MainWindow
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await this.ShowLoginError("Пожалуйста, введите имя пользователя и пароль.");
+            await ShowLoginError("Пожалуйста, введите имя пользователя и пароль.");
             return;
         }
 
         var loginSuccess = await ValidateAndLoginUser(username, password);
-        if (!loginSuccess)
-        {
-            await this.ShowLoginError("Проверьте правильность введенных данных.");
-        }
+        if (!loginSuccess) await ShowLoginError("Проверьте правильность введенных данных.");
     }
 
     private async Task<bool> ValidateAndLoginUser(string username, string password)
@@ -65,14 +60,11 @@ public partial class MainWindow
         try
         {
             isValidUser = await ValidateUser(username, password);
-            if (isValidUser)
-            {
-                OpenMainForm(username);
-            }
+            if (isValidUser) OpenMainForm(username);
         }
         catch (Exception ex)
         {
-            await this.ShowLoginError($"Ошибка при попытке авторизации: {ex.Message}");
+            await ShowLoginError($"Ошибка при попытке авторизации: {ex.Message}");
         }
 
         return isValidUser;
