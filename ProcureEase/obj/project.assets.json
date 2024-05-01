@@ -764,7 +764,7 @@
           "lib/net45/System.Windows.Interactivity.dll": {}
         }
       },
-      "MySql.Data/8.3.0": {
+      "MySql.Data/8.4.0": {
         "type": "package",
         "dependencies": {
           "BouncyCastle.Cryptography": "2.2.1",
@@ -3991,10 +3991,10 @@
         "mvvmlightlibs.nuspec"
       ]
     },
-    "MySql.Data/8.3.0": {
-      "sha512": "bAQlkLYvTYt5MtXAgHGURSBSUWynIvyN2FVQFUg51I2grxsOfnJSyGvO7YsDRnU7IvUNfMdxq8rNXiP5P4hMlw==",
+    "MySql.Data/8.4.0": {
+      "sha512": "NA273x7ybutfGwGbF2cd8rLVM5t7AkZCzRHr/+tGms1FeMlfl+LgfjHXcb5qN1QxFpeNQQKZ+vqZw8v/S8gUiA==",
       "type": "package",
-      "path": "mysql.data/8.3.0",
+      "path": "mysql.data/8.4.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4014,7 +4014,7 @@
         "lib/netstandard2.1/MySql.Data.dll",
         "lib/netstandard2.1/MySql.Data.xml",
         "logo-mysql-170x115.png",
-        "mysql.data.8.3.0.nupkg.sha512",
+        "mysql.data.8.4.0.nupkg.sha512",
         "mysql.data.nuspec",
         "runtimes/win-x64/native/comerr64.dll",
         "runtimes/win-x64/native/gssapi64.dll",
@@ -8920,7 +8920,7 @@
       "MahApps.Metro >= 2.4.10",
       "Microsoft.Extensions.Configuration.UserSecrets >= 6.0.1",
       "MvvmLightLibs >= 5.4.1.1",
-      "MySql.Data >= 8.3.0",
+      "MySql.Data >= 8.4.0",
       "Ookii.Dialogs.Wpf >= 5.0.1",
       "RelayCommand >= 1.0.2",
       "WPF-UI >= 3.0.4"
@@ -8992,7 +8992,7 @@
           },
           "MySql.Data": {
             "target": "Package",
-            "version": "[8.3.0, )"
+            "version": "[8.4.0, )"
           },
           "Ookii.Dialogs.Wpf": {
             "target": "Package",
