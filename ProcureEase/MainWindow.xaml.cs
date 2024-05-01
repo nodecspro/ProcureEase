@@ -19,7 +19,7 @@ public partial class MainWindow
     private readonly MySqlConnection _connection;
 
 // Consider moving these dialog settings to a class field if they don't change.
-    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false };
+    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false, AnimateHide = false };
 
     public MainWindow()
     {

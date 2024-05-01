@@ -130,4 +130,16 @@ public static class RequestRepository
         command.Parameters.AddWithValue("@RequestTypeName", requestTypeName);
         return Convert.ToInt32(await command.ExecuteScalarAsync());
     }
+
+    public static async Task<byte[]> GetFileDataByRequestIdAndFileNameAsync(int requestId, string fileName)
+    {
+        await using var connection = GetConnection();
+        await connection.OpenAsync();
+        var query = "SELECT file_data FROM request_files WHERE request_id = @requestId AND file_name = @fileName";
+        await using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@requestId", requestId);
+        command.Parameters.AddWithValue("@fileName", fileName);
+        var result = await command.ExecuteScalarAsync();
+        return result as byte[];
+    }
 }

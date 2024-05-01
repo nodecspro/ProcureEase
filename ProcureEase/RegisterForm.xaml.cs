@@ -36,7 +36,7 @@ public partial class RegisterForm
     private readonly Brush _defaultBorderBrush = Brushes.Gray;
 
     // Dialog settings can be a field if they are reused across methods.
-    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false };
+    private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false, AnimateHide = false};
     private readonly List<Control> _inputControls;
 
     public RegisterForm()

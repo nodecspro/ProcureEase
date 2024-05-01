@@ -1,8 +1,4 @@
-﻿#region
-
-#endregion
-
-namespace ProcureEase.Classes;
+﻿namespace ProcureEase.Classes;
 
 public static class EnumerableExtensions
 {

@@ -137,7 +137,7 @@ public partial class Main
     private async Task ShowErrorMessageAsync(string title, string message)
     {
         await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative,
-            new MetroDialogSettings { AnimateShow = false });
+            new MetroDialogSettings { AnimateShow = false, AnimateHide = false});
     }
 
     private static bool IsValidRequestName(string requestName)
@@ -156,10 +156,19 @@ public partial class Main
         var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
         var requestNotes = RequestNotesTextBox.Text;
 
-        // Validate input
-        if (requestType != null && !await ValidateInput(requestName, requestType, requestNotes)) return;
+        var validationResult = await ValidateInput(requestName, requestType, requestNotes);
+        if (!validationResult.Item1)
+        {
+            await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
+            return;
+        }
 
-        if (_currentUser == null) return;
+        if (_currentUser == null)
+        {
+            // Отображение ошибки или другое уведомление, если пользователь не определен
+            await ShowErrorMessageAsync("Ошибка", "Пользователь не определен.");
+            return;
+        }
 
         var request = new Request
         {
@@ -167,11 +176,10 @@ public partial class Main
             RequestType = requestType,
             Notes = requestNotes,
             UserId = _currentUser.UserId,
-            // Handle file attachments
             RequestFiles = await ProcessFileAttachments()
         };
 
-        // Add request and handle the result
+        // Добавление запроса и обработка результата
         if (!await AddRequestWithFiles(request))
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
     }
@@ -202,27 +210,18 @@ public partial class Main
         }).ToList();
     }
 
-    private async Task<bool> ValidateInput(string requestName, string requestType, string requestNotes)
+    private Task<(bool, string)> ValidateInput(string requestName, string requestType, string requestNotes)
     {
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Пожалуйста, заполните все обязательные поля.");
-            return false;
-        }
+            return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
 
         if (!IsValidRequestName(requestName))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Название заявки содержит недопустимые символы.");
-            return false;
-        }
+            return Task.FromResult((false, "Название заявки содержит недопустимые символы."));
 
         if (!IsValidRequestNotes(requestNotes))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Примечания содержат недопустимые символы.");
-            return false;
-        }
+            return Task.FromResult((false, "Примечания содержат недопустимые символы."));
 
-        return true;
+        return Task.FromResult((true, ""));
     }
 
     private static void ToggleVisibility(UIElement grid, Visibility visibility)
@@ -265,34 +264,58 @@ public partial class Main
         RequestNotesTextBox.Clear();
     }
 
-    private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private async void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         var textBlock = (TextBlock)sender;
         var fileName = textBlock.Text;
 
-        // Получение объекта DataGridRow из нажатого TextBlock
         var dataGridRow = FindParent<DataGridRow>(textBlock);
         if (dataGridRow != null)
         {
-            // Получение объекта, связанного с этой строкой
             var request = (Request)dataGridRow.Item;
-
-            // Извлечение ID заявки
             var requestId = request.RequestId;
 
-            // Проверка существования файла
-            var filePath = Path.Combine("путь_к_папке_с_файлами", fileName);
-            var fileExists = File.Exists(filePath);
+            // Создание и показ диалога для подтверждения
+            var mySettings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Да",
+                NegativeButtonText = "Нет",
+                AnimateShow = false,
+                AnimateHide = false
+            };
 
-            // Вывод сообщения с ID заявки и именем файла
-            var message = fileExists
-                ? $"File exists: {fileName} (Request ID: {requestId})"
-                : $"File does not exist: {fileName} (Request ID: {requestId})";
-            _ = ShowErrorMessageAsync("File Clicked", message);
+            var result = await this.ShowMessageAsync("Подтверждение загрузки",
+                $"Вы уверены, что хотите загрузить {fileName}?",
+                MessageDialogStyle.AffirmativeAndNegative, mySettings);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                var fileData = await RequestRepository.GetFileDataByRequestIdAndFileNameAsync(requestId, fileName);
+                if (fileData != null)
+                {
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    var fullFilePath = Path.Combine(desktopPath, fileName);
+
+                    try
+                    {
+                        await File.WriteAllBytesAsync(fullFilePath, fileData);
+                        await ShowErrorMessageAsync("Файл сохранён", $"Файл сохранён: {fullFilePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        await ShowErrorMessageAsync("Ошибка при сохранении файла", ex.Message);
+                    }
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("Ошибка",
+                        $"Файл {fileName} не найден в базе данных для заявки с ID {requestId}.");
+                }
+            }
         }
     }
 
-// Вспомогательный метод для поиска родительского элемента заданного типа
+    // Вспомогательный метод для поиска родительского элемента заданного типа
     private T FindParent<T>(DependencyObject child) where T : DependencyObject
     {
         var parentObject = VisualTreeHelper.GetParent(child);
