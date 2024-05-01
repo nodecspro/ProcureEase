@@ -1,13 +1,9 @@
 ﻿#region
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -180,7 +176,6 @@ public partial class Main
         ShowSingleGrid(RequestsGrid);
         LoadUserRequests();
         return Task.FromResult(true);
-
     }
 
     private async Task<List<RequestFile>> ProcessFileAttachments()
@@ -264,6 +259,39 @@ public partial class Main
     {
         var textBlock = (TextBlock)sender;
         var fileName = textBlock.Text;
-        _ = ShowErrorMessageAsync("File Clicked", $"You clicked on file: {fileName}");
+
+        // Получение объекта DataGridRow из нажатого TextBlock
+        var dataGridRow = FindParent<DataGridRow>(textBlock);
+        if (dataGridRow != null)
+        {
+            // Получение объекта, связанного с этой строкой
+            var request = (Request)dataGridRow.Item;
+
+            // Извлечение ID заявки
+            var requestId = request.RequestId;
+
+            // Проверка существования файла
+            var filePath = Path.Combine("путь_к_папке_с_файлами", fileName);
+            var fileExists = File.Exists(filePath);
+
+            // Вывод сообщения с ID заявки и именем файла
+            var message = fileExists
+                ? $"File exists: {fileName} (Request ID: {requestId})"
+                : $"File does not exist: {fileName} (Request ID: {requestId})";
+            _ = ShowErrorMessageAsync("File Clicked", message);
+        }
+    }
+
+// Вспомогательный метод для поиска родительского элемента заданного типа
+    private T FindParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        var parentObject = VisualTreeHelper.GetParent(child);
+
+        if (parentObject == null) return null;
+
+        var parent = parentObject as T;
+        if (parent != null)
+            return parent;
+        return FindParent<T>(parentObject);
     }
 }

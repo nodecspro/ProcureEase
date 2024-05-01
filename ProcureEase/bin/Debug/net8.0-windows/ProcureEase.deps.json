@@ -13,7 +13,7 @@
           "MahApps.Metro": "2.4.10",
           "Microsoft.Extensions.Configuration.UserSecrets": "6.0.1",
           "MvvmLightLibs": "5.4.1.1",
-          "MySql.Data": "8.3.0",
+          "MySql.Data": "8.4.0",
           "Ookii.Dialogs.Wpf": "5.0.1",
           "RelayCommand": "1.0.2",
           "WPF-UI": "3.0.4"
@@ -569,7 +569,7 @@
           }
         }
       },
-      "MySql.Data/8.3.0": {
+      "MySql.Data/8.4.0": {
         "dependencies": {
           "BouncyCastle.Cryptography": "2.2.1",
           "Google.Protobuf": "3.25.1",
@@ -587,8 +587,8 @@
         },
         "runtime": {
           "lib/net8.0/MySql.Data.dll": {
-            "assemblyVersion": "8.3.0.0",
-            "fileVersion": "8.3.0.0"
+            "assemblyVersion": "8.4.0.0",
+            "fileVersion": "8.4.0.0"
           }
         },
         "runtimeTargets": {
@@ -2009,12 +2009,12 @@
       "path": "mvvmlightlibs/5.4.1.1",
       "hashPath": "mvvmlightlibs.5.4.1.1.nupkg.sha512"
     },
-    "MySql.Data/8.3.0": {
+    "MySql.Data/8.4.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bAQlkLYvTYt5MtXAgHGURSBSUWynIvyN2FVQFUg51I2grxsOfnJSyGvO7YsDRnU7IvUNfMdxq8rNXiP5P4hMlw==",
-      "path": "mysql.data/8.3.0",
-      "hashPath": "mysql.data.8.3.0.nupkg.sha512"
+      "sha512": "sha512-NA273x7ybutfGwGbF2cd8rLVM5t7AkZCzRHr/+tGms1FeMlfl+LgfjHXcb5qN1QxFpeNQQKZ+vqZw8v/S8gUiA==",
+      "path": "mysql.data/8.4.0",
+      "hashPath": "mysql.data.8.4.0.nupkg.sha512"
     },
     "NETStandard.Library/1.6.0": {
       "type": "package",
