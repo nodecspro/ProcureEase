@@ -37,7 +37,6 @@ public partial class Main
 
         SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
-        DataContext = this;
         LoadUserData();
         LoadUserRequests();
     }
@@ -47,6 +46,7 @@ public partial class Main
     private void LoadUserData()
     {
         _currentUser = UserRepository.GetUserByUsername(UsernameTextBlock.Text);
+        DataContext = _currentUser;
         UserDataGrid.DataContext = _currentUser;
     }
 
@@ -137,7 +137,7 @@ public partial class Main
     private async Task ShowErrorMessageAsync(string title, string message)
     {
         await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative,
-            new MetroDialogSettings { AnimateShow = false, AnimateHide = false});
+            new MetroDialogSettings { AnimateShow = false, AnimateHide = false });
     }
 
     private static bool IsValidRequestName(string requestName)
@@ -210,7 +210,7 @@ public partial class Main
         }).ToList();
     }
 
-    private Task<(bool, string)> ValidateInput(string requestName, string requestType, string requestNotes)
+    private static Task<(bool, string)> ValidateInput(string requestName, string requestType, string requestNotes)
     {
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
             return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
@@ -239,22 +239,23 @@ public partial class Main
     private void ToggleEditing(bool isEditing = true)
     {
         SetEditMode(UserDataGrid, isEditing);
-        EditButton.Content = isEditing ? "Сохранить" : "Изменить";
-        EditButton.Background = isEditing ? Brushes.Green : Brushes.Transparent;
+        EditButton.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
+        SaveButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
         CancelButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private static void SetEditMode(DependencyObject grid, bool isEditing)
     {
-        foreach (var textBox in grid.FindVisualChildren
-                     <TextBox>())
-        {
-            textBox.IsReadOnly = !isEditing;
-            textBox.BorderThickness = isEditing ? new Thickness(1) : new Thickness(0);
-            textBox.BorderBrush = isEditing
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
-                : Brushes.Transparent;
-        }
+        foreach (var textBox in grid.FindVisualChildren<TextBox>())
+            // Проверяем Tag перед изменением свойств
+            if (textBox.Tag as string != "NoEdit")
+            {
+                textBox.IsReadOnly = !isEditing;
+                textBox.BorderThickness = isEditing ? new Thickness(1) : new Thickness(0);
+                textBox.BorderBrush = isEditing
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
+                    : Brushes.Transparent;
+            }
     }
 
     private void ClearRequestForm()
@@ -315,7 +316,6 @@ public partial class Main
         }
     }
 
-    // Вспомогательный метод для поиска родительского элемента заданного типа
     private T FindParent<T>(DependencyObject child) where T : DependencyObject
     {
         var parentObject = VisualTreeHelper.GetParent(child);
@@ -326,5 +326,65 @@ public partial class Main
         if (parent != null)
             return parent;
         return FindParent<T>(parentObject);
+    }
+
+    private async void SaveButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (!(DataContext is User userToUpdate))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Данные пользователя не загружены.");
+            return;
+        }
+
+        var validator = new UserValidator();
+        var validationResults = validator.Validate(userToUpdate);
+        if (!validationResults.IsValid)
+        {
+            HighlightErrors(validationResults.Errors);
+            await ShowErrorMessageAsync("Ошибка", "Введенные данные некорректны.");
+            return;
+        }
+
+        try
+        {
+            await UserRepository.UpdateUser(userToUpdate);
+            ToggleEditing(false);
+            await ShowErrorMessageAsync("Успех", "Данные успешно сохранены.");
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync("Ошибка", $"Ошибка сохранения данных: {ex.Message}");
+        }
+    }
+
+    private void HighlightErrors(Dictionary<string, string> errors)
+    {
+        foreach (var element in errors.Select(error => FindControlByName(UserDataGrid, error.Key)))
+        {
+            if (element is TextBox textBox) textBox.BorderBrush = Brushes.Red;
+        }
+    }
+
+    private static FrameworkElement FindControlByName(DependencyObject parent, string name)
+    {
+        if (parent is FrameworkElement fe && fe.Name == name)
+            return fe;
+
+        for (int i = 0, count = VisualTreeHelper.GetChildrenCount(parent); i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            var result = FindControlByName(child, name);
+            if (result != null)
+                return result;
+        }
+
+        return null;
+    }
+
+    private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not TextBox textBox) return;
+        var color = (Color)ColorConverter.ConvertFromString("#FFABADB3");
+        textBox.BorderBrush = new SolidColorBrush(color);
     }
 }
