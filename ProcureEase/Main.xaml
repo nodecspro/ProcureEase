@@ -71,7 +71,8 @@
                         Text="Ваши заявки на закупку" />
 
                     <!-- Список заявок пользователя -->
-                    <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Height="300">
+                    <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Height="300"
+                              MouseDoubleClick="UserRequestsDataGrid_OnMouseDoubleClick">
                         <DataGrid.Columns>
                             <!-- ID -->
                             <DataGridTextColumn Binding="{Binding RequestId}" Header="ID" MinWidth="50"
@@ -336,6 +337,98 @@
                     FontFamily="Arial Black"
                     FontSize="18"
                     FontWeight="Bold" />
+            </Grid>
+
+            <Grid x:Name="DetailsGrid" Visibility="Collapsed" Margin="20">
+                <!-- Заголовок "Заявка №n", центрированный в верхней части грида -->
+                <TextBlock Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
+                           FontSize="20"
+                           HorizontalAlignment="Center" VerticalAlignment="Top"
+                           Margin="0,10,0,10" />
+
+                <!-- Кнопка "Назад" слева вверху с меньшей высотой -->
+                <Button x:Name="BackButtonDetailsGrid" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        FontSize="20" Click="BackButtonDetailsGrid_OnClick"
+                        BorderThickness="0" Background="Transparent" Height="30" Width="30" />
+
+                <!-- Контент, выравниваемый по левому краю -->
+                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,50,0,0">
+                    <!-- Используем Grid для более точного контроля расположения элементов -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Content="Название заявки:" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Grid.Column="0" />
+                        <TextBox x:Name="NameTextBox" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                 Text="{Binding RequestName}"
+                                 IsReadOnly="True" Width="180"
+                                 BorderThickness="0" Grid.Column="1" />
+                    </Grid>
+
+                    <Grid Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Content="Статус заявки:" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Grid.Column="0" />
+                        <TextBox x:Name="StatusTextBox" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                 Text="{Binding RequestStatus}"
+                                 IsReadOnly="True" Width="180"
+                                 BorderThickness="0" Grid.Column="1" />
+                    </Grid>
+
+                    <Grid Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Content="Примечание:" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Grid.Column="0" />
+                        <TextBox x:Name="NotesTextBox" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                 Text="{Binding Notes}"
+                                 IsReadOnly="True" Width="180"
+                                 BorderThickness="0" Grid.Column="1" />
+                    </Grid>
+
+                    <!-- Label перед списком файлов -->
+                    <TextBlock Text="Файлы:" FontSize="16" Margin="0,10,0,0" />
+
+                    <!-- Вывод файлов в виде маркированного списка с меньшим расстоянием между элементами -->
+                    <ItemsControl ItemsSource="{Binding RequestFiles}" Margin="20,5,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
+                                    <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center" />
+                                    <Button Content="Удалить" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
+                                            Height="20" Width="60" Background="Red"
+                                            Click="DeleteFileButtonDetailsGrid_OnClick" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button x:Name="AddFileButtonDetailsGrid" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Добавить файл"
+                            Click="AddFileButtonDetailsGrid_OnClick" Margin="0,10,0,0" Visibility="Collapsed" />
+                </StackPanel>
+
+                <!-- Кнопки, центрированные в нижней части грида -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                            Margin="10">
+                    <Button x:Name="EditButtonDetailsGrid" Content="Изменить" Click="EditButtonDetailsGrid_OnClick"
+                            Margin="5,0" />
+                    <Button x:Name="DeleteRequestButtonDetailsGrid" Content="Удалить заявку"
+                            Click="DeleteRequestButtonDetailsGrid_OnClick" Margin="5,0" Background="Red" />
+                    <Button x:Name="SaveButtonDetailsGrid" Content="Сохранить" Background="Green"
+                            Click="SaveButtonDetailsGrid_OnClick"
+                            Margin="5,0" Visibility="Collapsed" />
+                    <Button x:Name="CancelButtonDetaisGrid" Content="Отмена" Background="Red"
+                            Click="CancelButtonDetaisGrid_OnClick"
+                            Margin="5,0" Visibility="Collapsed" />
+                </StackPanel>
             </Grid>
 
             <!--  New Request Grid (initially hidden)  -->

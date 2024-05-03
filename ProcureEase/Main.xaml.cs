@@ -28,7 +28,6 @@ public partial class Main
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
-        SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
         SortDataGribById();
         LoadUserData();
@@ -62,9 +61,7 @@ public partial class Main
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
-        ToggleVisibility(NewRequestGrid, Visibility.Collapsed);
-        ToggleVisibility(RequestsGrid, Visibility.Collapsed);
-        if (UserDataGrid.Visibility == Visibility.Collapsed) ToggleVisibility(UserDataGrid, Visibility.Visible);
+        ShowSingleGrid(UserDataGrid);
     }
 
     private void CreateRequest_Click(object sender, RoutedEventArgs e)
@@ -253,16 +250,14 @@ public partial class Main
                 : (true, ""));
     }
 
-    private static void ToggleVisibility(UIElement grid, Visibility visibility)
-    {
-        grid.Visibility = visibility;
-    }
-
     private void ShowSingleGrid(UIElement gridToShow)
     {
-        RequestsGrid.Visibility = gridToShow == RequestsGrid ? Visibility.Visible : Visibility.Collapsed;
-        UserDataGrid.Visibility = gridToShow == UserDataGrid ? Visibility.Visible : Visibility.Collapsed;
-        NewRequestGrid.Visibility = gridToShow == NewRequestGrid ? Visibility.Visible : Visibility.Collapsed;
+        var allGrids = new List<UIElement> { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid };
+
+        foreach (var grid in allGrids)
+        {
+            grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     private void ToggleEditing(bool isEditing = true)
@@ -414,5 +409,123 @@ public partial class Main
         if (sender is not TextBox textBox) return;
         var color = (Color)ColorConverter.ConvertFromString("#FFABADB3");
         textBox.BorderBrush = new SolidColorBrush(color);
+    }
+
+    private void UserRequestsDataGrid_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (UserRequestsDataGrid.SelectedItem != null)
+        {
+            RequestsGrid.Visibility = Visibility.Collapsed; // Скрываем основной Grid
+            DetailsGrid.Visibility = Visibility.Visible; // Показываем Grid с деталями
+            DetailsGrid.DataContext = UserRequestsDataGrid.SelectedItem; // Привязка данных выбранной заявки
+        }
+    }
+
+    private void EditButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Сделать поля редактируемыми
+        NameTextBox.IsReadOnly = false;
+        NotesTextBox.IsReadOnly = false;
+
+        // Показать новые кнопки и скрыть стандартные
+        SaveButtonDetailsGrid.Visibility = Visibility.Visible;
+        CancelButtonDetaisGrid.Visibility = Visibility.Visible;
+        AddFileButtonDetailsGrid.Visibility = Visibility.Visible;
+
+        // Скрыть кнопки "Изменить" и "Удалить заявку"
+        EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
+    }
+
+    private void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void BackButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Показываем другой Grid, например RequestsGrid
+        ShowSingleGrid(RequestsGrid);
+    }
+
+    private void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void SaveButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void CancelButtonDetaisGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Вернуть поля в неизменяемое состояние
+        NameTextBox.IsReadOnly = true;
+        NotesTextBox.IsReadOnly = true;
+
+        // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
+        SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        CancelButtonDetaisGrid.Visibility = Visibility.Collapsed;
+        AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
+
+        // Показать кнопки "Изменить" и "Удалить заявку"
+        EditButtonDetailsGrid.Visibility = Visibility.Visible;
+        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
+    }
+
+    private async void AddFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            Multiselect = true
+        };
+
+        if (openFileDialog.ShowDialog() != true) return;
+
+        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
+
+        var validFiles = openFileDialog.FileNames
+            .Where(f => validExtensions.Contains(Path.GetExtension(f).ToLowerInvariant())).ToList();
+        var invalidFiles = openFileDialog.FileNames.Except(validFiles).ToList();
+
+        var newRequestFiles = new List<RequestFile>();
+
+        foreach (var filePath in validFiles)
+        {
+            try
+            {
+                var fileData = await File.ReadAllBytesAsync(filePath);
+                var newFile = new RequestFile
+                {
+                    FileName = Path.GetFileName(filePath),
+                    FileData = fileData
+                };
+                newRequestFiles.Add(newFile);
+            }
+            catch (Exception ex)
+            {
+                // Ошибка чтения файла, возможно стоит добавить логирование или уведомление пользователя
+                Console.WriteLine($"Error reading file {filePath}: {ex.Message}");
+            }
+        }
+
+        // Предполагаем, что у вас есть доступ к requestId текущей заявки
+        int requestId = GetCurrentRequestId();
+        await RequestRepository.AddRequestFilesAsync(requestId, newRequestFiles);
+
+        if (invalidFiles.Any())
+        {
+            var message =
+                $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
+            await ShowErrorMessageAsync("Недопустимые файлы", message);
+        }
+    }
+
+    private int GetCurrentRequestId()
+    {
+        // Здесь должна быть логика для получения текущего ID заявки
+        return 123; // Пример ID
     }
 }
