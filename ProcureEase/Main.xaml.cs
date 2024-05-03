@@ -28,20 +28,22 @@ public partial class Main
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
-
-        // Установка сортировки по умолчанию по столбцу "ID"
-        var idColumn = UserRequestsDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "ID");
-        if (idColumn != null)
-            UserRequestsDataGrid.Items.SortDescriptions.Add(new SortDescription(idColumn.SortMemberPath,
-                ListSortDirection.Ascending));
-
         SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
+        SortDataGribById();
         LoadUserData();
         LoadUserRequests();
     }
 
     public ObservableCollection<string> SelectedFiles { get; }
+
+    private void SortDataGribById()
+    {
+        var idColumn = UserRequestsDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "ID");
+        if (idColumn != null)
+            UserRequestsDataGrid.Items.SortDescriptions.Add(new SortDescription(idColumn.SortMemberPath,
+                ListSortDirection.Ascending));
+    }
 
     private void LoadUserData()
     {
@@ -53,16 +55,11 @@ public partial class Main
     private async void LoadUserRequests()
     {
         if (_currentUser != null)
-            try
-            {
-                var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
-                UserRequestsDataGrid.ItemsSource = requests;
-            }
-            catch (Exception ex)
-            {
-                // Handle or log the exception as needed
-                Console.WriteLine("Failed to load user requests: " + ex.Message);
-            }
+        {
+            var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
+            UserRequestsDataGrid.ItemsSource = requests.OrderBy(r => r.RequestId).ToList();
+            UserRequestsDataGrid.Items.Refresh();
+        }
     }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)

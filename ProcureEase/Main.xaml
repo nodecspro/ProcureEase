@@ -54,7 +54,7 @@
                 Source="/UserAvatarDefaultWhite_30x30.png" />
         </DockPanel>
 
-        <!--  Основное содержимое окна  -->
+        <!-- Основное содержимое окна -->
         <Grid Grid.Row="1">
             <!--  Requests Grid  -->
             <Grid x:Name="RequestsGrid">
@@ -62,7 +62,7 @@
                     Width="Auto"
                     Height="Auto"
                     VerticalAlignment="Top">
-                    <!--  Заголовок  -->
+                    <!-- Заголовок -->
                     <TextBlock
                         Margin="0,0,0,20"
                         HorizontalAlignment="Center"
@@ -70,7 +70,7 @@
                         FontWeight="Bold"
                         Text="Ваши заявки на закупку" />
 
-                    <!--  Список заявок пользователя  -->
+                    <!-- Список заявок пользователя -->
                     <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Height="300">
                         <DataGrid.Columns>
                             <!-- ID -->
@@ -150,7 +150,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!--  Кнопка "Создать заявку"  -->
+                    <!-- Кнопка "Создать заявку" -->
                     <Button
                         Margin="0,10"
                         HorizontalAlignment="Center"
@@ -188,7 +188,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <!--  Имя пользователя  -->
+                        <!-- Имя пользователя -->
                         <Label
                             Grid.Row="0"
                             Grid.Column="0"
@@ -202,7 +202,7 @@
                             Tag="NoEdit"
                             Text="{Binding Username}" />
 
-                        <!--  Электронная почта  -->
+                        <!-- Электронная почта -->
                         <Label
                             Grid.Row="1"
                             Grid.Column="0"
@@ -216,7 +216,7 @@
                             IsReadOnly="True"
                             Text="{Binding Email}" />
 
-                        <!--  Имя  -->
+                        <!-- Имя -->
                         <Label
                             Grid.Row="2"
                             Grid.Column="0"
@@ -230,7 +230,7 @@
                             TextChanged="TextBox_TextChanged"
                             Text="{Binding FirstName}" />
 
-                        <!--  Фамилия  -->
+                        <!-- Фамилия -->
                         <Label
                             Grid.Row="3"
                             Grid.Column="0"
@@ -244,7 +244,7 @@
                             IsReadOnly="True"
                             Text="{Binding LastName}" />
 
-                        <!--  Отчество  -->
+                        <!-- Отчество -->
                         <Label
                             Grid.Row="4"
                             Grid.Column="0"
@@ -258,7 +258,7 @@
                             TextChanged="TextBox_TextChanged"
                             Text="{Binding Patronymic}" />
 
-                        <!--  Номер телефона  -->
+                        <!-- Номер телефона -->
                         <Label
                             Grid.Row="5"
                             Grid.Column="0"
@@ -369,7 +369,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!--  Название  -->
+                    <!-- Название -->
                     <TextBlock
                         Grid.Row="0"
                         Grid.Column="0"
@@ -385,7 +385,7 @@
                         VerticalContentAlignment="Center"
                         MaxLength="48" />
 
-                    <!--  Тип заявки  -->
+                    <!-- Тип заявки -->
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
@@ -404,7 +404,7 @@
                         <ComboBoxItem Content="Работа" />
                     </ComboBox>
 
-                    <!--  Примечания  -->
+                    <!-- Примечания -->
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="0"
