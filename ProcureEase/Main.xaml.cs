@@ -54,12 +54,10 @@ public partial class Main
 
     private async void LoadUserRequests()
     {
-        if (_currentUser != null)
-        {
-            var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
-            UserRequestsDataGrid.ItemsSource = requests.OrderBy(r => r.RequestId).ToList();
-            UserRequestsDataGrid.Items.Refresh();
-        }
+        if (_currentUser == null) return;
+        var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
+        UserRequestsDataGrid.ItemsSource = requests.OrderBy(r => r.RequestId).ToList();
+        UserRequestsDataGrid.Items.Refresh();
     }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
@@ -95,28 +93,40 @@ public partial class Main
         LoadUserData();
     }
 
+// Обработчик события клика по кнопке для открытия файла
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
+        // Создание и настройка диалога выбора файлов
         var openFileDialog = new OpenFileDialog
         {
+            // Установка фильтра для отображения определённых типов файлов в диалоге
             Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            // Разрешение выбора нескольких файлов
             Multiselect = true
         };
 
+        // Отображение диалога выбора файлов и проверка на успешное закрытие с выбранными файлами
         if (openFileDialog.ShowDialog() != true) return;
 
+        // Создание списка допустимых расширений файлов
         var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
 
+        // Разделение выбранных файлов на допустимые и недопустимые по расширению
         var (validFiles, invalidFiles) = openFileDialog.FileNames
             .Partition(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()));
 
+        // Добавление допустимых файлов в коллекцию выбранных файлов
         foreach (var validFile in validFiles)
-            // Replace this line with the appropriate method to add to your SelectedFiles collection
-            SelectedFiles.Add(validFile);
+            SelectedFiles
+                .Add(validFile); // Замените эту строку соответствующим методом для добавления в вашу коллекцию выбранных файлов
 
+        // Если нет недопустимых файлов, прекратить выполнение функции
         if (invalidFiles.Count == 0) return;
+
+        // Создание сообщения об ошибках для недопустимых файлов
         var message =
             $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
+        // Отображение сообщения об ошибке
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
@@ -147,63 +157,87 @@ public partial class Main
         return string.IsNullOrEmpty(requestNotes) || RequestNameRegex.IsMatch(requestNotes);
     }
 
+// Обработчик клика по кнопке "Сохранить заявку"
     private async void SaveRequestButton_Click(object sender, RoutedEventArgs e)
     {
-        var requestName = RequestNameTextBox.Text;
-        var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-        var requestNotes = RequestNotesTextBox.Text;
+        // Считывание данных из формы
+        var requestName = RequestNameTextBox.Text; // Имя заявки
+        var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString(); // Тип заявки
+        var requestNotes = RequestNotesTextBox.Text; // Примечания к заявке
 
+        // Валидация введённых данных
         var validationResult = await ValidateInput(requestName, requestType, requestNotes);
-        if (!validationResult.Item1)
+        if (!validationResult.Item1) // Если валидация не пройдена
         {
+            // Отображение сообщения об ошибке
             await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
             return;
         }
 
+        // Проверка наличия данных о текущем пользователе
         if (_currentUser == null)
         {
-            // Отображение ошибки или другое уведомление, если пользователь не определен
+            // Отображение ошибки, если пользователь не определён
             await ShowErrorMessageAsync("Ошибка", "Пользователь не определен.");
             return;
         }
 
+        // Создание объекта заявки с данными из формы
         var request = new Request
         {
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = _currentUser.UserId,
-            RequestFiles = await ProcessFileAttachments()
+            UserId = _currentUser.UserId, // ID пользователя
+            RequestFiles = await ProcessFileAttachments() // Обработка прикреплённых файлов
         };
 
-        // Добавление запроса и обработка результата
+        // Добавление заявки через API или базу данных
         if (!await AddRequestWithFiles(request))
+        {
+            // Если процесс добавления не успешен, отображение сообщения об ошибке
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
+        }
     }
 
+// Асинхронный метод для добавления заявки с файлами
     private async Task<bool> AddRequestWithFiles(Request request)
     {
+        // Добавление заявки в репозиторий и получение её уникального идентификатора (ID)
         var requestId = await RequestRepository.AddRequestAsync(request);
+        // Проверка успешности добавления заявки: если ID меньше или равен 0, возвращаем false
         if (requestId <= 0) return false;
 
+        // Добавление файлов для соответствующей заявки
         await RequestRepository.AddRequestFilesAsync(requestId, request.RequestFiles);
+
+        // Очистка формы после успешного добавления заявки
         ClearRequestForm();
+        // Отображение таблицы заявок (переключение видимости элементов интерфейса)
         ShowSingleGrid(RequestsGrid);
+        // Загрузка и обновление списка заявок
         LoadUserRequests();
+
+        // Возвращаем true, указывая на успешное выполнение операции
         return true;
     }
 
+// Асинхронный метод для обработки прикреплённых файлов
     private async Task<List<RequestFile>> ProcessFileAttachments()
     {
-        if (SelectedFiles.Count == 0) return new List<RequestFile>();
+        // Проверка на наличие выбранных файлов
+        if (SelectedFiles.Count == 0) return new List<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
 
+        // Создание списка задач на асинхронное чтение данных из файлов
         var tasks = SelectedFiles.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
+        // Ожидание завершения всех задач и сбор результатов в массив байтов
         var fileBytes = await Task.WhenAll(tasks);
 
+        // Преобразование результатов чтения файлов в список объектов RequestFile
         return SelectedFiles.Select((filePath, index) => new RequestFile
         {
-            FileName = Path.GetFileName(filePath),
-            FileData = fileBytes[index]
+            FileName = Path.GetFileName(filePath), // Получение имени файла
+            FileData = fileBytes[index] // Получение данных файла
         }).ToList();
     }
 
@@ -212,13 +246,11 @@ public partial class Main
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
             return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
 
-        if (!IsValidRequestName(requestName))
-            return Task.FromResult((false, "Название заявки содержит недопустимые символы."));
-
-        if (!IsValidRequestNotes(requestNotes))
-            return Task.FromResult((false, "Примечания содержат недопустимые символы."));
-
-        return Task.FromResult((true, ""));
+        return !IsValidRequestName(requestName)
+            ? Task.FromResult((false, "Название заявки содержит недопустимые символы."))
+            : Task.FromResult(!IsValidRequestNotes(requestNotes)
+                ? (false, "Примечания содержат недопустимые символы.")
+                : (true, ""));
     }
 
     private static void ToggleVisibility(UIElement grid, Visibility visibility)
@@ -357,9 +389,8 @@ public partial class Main
     private void HighlightErrors(Dictionary<string, string> errors)
     {
         foreach (var element in errors.Select(error => FindControlByName(UserDataGrid, error.Key)))
-        {
-            if (element is TextBox textBox) textBox.BorderBrush = Brushes.Red;
-        }
+            if (element is TextBox textBox)
+                textBox.BorderBrush = Brushes.Red;
     }
 
     private static FrameworkElement FindControlByName(DependencyObject parent, string name)
