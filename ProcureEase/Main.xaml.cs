@@ -28,6 +28,7 @@ public partial class Main
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
+        SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
         SortDataGribById();
         LoadUserData();
