@@ -354,7 +354,7 @@
 
             <Grid x:Name="DetailsGrid" Visibility="Collapsed" Margin="20">
                 <!-- Заголовок "Заявка №n", центрированный в верхней части грида -->
-                <TextBlock Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
+                <TextBlock x:Name="IdRequestDetailsGrid" Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
                            FontSize="20"
                            HorizontalAlignment="Center" VerticalAlignment="Top"
                            Margin="0,10,0,10" />
@@ -417,7 +417,7 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
                                     <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center" />
-                                    <Button Content="Удалить" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
+                                    <Button Content="Удалить" Tag="{Binding FileName}" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
                                             Height="20" Width="60" Background="Red"
                                             Click="DeleteFileButtonDetailsGrid_OnClick" />
                                 </StackPanel>
@@ -436,7 +436,7 @@
                                         Margin="5,0,5,0" VerticalAlignment="Center" />
                                     <Button Content="Удалить" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
                                             Height="20" Width="60" Background="Red"
-                                            Click="DeleteFileButtonDetailsGrid_OnClick" />
+                                            Click="DeleteNewFileButtonDetailsGrid_OnClick" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -451,7 +451,7 @@
                             Margin="10">
                     <Button x:Name="EditButtonDetailsGrid" Content="Изменить" Click="EditButtonDetailsGrid_OnClick"
                             Margin="5,0" />
-                    <Button x:Name="DeleteRequestButtonDetailsGrid" Content="Удалить заявку"
+                    <Button x:Name="DeleteRequestButtonDetailsGrid" Tag="{Binding RequestId}" Content="Удалить заявку"
                             Click="DeleteRequestButtonDetailsGrid_OnClick" Margin="5,0" Background="Red" />
                     <Button x:Name="SaveButtonDetailsGrid" Content="Сохранить" Background="Green"
                             Click="SaveButtonDetailsGrid_OnClick"

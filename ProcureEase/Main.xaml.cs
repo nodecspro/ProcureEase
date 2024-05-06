@@ -221,22 +221,25 @@ public partial class Main
     }
 
 // Асинхронный метод для обработки прикреплённых файлов
-    private async Task<List<RequestFile>> ProcessFileAttachments()
+    private async Task<ObservableCollection<RequestFile>> ProcessFileAttachments()
     {
         // Проверка на наличие выбранных файлов
-        if (SelectedFiles.Count == 0) return new List<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
+        if (SelectedFiles.Count == 0)
+            return new ObservableCollection<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
 
         // Создание списка задач на асинхронное чтение данных из файлов
         var tasks = SelectedFiles.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
         // Ожидание завершения всех задач и сбор результатов в массив байтов
         var fileBytes = await Task.WhenAll(tasks);
 
-        // Преобразование результатов чтения файлов в список объектов RequestFile
-        return SelectedFiles.Select((filePath, index) => new RequestFile
-        {
-            FileName = Path.GetFileName(filePath), // Получение имени файла
-            FileData = fileBytes[index] // Получение данных файла
-        }).ToList();
+        // Преобразование результатов чтения файлов в ObservableCollection объектов RequestFile
+        return new ObservableCollection<RequestFile>(
+            SelectedFiles.Select((filePath, index) => new RequestFile
+            {
+                FileName = Path.GetFileName(filePath), // Получение имени файла
+                FileData = fileBytes[index] // Получение данных файла
+            })
+        );
     }
 
     private static Task<(bool, string)> ValidateInput(string requestName, string requestType, string requestNotes)
@@ -441,9 +444,39 @@ public partial class Main
     }
 
 
-    private void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var button = (Button)sender;
+        var requestId = int.Parse(button.Tag.ToString()); // Убедитесь, что Tag содержит корректный ID
+
+        // Определение настроек диалога
+        var mySettings = new MetroDialogSettings
+        {
+            AffirmativeButtonText = "Да",
+            NegativeButtonText = "Нет",
+            AnimateShow = false,
+            AnimateHide = false
+        };
+
+        // Диалог подтверждения с пользовательскими настройками
+        var confirmResult = await this.ShowMessageAsync("Подтверждение удаления",
+            "Вы уверены, что хотите удалить эту заявку и все связанные файлы?",
+            MessageDialogStyle.AffirmativeAndNegative, mySettings);
+
+        if (confirmResult == MessageDialogResult.Affirmative)
+        {
+            var result = await RequestRepository.DeleteRequestWithFilesAsync(requestId);
+            if (result)
+            {
+                await ShowErrorMessageAsync("Удаление завершено", "Заявка и все связанные файлы успешно удалены.");
+                ShowSingleGrid(RequestsGrid); // Предполагается, что это обновляет или скрывает интерфейс
+                LoadUserRequests(); // Обновление списка заявок
+            }
+            else
+            {
+                await ShowErrorMessageAsync("Ошибка удаления", "Произошла ошибка при удалении заявки.");
+            }
+        }
     }
 
     private void BackButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -455,7 +488,22 @@ public partial class Main
 
     private void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var button = (Button)sender;
+        var idstring = int.TryParse(new Func<string, string>(text =>
+            Regex.Match(text, "№(\\d+)").Success ? Regex.Match(text, "№(\\d+)").Groups[1].Value : null)(
+            IdRequestDetailsGrid.Text), out var requestId);
+
+        var fileName = button.Tag.ToString();
+
+        RequestRepository.DeleteFileFromDatabase(requestId, fileName);
+
+        LoadUserRequests(); // Перезагружаем список заявок
+    }
+
+    private void DeleteNewFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        var file = (string)((Button)sender).DataContext;
+        SelectedFilesDetailsGrid.Remove(file);
     }
 
     private void SaveButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)

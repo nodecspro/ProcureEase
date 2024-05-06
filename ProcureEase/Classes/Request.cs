@@ -1,4 +1,6 @@
-﻿namespace ProcureEase.Classes;
+﻿using System.Collections.ObjectModel;
+
+namespace ProcureEase.Classes;
 
 public class Request
 {
@@ -14,5 +16,5 @@ public class Request
 
     public int UserId { get; init; }
 
-    public List<RequestFile> RequestFiles { get; set; } = [];
+    public ObservableCollection<RequestFile> RequestFiles { get; set; } = [];
 }

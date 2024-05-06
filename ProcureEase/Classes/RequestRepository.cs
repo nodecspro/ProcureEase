@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Text;
 using MySql.Data.MySqlClient;
@@ -36,6 +37,7 @@ public static class RequestRepository
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
+            var fileList = await GetRequestFilesAsync(reader.GetInt32("request_id"));
             var request = new Request
             {
                 RequestId = reader.GetInt32("request_id"),
@@ -43,7 +45,7 @@ public static class RequestRepository
                 RequestType = reader.GetString("request_type"),
                 RequestStatus = reader.GetString("request_status"),
                 Notes = reader.GetString("notes"),
-                RequestFiles = await GetRequestFilesAsync(reader.GetInt32("request_id"))
+                RequestFiles = new ObservableCollection<RequestFile>(fileList)
             };
             requests.Add(request);
         }
@@ -91,7 +93,7 @@ public static class RequestRepository
         return Convert.ToInt32(await command.ExecuteScalarAsync());
     }
 
-    public static async Task AddRequestFilesAsync(int requestId, List<RequestFile> requestFiles)
+    public static async Task AddRequestFilesAsync(int requestId, ObservableCollection<RequestFile> requestFiles)
     {
         await using var connection = GetConnection();
         await connection.OpenAsync();
@@ -142,5 +144,63 @@ public static class RequestRepository
         command.Parameters.AddWithValue("@fileName", fileName);
         var result = await command.ExecuteScalarAsync();
         return result as byte[];
+    }
+
+    public static bool DeleteFileFromDatabase(int requestId, string fileName)
+    {
+        try
+        {
+            using var connection = GetConnection();
+            connection.Open();
+            var query = "DELETE FROM request_files WHERE request_id = @RequestId AND file_name = @FileName";
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@RequestId", requestId);
+            command.Parameters.AddWithValue("@FileName", fileName);
+
+            // Execute the command and check if any rows were affected
+            var affectedRows = command.ExecuteNonQuery();
+            return affectedRows > 0; // Return true if one or more rows were affected
+        }
+        catch
+        {
+            return false; // Return false if an error occurred
+        }
+    }
+
+    public static async Task<bool> DeleteRequestWithFilesAsync(int requestId)
+    {
+        using (var connection = GetConnection())
+        {
+            await connection.OpenAsync();
+        
+            using (var transaction = await connection.BeginTransactionAsync())
+            {
+                try
+                {
+                    var deleteFilesQuery = "DELETE FROM request_files WHERE request_id = @RequestId";
+                    using (var deleteFilesCommand = new MySqlCommand(deleteFilesQuery, connection, transaction))
+                    {
+                        deleteFilesCommand.Parameters.AddWithValue("@RequestId", requestId);
+                        await deleteFilesCommand.ExecuteNonQueryAsync();
+                    }
+
+                    var deleteRequestQuery = "DELETE FROM requests WHERE request_id = @RequestId";
+                    using (var deleteRequestCommand = new MySqlCommand(deleteRequestQuery, connection, transaction))
+                    {
+                        deleteRequestCommand.Parameters.AddWithValue("@RequestId", requestId);
+                        await deleteRequestCommand.ExecuteNonQueryAsync();
+                    }
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine("Error occurred: " + ex.Message);
+                    return false;
+                }
+            }
+        }
     }
 }
