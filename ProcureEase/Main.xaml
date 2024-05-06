@@ -424,6 +424,23 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <ItemsControl
+                        DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                        ItemsSource="{Binding SelectedFilesDetailsGrid}" Margin="20,0,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
+                                    <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
+                                    <TextBlock
+                                        Text="{Binding Path=., Converter={StaticResource PathToFilenameConverter}}"
+                                        Margin="5,0,5,0" VerticalAlignment="Center" />
+                                    <Button Content="Удалить" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
+                                            Height="20" Width="60" Background="Red"
+                                            Click="DeleteFileButtonDetailsGrid_OnClick" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <Button x:Name="AddFileButtonDetailsGrid" VerticalAlignment="Center" HorizontalAlignment="Center"
                             Content="Добавить файл"
                             Click="AddFileButtonDetailsGrid_OnClick" Margin="0,10,0,0" Visibility="Collapsed" />
@@ -439,8 +456,8 @@
                     <Button x:Name="SaveButtonDetailsGrid" Content="Сохранить" Background="Green"
                             Click="SaveButtonDetailsGrid_OnClick"
                             Margin="5,0" Visibility="Collapsed" />
-                    <Button x:Name="CancelButtonDetaisGrid" Content="Отмена" Background="Red"
-                            Click="CancelButtonDetaisGrid_OnClick"
+                    <Button x:Name="CancelButtonDetailsGrid" Content="Отмена" Background="Red"
+                            Click="CancelButtonDetailsGrid_OnClick"
                             Margin="5,0" Visibility="Collapsed" />
                 </StackPanel>
             </Grid>
@@ -555,11 +572,6 @@
                             Margin="0,5,0,0"
                             VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding SelectedFiles}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="0,2">

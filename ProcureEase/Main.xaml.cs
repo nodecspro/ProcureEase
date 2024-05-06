@@ -36,6 +36,7 @@ public partial class Main
     }
 
     public ObservableCollection<string> SelectedFiles { get; } = new();
+    public ObservableCollection<string> SelectedFilesDetailsGrid { get; } = new();
 
     private void SortDataGribById()
     {
@@ -116,7 +117,7 @@ public partial class Main
 
         // Добавление допустимых файлов в коллекцию выбранных файлов
         foreach (var validFile in validFiles)
-            SelectedFiles.Add(validFile);   
+            SelectedFiles.Add(validFile);
 
         // Если нет недопустимых файлов, прекратить выполнение функции
         if (invalidFiles.Count == 0) return;
@@ -431,7 +432,7 @@ public partial class Main
 
         // Показать новые кнопки и скрыть стандартные
         SaveButtonDetailsGrid.Visibility = Visibility.Visible;
-        CancelButtonDetaisGrid.Visibility = Visibility.Visible;
+        CancelButtonDetailsGrid.Visibility = Visibility.Visible;
         AddFileButtonDetailsGrid.Visibility = Visibility.Visible;
 
         // Скрыть кнопки "Изменить" и "Удалить заявку"
@@ -462,7 +463,7 @@ public partial class Main
         throw new NotImplementedException();
     }
 
-    private void CancelButtonDetaisGrid_OnClick(object sender, RoutedEventArgs e)
+    private void CancelButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         DisableEditing();
     }
@@ -475,7 +476,7 @@ public partial class Main
 
         // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
         SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        CancelButtonDetaisGrid.Visibility = Visibility.Collapsed;
+        CancelButtonDetailsGrid.Visibility = Visibility.Collapsed;
         AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
 
         // Показать кнопки "Изменить" и "Удалить заявку"
@@ -483,15 +484,12 @@ public partial class Main
         DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
     }
 
-
     private async void AddFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         // Создание и настройка диалога выбора файлов
         var openFileDialog = new OpenFileDialog
         {
-            // Установка фильтра для отображения определённых типов файлов в диалоге
             Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
-            // Разрешение выбора нескольких файлов
             Multiselect = true
         };
 
@@ -502,13 +500,12 @@ public partial class Main
         var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
 
         // Разделение выбранных файлов на допустимые и недопустимые по расширению
-        var (validFiles, invalidFiles) = openFileDialog.FileNames
-            .Partition(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()));
+        var validFiles = openFileDialog.FileNames
+            .Where(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant())).ToList();
+        var invalidFiles = openFileDialog.FileNames.Except(validFiles).ToList();
 
         // Добавление допустимых файлов в коллекцию выбранных файлов
-        foreach (var validFile in validFiles)
-            SelectedFiles
-                .Add(validFile); // Замените эту строку соответствующим методом для добавления в вашу коллекцию выбранных файлов
+        foreach (var validFile in validFiles) SelectedFilesDetailsGrid.Add(validFile);
 
         // Если нет недопустимых файлов, прекратить выполнение функции
         if (invalidFiles.Count == 0) return;

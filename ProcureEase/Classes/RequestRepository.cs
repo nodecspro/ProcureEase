@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Data;
+using System.Text;
 using MySql.Data.MySqlClient;
 
 #endregion
