@@ -8927,8 +8927,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\node\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\node\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -8939,9 +8938,6 @@
       "packagesPath": "C:\\Users\\node\\.nuget\\packages\\",
       "outputPath": "D:\\JetBrains Rider 2024.1.1\\RiderProjects\\ProcureEase\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
         "C:\\Users\\node\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",

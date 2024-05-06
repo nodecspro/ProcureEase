@@ -28,14 +28,14 @@ public partial class Main
         InitializeComponent();
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
-        SelectedFiles = new ObservableCollection<string>();
         UsernameTextBlock.Text = login;
         SortDataGribById();
         LoadUserData();
         LoadUserRequests();
+        DataContext = this;
     }
 
-    public ObservableCollection<string> SelectedFiles { get; }
+    public ObservableCollection<string> SelectedFiles { get; } = new();
 
     private void SortDataGribById()
     {
@@ -62,6 +62,7 @@ public partial class Main
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
+        DisableEditing();
         ShowSingleGrid(UserDataGrid);
     }
 
@@ -115,8 +116,7 @@ public partial class Main
 
         // Добавление допустимых файлов в коллекцию выбранных файлов
         foreach (var validFile in validFiles)
-            SelectedFiles
-                .Add(validFile); // Замените эту строку соответствующим методом для добавления в вашу коллекцию выбранных файлов
+            SelectedFiles.Add(validFile);   
 
         // Если нет недопустимых файлов, прекратить выполнение функции
         if (invalidFiles.Count == 0) return;
@@ -136,6 +136,7 @@ public partial class Main
 
     private void HomeButton_Click(object sender, RoutedEventArgs e)
     {
+        DisableEditing();
         ShowSingleGrid(RequestsGrid);
     }
 
@@ -192,10 +193,8 @@ public partial class Main
 
         // Добавление заявки через API или базу данных
         if (!await AddRequestWithFiles(request))
-        {
             // Если процесс добавления не успешен, отображение сообщения об ошибке
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
-        }
     }
 
 // Асинхронный метод для добавления заявки с файлами
@@ -255,10 +254,7 @@ public partial class Main
     {
         var allGrids = new List<UIElement> { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid };
 
-        foreach (var grid in allGrids)
-        {
-            grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
-        }
+        foreach (var grid in allGrids) grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ToggleEditing(bool isEditing = true)
@@ -424,6 +420,11 @@ public partial class Main
 
     private void EditButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
+        EnableEditing();
+    }
+
+    private void EnableEditing()
+    {
         // Сделать поля редактируемыми
         NameTextBox.IsReadOnly = false;
         NotesTextBox.IsReadOnly = false;
@@ -438,6 +439,7 @@ public partial class Main
         DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
     }
 
+
     private void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         throw new NotImplementedException();
@@ -445,6 +447,7 @@ public partial class Main
 
     private void BackButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
+        DisableEditing();
         // Показываем другой Grid, например RequestsGrid
         ShowSingleGrid(RequestsGrid);
     }
@@ -461,6 +464,11 @@ public partial class Main
 
     private void CancelButtonDetaisGrid_OnClick(object sender, RoutedEventArgs e)
     {
+        DisableEditing();
+    }
+
+    private void DisableEditing()
+    {
         // Вернуть поля в неизменяемое состояние
         NameTextBox.IsReadOnly = true;
         NotesTextBox.IsReadOnly = true;
@@ -475,58 +483,40 @@ public partial class Main
         DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
     }
 
+
     private async void AddFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
+        // Создание и настройка диалога выбора файлов
         var openFileDialog = new OpenFileDialog
         {
-            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            // Установка фильтра для отображения определённых типов файлов в диалоге
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            // Разрешение выбора нескольких файлов
             Multiselect = true
         };
 
+        // Отображение диалога выбора файлов и проверка на успешное закрытие с выбранными файлами
         if (openFileDialog.ShowDialog() != true) return;
 
+        // Создание списка допустимых расширений файлов
         var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
 
-        var validFiles = openFileDialog.FileNames
-            .Where(f => validExtensions.Contains(Path.GetExtension(f).ToLowerInvariant())).ToList();
-        var invalidFiles = openFileDialog.FileNames.Except(validFiles).ToList();
+        // Разделение выбранных файлов на допустимые и недопустимые по расширению
+        var (validFiles, invalidFiles) = openFileDialog.FileNames
+            .Partition(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()));
 
-        var newRequestFiles = new List<RequestFile>();
+        // Добавление допустимых файлов в коллекцию выбранных файлов
+        foreach (var validFile in validFiles)
+            SelectedFiles
+                .Add(validFile); // Замените эту строку соответствующим методом для добавления в вашу коллекцию выбранных файлов
 
-        foreach (var filePath in validFiles)
-        {
-            try
-            {
-                var fileData = await File.ReadAllBytesAsync(filePath);
-                var newFile = new RequestFile
-                {
-                    FileName = Path.GetFileName(filePath),
-                    FileData = fileData
-                };
-                newRequestFiles.Add(newFile);
-            }
-            catch (Exception ex)
-            {
-                // Ошибка чтения файла, возможно стоит добавить логирование или уведомление пользователя
-                Console.WriteLine($"Error reading file {filePath}: {ex.Message}");
-            }
-        }
+        // Если нет недопустимых файлов, прекратить выполнение функции
+        if (invalidFiles.Count == 0) return;
 
-        // Предполагаем, что у вас есть доступ к requestId текущей заявки
-        int requestId = GetCurrentRequestId();
-        await RequestRepository.AddRequestFilesAsync(requestId, newRequestFiles);
-
-        if (invalidFiles.Any())
-        {
-            var message =
-                $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
-            await ShowErrorMessageAsync("Недопустимые файлы", message);
-        }
-    }
-
-    private int GetCurrentRequestId()
-    {
-        // Здесь должна быть логика для получения текущего ID заявки
-        return 123; // Пример ID
+        // Создание сообщения об ошибках для недопустимых файлов
+        var message =
+            $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
+        // Отображение сообщения об ошибке
+        await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 }

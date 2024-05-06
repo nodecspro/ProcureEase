@@ -177,3 +177,5 @@ D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\P
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\ProcureEase.genruntimeconfig.cache
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\ref\ProcureEase.dll
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\bin\Debug\net8.0-windows\Wpf.Ui.dll
+D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\ProcureEase_MarkupCompile.lref
