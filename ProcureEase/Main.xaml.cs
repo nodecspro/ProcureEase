@@ -3,7 +3,6 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Drawing.Printing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -26,7 +25,6 @@ public partial class Main
     private User? _currentUser;
     private string? _originalName;
     private string? _originalNotes;
-    private string? _originalStatus;
 
     public Main(string login)
     {
@@ -753,7 +751,7 @@ public partial class Main
             NameTextBox.BorderThickness = new Thickness(0);
             NotesTextBox.IsReadOnly = false;
             NotesTextBox.BorderThickness = new Thickness(0);
-            
+
             // Показать кнопки "Изменить" и "Удалить заявку"
             EditButtonDetailsGrid.Visibility = Visibility.Visible;
             DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
@@ -801,11 +799,13 @@ public partial class Main
 
     private void AcceptRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var button = (Button)sender;
+        var requestId = int.Parse(button.Tag.ToString());
     }
 
     private void RejectRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var button = (Button)sender;
+        var requestId = int.Parse(button.Tag.ToString());
     }
 }

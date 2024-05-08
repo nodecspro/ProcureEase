@@ -472,11 +472,14 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                             Margin="10">
-                    <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Content="Взять заявку" Background="Green"
+                    <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Tag="{Binding RequestId}"
+                            Content="Взять заявку" Background="Green"
                             Margin="5,0" Visibility="Collapsed" />
-                    <Button x:Name="AcceptRequestManagerButtonDetailsGrid" Content="Одобрить заявку" Background="Green"
+                    <Button x:Name="AcceptRequestManagerButtonDetailsGrid" Tag="{Binding RequestId}"
+                            Content="Одобрить заявку" Background="Green"
                             Margin="5,0" Visibility="Collapsed" Click="AcceptRequestManagerButtonDetailsGrid_OnClick" />
-                    <Button x:Name="RejectRequestManagerButtonDetailsGrid" Content="Отклонить заявку" Background="Red"
+                    <Button x:Name="RejectRequestManagerButtonDetailsGrid" Tag="{Binding RequestId}"
+                            Content="Отклонить заявку" Background="Red"
                             Margin="5,0" Visibility="Collapsed" Click="RejectRequestManagerButtonDetailsGrid_OnClick" />
                 </StackPanel>
             </Grid>
