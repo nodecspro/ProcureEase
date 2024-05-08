@@ -23,6 +23,7 @@ public static class UserRepository
             {
                 UserId = reader.GetInt32("user_id"),
                 Username = reader.GetString("username"),
+                RoleId = reader.GetInt32("role_id"),
                 Email = reader.GetString("email"),
                 FirstName = reader.GetString("first_name"),
                 LastName = reader.GetString("last_name"),

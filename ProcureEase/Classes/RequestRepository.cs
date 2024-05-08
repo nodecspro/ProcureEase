@@ -15,23 +15,68 @@ public static class RequestRepository
         return new MySqlConnection(AppSettings.ConnectionString);
     }
 
-    public static async Task<IEnumerable<Request>> GetUserRequestsAsync(int userId)
+    public static async Task<IEnumerable<Request>> GetUserRequestsAsync(User user)
     {
         var requests = new List<Request>();
         await using var connection = GetConnection();
         await connection.OpenAsync();
 
-        const string query = """
-                                         SELECT r.request_id, r.request_name, rt.name as request_type,
-                                                rs.name as request_status, r.notes
-                                         FROM requests r
-                                         JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                                         JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                                         WHERE r.user_id = @userId
-                             """;
+        string query;
+
+        // Проверяем RoleId пользователя
+        switch (user.RoleId)
+        {
+            case 1:
+                // Для роли 1 возвращаем все заявки
+                query = @"
+                SELECT r.request_id, r.request_name, rt.name as request_type,
+                       rs.name as request_status, r.notes
+                FROM requests r
+                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+            ";
+                break;
+            case 2:
+                // Для роли 2 возвращаем заявки, где idRequestStatus = 2
+                query = @"
+                SELECT r.request_id, r.request_name, rt.name as request_type,
+                       rs.name as request_status, r.notes
+                FROM requests r
+                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                WHERE rs.idRequestStatus = 2
+            ";
+                break;
+            case 3:
+                query = @"
+                SELECT r.request_id, r.request_name, rt.name as request_type,
+                       rs.name as request_status, r.notes
+                FROM requests r
+                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                WHERE r.user_id = @userId
+            ";
+                break;
+            case 4:
+                // Для ролей 3 и 4 возвращаем заявки конкретного пользователя
+                query = @"
+                SELECT r.request_id, r.request_name, rt.name as request_type,
+                       rs.name as request_status, r.notes
+                FROM requests r
+                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                WHERE r.user_id = @userId and rs.idRequestStatus = 2
+            ";
+                break;
+            default:
+                // Для неопределенных ролей возвращаем пустой список
+                return requests;
+        }
 
         await using var command = new MySqlCommand(query, connection);
-        command.Parameters.AddWithValue("@userId", userId);
+
+        // Если необходимо, добавляем параметры к запросу
+        if (user.RoleId == 3 || user.RoleId == 4) command.Parameters.AddWithValue("@userId", user.UserId);
 
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())

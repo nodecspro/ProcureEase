@@ -44,7 +44,7 @@
             <!--  Register Hyperlink  -->
             <TextBlock FontSize="10">
                 <Run Text="Нет аккаунта? " />
-                <Hyperlink Click="RegisterHyperlink_Click" Foreground="#5CA7E5">
+                <Hyperlink Click="RegisterHyperlink_Click" Foreground="CornflowerBlue">
                     <TextBlock Text="Зарегистрироваться" TextDecorations="Underline" />
                 </Hyperlink>
             </TextBlock>

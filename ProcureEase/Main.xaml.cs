@@ -3,6 +3,7 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing.Printing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -25,6 +26,7 @@ public partial class Main
     private User? _currentUser;
     private string? _originalName;
     private string? _originalNotes;
+    private string? _originalStatus;
 
     public Main(string login)
     {
@@ -32,14 +34,50 @@ public partial class Main
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
         UsernameTextBlock.Text = login;
-        SortDataGribById();
         LoadUserData();
         LoadUserRequests();
+        SortDataGribById();
         DataContext = this;
     }
 
     public ObservableCollection<string> SelectedFiles { get; } = new();
     public ObservableCollection<string> SelectedFilesDetailsGrid { get; } = new();
+
+    private void ConfigureUIBasedOnUserRole(User user)
+    {
+        // Проверяем роль пользователя и настраиваем интерфейс
+        switch (user.RoleId)
+        {
+            case 1:
+                // Администратор
+
+                break;
+            case 2:
+                // Менеджер
+                YourPurchaseRequestsTextBlock.Text = "Заявки на закупку";
+                CreateRequestButton.Visibility = Visibility.Hidden;
+                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
+                EditButtonDetailsGrid.Visibility = Visibility.Hidden;
+                AddFileButtonDetailsGrid.Visibility = Visibility.Hidden;
+                AcceptRequestManagerButtonDetailsGrid.Visibility = Visibility.Visible;
+                RejectRequestManagerButtonDetailsGrid.Visibility = Visibility.Visible;
+                UserRequestsDataGrid.Height = 380;
+                break;
+            case 3:
+                // Заказчик пользователь
+
+                break;
+            case 4:
+                // Поставщик пользователь
+                YourPurchaseRequestsTextBlock.Text = "Доступные заявки на закупку";
+                CreateRequestButton.Visibility = Visibility.Hidden;
+                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
+                EditButtonDetailsGrid.Visibility = Visibility.Hidden;
+                AcceptRequestSuppliersButtonDetailsGrid.Visibility = Visibility.Visible;
+                UserRequestsDataGrid.Height = 380;
+                break;
+        }
+    }
 
     private void SortDataGribById()
     {
@@ -52,6 +90,7 @@ public partial class Main
     private void LoadUserData()
     {
         _currentUser = UserRepository.GetUserByUsername(UsernameTextBlock.Text);
+        ConfigureUIBasedOnUserRole(_currentUser);
         DataContext = _currentUser;
         UserDataGrid.DataContext = _currentUser;
     }
@@ -59,7 +98,10 @@ public partial class Main
     private async void LoadUserRequests()
     {
         if (_currentUser == null) return;
-        var requests = await RequestRepository.GetUserRequestsAsync(_currentUser.UserId);
+
+        var requests = await RequestRepository.GetUserRequestsAsync(_currentUser);
+
+        // Сортируем и обновляем данные в DataGrid
         UserRequestsDataGrid.ItemsSource = requests.OrderBy(r => r.RequestId).ToList();
         UserRequestsDataGrid.Items.Refresh();
     }
@@ -100,10 +142,10 @@ public partial class Main
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
         // Создание и настройка диалога выбора файлов
-        var openFileDialog = new Microsoft.Win32.OpenFileDialog
+        var openFileDialog = new OpenFileDialog
         {
             // Установка фильтра для отображения определённых типов файлов в диалоге
-            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf",
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
             // Разрешение выбора нескольких файлов
             Multiselect = true
         };
@@ -123,7 +165,28 @@ public partial class Main
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
             if (validExtensions.Contains(extension))
             {
-                validFiles.Add(filePath);
+                if (SelectedFiles.Contains(filePath))
+                {
+                    // Если файл уже существует, отобразить предупреждение
+                    var result = MessageBox.Show(
+                        $"Файл \"{Path.GetFileName(filePath)}\" уже существует в списке.\n\n" +
+                        "Хотите перезаписать его?",
+                        "Дубликат файла",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        // Перезаписать файл, удалив предыдущий экземпляр
+                        SelectedFiles.Remove(filePath);
+                        validFiles.Add(filePath);
+                    }
+                    // Если выбрано "No", не добавлять файл
+                }
+                else
+                {
+                    validFiles.Add(filePath);
+                }
             }
             else
             {
@@ -145,6 +208,7 @@ public partial class Main
         // Отображение сообщения об ошибке
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
+
 
     private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
     {
@@ -314,7 +378,7 @@ public partial class Main
             if (textBox.Tag as string != "NoEdit")
             {
                 textBox.IsReadOnly = !isEditing;
-                textBox.BorderThickness = isEditing ? new Thickness(1) : new Thickness(0);
+                textBox.BorderThickness = isEditing ? new Thickness(0, 0, 0, 1) : new Thickness(0);
                 textBox.BorderBrush = isEditing
                     ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
                     : Brushes.Transparent;
@@ -489,10 +553,9 @@ public partial class Main
         AddFileButtonDetailsGrid.Visibility = Visibility.Visible;
 
         // Скрыть кнопки "Изменить" и "Удалить заявку"
-        EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        EditButtonDetailsGrid.Visibility = Visibility.Hidden;
+        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
     }
-
 
     private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
@@ -539,8 +602,22 @@ public partial class Main
 
     private async void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
+        // Проверяем, что id текущего пользователя равен 3
+        if (_currentUser.UserId != 3)
+        {
+            // Показываем сообщение об ошибке
+            await ShowErrorMessageAsync("Ошибка", "Вы не являетесь автором этой заявки.");
+            return; // Прекращаем выполнение метода
+        }
+
         var button = sender as Button;
-        var fileName = button.Tag.ToString();
+        var fileName = button?.Tag?.ToString();
+
+        if (fileName == null)
+        {
+            await ShowErrorMessageAsync("Ошибка", "Невозможно определить имя файла для удаления.");
+            return;
+        }
 
         DependencyObject parent = button;
         Request request = null;
@@ -549,7 +626,8 @@ public partial class Main
         while (parent != null && request == null)
         {
             parent = VisualTreeHelper.GetParent(parent) ?? LogicalTreeHelper.GetParent(parent);
-            if (parent is FrameworkElement frameworkElement) request = frameworkElement.DataContext as Request;
+            if (parent is FrameworkElement frameworkElement)
+                request = frameworkElement.DataContext as Request;
         }
 
         if (request != null)
@@ -663,20 +741,29 @@ public partial class Main
         NotesTextBox.Text = _originalNotes;
         SelectedFilesDetailsGrid.Clear();
 
-        // Вернуть поля в неизменяемое состояние
-        NameTextBox.IsReadOnly = true;
-        NameTextBox.BorderThickness = new Thickness(0);
-        NotesTextBox.IsReadOnly = false;
-        NotesTextBox.BorderThickness = new Thickness(0);
-
         // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
-        SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        CancelButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        SaveButtonDetailsGrid.Visibility = Visibility.Hidden;
+        CancelButtonDetailsGrid.Visibility = Visibility.Hidden;
+        AddFileButtonDetailsGrid.Visibility = Visibility.Hidden;
 
-        // Показать кнопки "Изменить" и "Удалить заявку"
-        EditButtonDetailsGrid.Visibility = Visibility.Visible;
-        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
+        if (_currentUser.RoleId == 3)
+        {
+            // Вернуть поля в неизменяемое состояние
+            NameTextBox.IsReadOnly = true;
+            NameTextBox.BorderThickness = new Thickness(0);
+            NotesTextBox.IsReadOnly = false;
+            NotesTextBox.BorderThickness = new Thickness(0);
+            
+            // Показать кнопки "Изменить" и "Удалить заявку"
+            EditButtonDetailsGrid.Visibility = Visibility.Visible;
+            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            // Показать кнопки "Изменить" и "Удалить заявку"
+            EditButtonDetailsGrid.Visibility = Visibility.Hidden;
+            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
+        }
     }
 
     private async void AddFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -710,5 +797,15 @@ public partial class Main
             $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
         // Отображение сообщения об ошибке
         await ShowErrorMessageAsync("Недопустимые файлы", message);
+    }
+
+    private void AcceptRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void RejectRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }

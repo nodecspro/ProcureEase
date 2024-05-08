@@ -37,13 +37,6 @@
                 BorderThickness="0,0,0,1"
                 Background="Transparent"
                 Content="На главную" />
-            <Button
-                Margin="10,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0,0,0,1"
-                Content="Настройки" />
             <TextBlock
                 x:Name="UsernameTextBlock"
                 Margin="4,4,8,4"
@@ -72,11 +65,13 @@
             <!--  Requests Grid  -->
             <Grid x:Name="RequestsGrid">
                 <StackPanel
+                    x:Name="RequestsGridStackPanel"
                     Width="Auto"
                     Height="Auto"
                     VerticalAlignment="Top">
                     <!-- Заголовок -->
                     <TextBlock
+                        x:Name="YourPurchaseRequestsTextBlock"
                         Margin="0,0,0,20"
                         HorizontalAlignment="Center"
                         FontSize="20"
@@ -150,9 +145,10 @@
                                                     <ContentControl d:DataContext="{d:DesignInstance }">
                                                         <TextBlock Text="{Binding FileName}"
                                                                    TextWrapping="Wrap"
-                                                                   Foreground="LightBlue"
+                                                                   Foreground="CornflowerBlue"
                                                                    TextDecorations="Underline"
                                                                    Cursor="Hand"
+                                                                   Margin="0,0,0,4"
                                                                    MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />
                                                     </ContentControl>
                                                 </DataTemplate>
@@ -166,6 +162,7 @@
 
                     <!-- Кнопка "Создать заявку" -->
                     <Button
+                        x:Name="CreateRequestButton"
                         Margin="0,10"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Bottom"
@@ -424,7 +421,8 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
                                     <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center" />
-                                    <Button Content="Удалить" Tag="{Binding FileName}" FontSize="8" Margin="0,0,0,0"
+                                    <Button Visibility="Visible" Content="Удалить" Tag="{Binding FileName}"
+                                            FontSize="8" Margin="0,0,0,0"
                                             HorizontalAlignment="Right" Height="20" Width="60" Background="Red"
                                             Click="DeleteFileButtonDetailsGrid_OnClick"
                                             CommandParameter="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
@@ -443,7 +441,8 @@
                                     <TextBlock
                                         Text="{Binding Path=., Converter={StaticResource PathToFilenameConverter}}"
                                         Margin="5,0,5,0" VerticalAlignment="Center" />
-                                    <Button Content="Удалить" FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
+                                    <Button Content="Удалить"
+                                            FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
                                             Height="20" Width="60" Background="Red"
                                             Click="DeleteNewFileButtonDetailsGrid_OnClick" />
                                 </StackPanel>
@@ -469,6 +468,16 @@
                     <Button x:Name="CancelButtonDetailsGrid" Content="Отмена" Background="Red"
                             Click="CancelButtonDetailsGrid_OnClick"
                             Margin="5,0" Visibility="Collapsed" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                            Margin="10">
+                    <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Content="Взять заявку" Background="Green"
+                            Margin="5,0" Visibility="Collapsed" />
+                    <Button x:Name="AcceptRequestManagerButtonDetailsGrid" Content="Одобрить заявку" Background="Green"
+                            Margin="5,0" Visibility="Collapsed" Click="AcceptRequestManagerButtonDetailsGrid_OnClick" />
+                    <Button x:Name="RejectRequestManagerButtonDetailsGrid" Content="Отклонить заявку" Background="Red"
+                            Margin="5,0" Visibility="Collapsed" Click="RejectRequestManagerButtonDetailsGrid_OnClick" />
                 </StackPanel>
             </Grid>
 
