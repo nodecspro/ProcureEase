@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -99,10 +100,10 @@ public partial class Main
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
         // Создание и настройка диалога выбора файлов
-        var openFileDialog = new OpenFileDialog
+        var openFileDialog = new Microsoft.Win32.OpenFileDialog
         {
             // Установка фильтра для отображения определённых типов файлов в диалоге
-            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf",
             // Разрешение выбора нескольких файлов
             Multiselect = true
         };
@@ -114,8 +115,21 @@ public partial class Main
         var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
 
         // Разделение выбранных файлов на допустимые и недопустимые по расширению
-        var (validFiles, invalidFiles) = openFileDialog.FileNames
-            .Partition(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()));
+        var validFiles = new List<string>();
+        var invalidFiles = new List<string>();
+
+        foreach (var filePath in openFileDialog.FileNames)
+        {
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            if (validExtensions.Contains(extension))
+            {
+                validFiles.Add(filePath);
+            }
+            else
+            {
+                invalidFiles.Add(filePath);
+            }
+        }
 
         // Добавление допустимых файлов в коллекцию выбранных файлов
         foreach (var validFile in validFiles)
@@ -127,6 +141,7 @@ public partial class Main
         // Создание сообщения об ошибках для недопустимых файлов
         var message =
             $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
+
         // Отображение сообщения об ошибке
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
@@ -228,25 +243,41 @@ public partial class Main
 
 // Асинхронный метод для обработки прикреплённых файлов
     private static async Task<ObservableCollection<RequestFile>> ProcessFileAttachments(
-        ObservableCollection<string> nameList)
+        ObservableCollection<string> nameList, int maxDegreeOfParallelism = 4)
     {
         // Проверка на наличие выбранных файлов
         if (nameList.Count == 0)
             return new ObservableCollection<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
 
-        // Создание списка задач на асинхронное чтение данных из файлов
-        var tasks = nameList.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
-        // Ожидание завершения всех задач и сбор результатов в массив байтов
-        var fileBytes = await Task.WhenAll(tasks);
+        var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
+        var resultBag = new ConcurrentBag<RequestFile>();
 
-        // Преобразование результатов чтения файлов в ObservableCollection объектов RequestFile
-        return new ObservableCollection<RequestFile>(
-            nameList.Select((filePath, index) => new RequestFile
+        var tasks = nameList.Select(async filePath =>
+        {
+            await semaphore.WaitAsync();
+            try
             {
-                FileName = Path.GetFileName(filePath), // Получение имени файла
-                FileData = fileBytes[index] // Получение данных файла
-            })
-        );
+                var fileData = await File.ReadAllBytesAsync(filePath);
+                resultBag.Add(new RequestFile
+                {
+                    FileName = Path.GetFileName(filePath),
+                    FileData = fileData
+                });
+            }
+            catch (Exception ex)
+            {
+                // Здесь можно логировать ошибку или предпринять другие действия
+                Console.WriteLine($"Failed to read file {filePath}: {ex.Message}");
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks);
+
+        return new ObservableCollection<RequestFile>(resultBag.OrderBy(rf => nameList.IndexOf(rf.FileName)));
     }
 
     private static Task<(bool, string)> ValidateInput(string requestName, string? requestType, string requestNotes)
@@ -348,16 +379,21 @@ public partial class Main
         }
     }
 
-    private T FindParent<T>(DependencyObject child) where T : DependencyObject
+    private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
     {
-        var parentObject = VisualTreeHelper.GetParent(child);
+        var current = child;
 
-        if (parentObject == null) return null;
+        while (current != null)
+        {
+            var parentObject = VisualTreeHelper.GetParent(current);
 
-        var parent = parentObject as T;
-        if (parent != null)
-            return parent;
-        return FindParent<T>(parentObject);
+            if (parentObject is T parent)
+                return parent;
+
+            current = parentObject;
+        }
+
+        return null;
     }
 
     private async void SaveButton_OnClick(object sender, RoutedEventArgs e)
@@ -426,6 +462,7 @@ public partial class Main
             RequestsGrid.Visibility = Visibility.Collapsed;
             DetailsGrid.Visibility = Visibility.Visible;
             DetailsGrid.DataContext = selectedRequest;
+            RefreshFilesListUI();
         }
     }
 
@@ -500,7 +537,7 @@ public partial class Main
         LoadUserRequests();
     }
 
-    private void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         var button = sender as Button;
         var fileName = button.Tag.ToString();
@@ -508,7 +545,7 @@ public partial class Main
         DependencyObject parent = button;
         Request request = null;
 
-        // Поднимаемся вверх по дереву элементов, пока не найдем DataContext типа Request
+        // Поднимаемся по дереву элементов, пока не найдем DataContext типа Request
         while (parent != null && request == null)
         {
             parent = VisualTreeHelper.GetParent(parent) ?? LogicalTreeHelper.GetParent(parent);
@@ -527,21 +564,22 @@ public partial class Main
             }
             else
             {
-                MessageBox.Show("Ошибка при удалении файла из базы данных.", "Ошибка", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                await ShowErrorMessageAsync("Ошибка", "Ошибка при удалении файла из базы данных.");
             }
         }
         else
         {
-            MessageBox.Show("Невозможно определить заявку для удаления файла.", "Ошибка", MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            await ShowErrorMessageAsync("Ошибка", "Невозможно определить заявку для удаления файла.");
         }
     }
 
     private void RefreshFilesListUI()
     {
-        RequestFilesDetailsGrid.ItemsSource = null;
-        RequestFilesDetailsGrid.ItemsSource = ((Request)DetailsGrid.DataContext).RequestFiles;
+        if (DetailsGrid.DataContext is Request currentRequest)
+        {
+            RequestFilesDetailsGrid.ItemsSource = currentRequest.RequestFiles;
+            RequestFilesDetailsGrid.Items.Refresh();
+        }
     }
 
     private void DeleteNewFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -555,9 +593,9 @@ public partial class Main
         var button = (Button)sender;
         var requestId = int.Parse(button.Tag.ToString());
 
-        var requestName = NameTextBox.Text;
+        var requestName = NameTextBox.Text.Trim();
         var requestType = StatusTextBox.Text;
-        var requestNotes = NotesTextBox.Text;
+        var requestNotes = NotesTextBox.Text.Trim();
 
         var validationResult = await ValidateInput(requestName, requestType, requestNotes);
         if (!validationResult.Item1) // Если валидация не пройдена
@@ -573,8 +611,7 @@ public partial class Main
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = _currentUser.UserId, // ID пользователя
-            RequestFiles = await ProcessFileAttachments(SelectedFilesDetailsGrid) // Обработка прикреплённых файлов
+            UserId = _currentUser.UserId // ID пользователя
         };
 
         try
@@ -582,16 +619,35 @@ public partial class Main
             // Обновляем данные заявки
             await RequestRepository.UpdateRequestAsync(updatedRequest);
 
-            // Добавляем новые файлы к заявке
-            await RequestRepository.AddRequestFilesAsync(requestId, updatedRequest.RequestFiles);
+            // Проверяем, есть ли выбранные файлы для добавления
+            if (SelectedFilesDetailsGrid.Count > 0)
+            {
+                // Обработка прикреплённых файлов
+                var attachedFiles = await ProcessFileAttachments(SelectedFilesDetailsGrid);
 
-            MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-            DisableEditing();
+                if (attachedFiles.Any())
+                {
+                    // Добавляем новые файлы к заявке
+                    await RequestRepository.AddRequestFilesAsync(requestId, attachedFiles);
+
+                    // Получаем текущий объект заявки из UI
+                    if (DetailsGrid.DataContext is Request currentRequest)
+                    {
+                        // Добавляем файлы в локальный список файлов заявки
+                        foreach (var file in attachedFiles) currentRequest.RequestFiles.Add(file);
+
+                        DisableEditing();
+                        // Обновляем UI
+                        RefreshFilesListUI();
+                    }
+                }
+            }
+
+            await ShowErrorMessageAsync("Успех", "Изменения успешно сохранены.");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка при сохранении изменений: {ex.Message}", "Ошибка", MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            await ShowErrorMessageAsync("Ошибка", $"Ошибка при сохранении изменений: {ex.Message}");
         }
     }
 

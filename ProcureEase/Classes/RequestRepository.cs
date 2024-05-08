@@ -2,7 +2,6 @@
 
 using System.Collections.ObjectModel;
 using System.Data;
-using System.IO;
 using MySql.Data.MySqlClient;
 
 #endregion
@@ -78,10 +77,11 @@ public static class RequestRepository
         await using var connection = GetConnection();
         await connection.OpenAsync();
 
-        const string query = @"
-            INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
-            VALUES(@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
-            SELECT LAST_INSERT_ID();";
+        const string query = """
+                                         INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
+                                         VALUES (@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
+                                         SELECT LAST_INSERT_ID();
+                             """;
 
         await using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@RequestName", request.RequestName);
@@ -209,11 +209,8 @@ public static class RequestRepository
         await using var connection = GetConnection();
         await connection.OpenAsync();
 
-        const string query = @"
-            UPDATE requests
-            SET request_name = @RequestName,
-                notes = @Notes
-            WHERE request_id = @RequestId";
+        const string query =
+            " UPDATE requests SET request_name = @RequestName, notes = @Notes WHERE request_id = @RequestId ";
 
         await using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@RequestId", request.RequestId);
