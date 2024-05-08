@@ -1,20 +1,40 @@
-﻿using System.Collections.ObjectModel;
+﻿#region
+
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+#endregion
 
 namespace ProcureEase.Classes;
 
-public class Request
+public class Request : INotifyPropertyChanged
 {
-    public int RequestId { get; init; }
+    private ObservableCollection<RequestFile> _requestFiles;
+    public int RequestId { get; set; }
+    public string RequestName { get; set; }
+    public string RequestType { get; set; }
+    public string RequestStatus { get; set; }
+    public string Notes { get; set; }
+    public int UserId { get; set; }
 
-    public string? RequestName { get; init; }
+    public ObservableCollection<RequestFile> RequestFiles
+    {
+        get => _requestFiles;
+        set
+        {
+            if (_requestFiles != value)
+            {
+                _requestFiles = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
-    public string? RequestType { get; init; }
+    public event PropertyChangedEventHandler PropertyChanged;
 
-    public string? RequestStatus { get; set; }
-
-    public string? Notes { get; init; }
-
-    public int UserId { get; init; }
-
-    public ObservableCollection<RequestFile> RequestFiles { get; set; } = [];
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

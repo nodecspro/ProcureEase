@@ -22,6 +22,8 @@ public partial class Main
 {
     private static readonly Regex RequestNameRegex = new(@"^[a-zA-Zа-яА-ЯёЁ0-9\s\-\.,#№()]+$");
     private User? _currentUser;
+    private string? _originalName;
+    private string? _originalNotes;
 
     public Main(string login)
     {
@@ -139,6 +141,7 @@ public partial class Main
     {
         DisableEditing();
         ShowSingleGrid(RequestsGrid);
+        LoadUserRequests();
     }
 
     private async Task ShowErrorMessageAsync(string title, string message)
@@ -189,11 +192,14 @@ public partial class Main
             RequestType = requestType,
             Notes = requestNotes,
             UserId = _currentUser.UserId, // ID пользователя
-            RequestFiles = await ProcessFileAttachments() // Обработка прикреплённых файлов
+            RequestFiles = await ProcessFileAttachments(SelectedFiles) // Обработка прикреплённых файлов
         };
 
         // Добавление заявки через API или базу данных
-        if (!await AddRequestWithFiles(request))
+        if (await AddRequestWithFiles(request))
+            // Если процесс добавления успешен, очистка списка выбранных файлов
+            SelectedFiles.Clear();
+        else
             // Если процесс добавления не успешен, отображение сообщения об ошибке
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
     }
@@ -221,20 +227,21 @@ public partial class Main
     }
 
 // Асинхронный метод для обработки прикреплённых файлов
-    private async Task<ObservableCollection<RequestFile>> ProcessFileAttachments()
+    private static async Task<ObservableCollection<RequestFile>> ProcessFileAttachments(
+        ObservableCollection<string> nameList)
     {
         // Проверка на наличие выбранных файлов
-        if (SelectedFiles.Count == 0)
+        if (nameList.Count == 0)
             return new ObservableCollection<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
 
         // Создание списка задач на асинхронное чтение данных из файлов
-        var tasks = SelectedFiles.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
+        var tasks = nameList.Select(filePath => File.ReadAllBytesAsync(filePath)).ToList();
         // Ожидание завершения всех задач и сбор результатов в массив байтов
         var fileBytes = await Task.WhenAll(tasks);
 
         // Преобразование результатов чтения файлов в ObservableCollection объектов RequestFile
         return new ObservableCollection<RequestFile>(
-            SelectedFiles.Select((filePath, index) => new RequestFile
+            nameList.Select((filePath, index) => new RequestFile
             {
                 FileName = Path.GetFileName(filePath), // Получение имени файла
                 FileData = fileBytes[index] // Получение данных файла
@@ -242,7 +249,7 @@ public partial class Main
         );
     }
 
-    private static Task<(bool, string)> ValidateInput(string requestName, string requestType, string requestNotes)
+    private static Task<(bool, string)> ValidateInput(string requestName, string? requestType, string requestNotes)
     {
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
             return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
@@ -414,11 +421,11 @@ public partial class Main
 
     private void UserRequestsDataGrid_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (UserRequestsDataGrid.SelectedItem != null)
+        if (UserRequestsDataGrid.SelectedItem is Request selectedRequest)
         {
-            RequestsGrid.Visibility = Visibility.Collapsed; // Скрываем основной Grid
-            DetailsGrid.Visibility = Visibility.Visible; // Показываем Grid с деталями
-            DetailsGrid.DataContext = UserRequestsDataGrid.SelectedItem; // Привязка данных выбранной заявки
+            RequestsGrid.Visibility = Visibility.Collapsed;
+            DetailsGrid.Visibility = Visibility.Visible;
+            DetailsGrid.DataContext = selectedRequest;
         }
     }
 
@@ -429,9 +436,15 @@ public partial class Main
 
     private void EnableEditing()
     {
+        // Сохранить исходные данные
+        _originalName = NameTextBox.Text;
+        _originalNotes = NotesTextBox.Text;
+
         // Сделать поля редактируемыми
         NameTextBox.IsReadOnly = false;
+        NameTextBox.BorderThickness = new Thickness(0, 0, 0, 1);
         NotesTextBox.IsReadOnly = false;
+        NotesTextBox.BorderThickness = new Thickness(0, 0, 0, 1);
 
         // Показать новые кнопки и скрыть стандартные
         SaveButtonDetailsGrid.Visibility = Visibility.Visible;
@@ -447,7 +460,7 @@ public partial class Main
     private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
-        var requestId = int.Parse(button.Tag.ToString()); // Убедитесь, что Tag содержит корректный ID
+        var requestId = int.Parse(button.Tag.ToString());
 
         // Определение настроек диалога
         var mySettings = new MetroDialogSettings
@@ -484,20 +497,51 @@ public partial class Main
         DisableEditing();
         // Показываем другой Grid, например RequestsGrid
         ShowSingleGrid(RequestsGrid);
+        LoadUserRequests();
     }
 
     private void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        var button = (Button)sender;
-        var idstring = int.TryParse(new Func<string, string>(text =>
-            Regex.Match(text, "№(\\d+)").Success ? Regex.Match(text, "№(\\d+)").Groups[1].Value : null)(
-            IdRequestDetailsGrid.Text), out var requestId);
-
+        var button = sender as Button;
         var fileName = button.Tag.ToString();
 
-        RequestRepository.DeleteFileFromDatabase(requestId, fileName);
+        DependencyObject parent = button;
+        Request request = null;
 
-        LoadUserRequests(); // Перезагружаем список заявок
+        // Поднимаемся вверх по дереву элементов, пока не найдем DataContext типа Request
+        while (parent != null && request == null)
+        {
+            parent = VisualTreeHelper.GetParent(parent) ?? LogicalTreeHelper.GetParent(parent);
+            if (parent is FrameworkElement frameworkElement) request = frameworkElement.DataContext as Request;
+        }
+
+        if (request != null)
+        {
+            var requestId = request.RequestId;
+            var fileToRemove = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
+
+            if (fileToRemove != null && RequestRepository.DeleteFileFromDatabase(requestId, fileName))
+            {
+                request.RequestFiles.Remove(fileToRemove);
+                RefreshFilesListUI();
+            }
+            else
+            {
+                MessageBox.Show("Ошибка при удалении файла из базы данных.", "Ошибка", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+        else
+        {
+            MessageBox.Show("Невозможно определить заявку для удаления файла.", "Ошибка", MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void RefreshFilesListUI()
+    {
+        RequestFilesDetailsGrid.ItemsSource = null;
+        RequestFilesDetailsGrid.ItemsSource = ((Request)DetailsGrid.DataContext).RequestFiles;
     }
 
     private void DeleteNewFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -506,9 +550,49 @@ public partial class Main
         SelectedFilesDetailsGrid.Remove(file);
     }
 
-    private void SaveButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void SaveButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var button = (Button)sender;
+        var requestId = int.Parse(button.Tag.ToString());
+
+        var requestName = NameTextBox.Text;
+        var requestType = StatusTextBox.Text;
+        var requestNotes = NotesTextBox.Text;
+
+        var validationResult = await ValidateInput(requestName, requestType, requestNotes);
+        if (!validationResult.Item1) // Если валидация не пройдена
+        {
+            // Отображение сообщения об ошибке
+            await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
+            return;
+        }
+
+        var updatedRequest = new Request
+        {
+            RequestId = requestId,
+            RequestName = requestName,
+            RequestType = requestType,
+            Notes = requestNotes,
+            UserId = _currentUser.UserId, // ID пользователя
+            RequestFiles = await ProcessFileAttachments(SelectedFilesDetailsGrid) // Обработка прикреплённых файлов
+        };
+
+        try
+        {
+            // Обновляем данные заявки
+            await RequestRepository.UpdateRequestAsync(updatedRequest);
+
+            // Добавляем новые файлы к заявке
+            await RequestRepository.AddRequestFilesAsync(requestId, updatedRequest.RequestFiles);
+
+            MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            DisableEditing();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка при сохранении изменений: {ex.Message}", "Ошибка", MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void CancelButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -518,9 +602,16 @@ public partial class Main
 
     private void DisableEditing()
     {
+        // Восстановление исходных значений при отмене редактирования полей
+        NameTextBox.Text = _originalName;
+        NotesTextBox.Text = _originalNotes;
+        SelectedFilesDetailsGrid.Clear();
+
         // Вернуть поля в неизменяемое состояние
         NameTextBox.IsReadOnly = true;
-        NotesTextBox.IsReadOnly = true;
+        NameTextBox.BorderThickness = new Thickness(0);
+        NotesTextBox.IsReadOnly = false;
+        NotesTextBox.BorderThickness = new Thickness(0);
 
         // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
         SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;

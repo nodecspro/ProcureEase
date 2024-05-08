@@ -2,7 +2,7 @@
 
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Text;
+using System.IO;
 using MySql.Data.MySqlClient;
 
 #endregion
@@ -172,7 +172,7 @@ public static class RequestRepository
         using (var connection = GetConnection())
         {
             await connection.OpenAsync();
-        
+
             using (var transaction = await connection.BeginTransactionAsync())
             {
                 try
@@ -202,5 +202,24 @@ public static class RequestRepository
                 }
             }
         }
+    }
+
+    public static async Task UpdateRequestAsync(Request request)
+    {
+        await using var connection = GetConnection();
+        await connection.OpenAsync();
+
+        const string query = @"
+            UPDATE requests
+            SET request_name = @RequestName,
+                notes = @Notes
+            WHERE request_id = @RequestId";
+
+        await using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@RequestId", request.RequestId);
+        command.Parameters.AddWithValue("@RequestName", request.RequestName);
+        command.Parameters.AddWithValue("@Notes", request.Notes ?? (object)DBNull.Value);
+
+        await command.ExecuteNonQueryAsync();
     }
 }
