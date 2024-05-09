@@ -264,4 +264,63 @@ public static class RequestRepository
 
         await command.ExecuteNonQueryAsync();
     }
+
+    public static async Task<bool> ChangeRequestStatus(int requestId, int newStatusId)
+    {
+        await using var connection = GetConnection();
+        await connection.OpenAsync();
+        const string query = "UPDATE requests SET request_status_id = @NewStatus WHERE request_id = @RequestId";
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+
+        var paramNewStatus = command.CreateParameter();
+        paramNewStatus.ParameterName = "@NewStatus";
+        paramNewStatus.Value = newStatusId;
+        command.Parameters.Add(paramNewStatus);
+
+        var paramRequestId = command.CreateParameter();
+        paramRequestId.ParameterName = "@RequestId";
+        paramRequestId.Value = requestId;
+        command.Parameters.Add(paramRequestId);
+
+        var affectedRows = await command.ExecuteNonQueryAsync();
+        return affectedRows > 0;
+    }
+    
+    public static async Task<bool> ChangeRequestStatusAndReason(int requestId, int newStatusId, string declineReason)
+    {
+        using (var connection = GetConnection())
+        {
+            await connection.OpenAsync();
+            var query = @"
+                UPDATE requests 
+                SET request_status_id = @NewStatus, 
+                    decline_reason = @DeclineReason
+                WHERE request_id = @RequestId";
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = query;
+
+                var paramNewStatus = command.CreateParameter();
+                paramNewStatus.ParameterName = "@NewStatus";
+                paramNewStatus.Value = newStatusId;
+                command.Parameters.Add(paramNewStatus);
+
+                var paramDeclineReason = command.CreateParameter();
+                paramDeclineReason.ParameterName = "@DeclineReason";
+                paramDeclineReason.Value = declineReason;
+                command.Parameters.Add(paramDeclineReason);
+
+                var paramRequestId = command.CreateParameter();
+                paramRequestId.ParameterName = "@RequestId";
+                paramRequestId.Value = requestId;
+                command.Parameters.Add(paramRequestId);
+
+                int affectedRows = await command.ExecuteNonQueryAsync();
+                return affectedRows > 0;
+            }
+        }
+    }
 }

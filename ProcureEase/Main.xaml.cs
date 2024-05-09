@@ -524,7 +524,7 @@ public partial class Main
             RequestsGrid.Visibility = Visibility.Collapsed;
             DetailsGrid.Visibility = Visibility.Visible;
             DetailsGrid.DataContext = selectedRequest;
-            RefreshFilesListUI();
+            RefreshFilesListUi();
         }
     }
 
@@ -636,7 +636,7 @@ public partial class Main
             if (fileToRemove != null && RequestRepository.DeleteFileFromDatabase(requestId, fileName))
             {
                 request.RequestFiles.Remove(fileToRemove);
-                RefreshFilesListUI();
+                RefreshFilesListUi();
             }
             else
             {
@@ -649,7 +649,7 @@ public partial class Main
         }
     }
 
-    private void RefreshFilesListUI()
+    private void RefreshFilesListUi()
     {
         if (DetailsGrid.DataContext is Request currentRequest)
         {
@@ -714,7 +714,7 @@ public partial class Main
 
                         DisableEditing();
                         // Обновляем UI
-                        RefreshFilesListUI();
+                        RefreshFilesListUi();
                     }
                 }
             }
@@ -797,15 +797,96 @@ public partial class Main
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
-    private void AcceptRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void AcceptRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        var button = (Button)sender;
-        var requestId = int.Parse(button.Tag.ToString());
+        const int acceptedStatusId = 4;
+
+        if (sender is not Button button)
+        {
+            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события.");
+            return;
+        }
+
+        if (!int.TryParse(button.Tag.ToString(), out var requestId))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Некорректный идентификатор заявки.");
+            return;
+        }
+
+        try
+        {
+            var isUpdated = await RequestRepository.ChangeRequestStatus(requestId, acceptedStatusId);
+            if (isUpdated)
+            {
+                await ShowErrorMessageAsync("Успех", "Заявка принята!");
+                ShowSingleGrid(RequestsGrid);
+                LoadUserRequests();
+            }
+            else
+            {
+                await ShowErrorMessageAsync("Ошибка", "Заявка не найдена!");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync("Исключение", $"Произошла ошибка: {ex.Message}");
+        }
     }
 
-    private void RejectRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void RejectRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        var button = (Button)sender;
-        var requestId = int.Parse(button.Tag.ToString());
+        const int rejectedStatusId = 3;
+        const string dialogTitle = "Причина отклонения";
+        const string dialogMessage = "Введите причину отклонения заявки:";
+
+        if (!(sender is Button button))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события.");
+            return;
+        }
+
+        if (!int.TryParse(button.Tag.ToString(), out var requestId))
+        {
+            await ShowErrorMessageAsync("Ошибка", "Некорректный идентификатор заявки.");
+            return;
+        }
+
+        string input = null;
+        do
+        {
+            input = await this.ShowInputAsync(dialogTitle, dialogMessage, new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Отклонить заявку",
+                NegativeButtonText = "Отмена",
+                AnimateShow = false,
+                AnimateHide = false,
+                DefaultButtonFocus = MessageDialogResult.Affirmative
+            });
+
+            // Если пользователь нажал "Отмена" или закрыл окно
+            if (input == null)
+            {
+                return; // Просто выходим из метода, ничего не делаем
+            }
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                await ShowErrorMessageAsync("Ошибка", "Поле причины отклонения не может быть пустым.");
+            }
+        } while (string.IsNullOrWhiteSpace(input));
+
+        try
+        {
+            // Обновляем статус и причину отклонения заявки в базе данных
+            var isUpdated = await RequestRepository.ChangeRequestStatusAndReason(requestId, rejectedStatusId, input);
+            if (isUpdated)
+                await ShowErrorMessageAsync("Успех", "Заявка успешно отклонена.");
+            else
+                await ShowErrorMessageAsync("Ошибка", "Заявка не найдена.");
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync("Исключение", $"Произошла ошибка: {ex.Message}");
+        }
     }
 }
