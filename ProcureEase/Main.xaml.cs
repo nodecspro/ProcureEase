@@ -62,17 +62,19 @@ public partial class Main
                 UserRequestsDataGrid.Height = 380;
                 break;
             case 3:
-                // Заказчик пользователь
+                // Заказчик
 
                 break;
             case 4:
-                // Поставщик пользователь
+                // Поставщик
                 YourPurchaseRequestsTextBlock.Text = "Доступные заявки на закупку";
                 CreateRequestButton.Visibility = Visibility.Hidden;
                 DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
                 EditButtonDetailsGrid.Visibility = Visibility.Hidden;
                 AcceptRequestSuppliersButtonDetailsGrid.Visibility = Visibility.Visible;
                 UserRequestsDataGrid.Height = 380;
+                StatusFieldRequestGrid.MinWidth = 150;
+                StatusFieldRequestGrid.MaxWidth = 150;
                 break;
         }
     }
@@ -864,15 +866,10 @@ public partial class Main
             });
 
             // Если пользователь нажал "Отмена" или закрыл окно
-            if (input == null)
-            {
-                return; // Просто выходим из метода, ничего не делаем
-            }
+            if (input == null) return; // Просто выходим из метода, ничего не делаем
 
             if (string.IsNullOrWhiteSpace(input))
-            {
                 await ShowErrorMessageAsync("Ошибка", "Поле причины отклонения не может быть пустым.");
-            }
         } while (string.IsNullOrWhiteSpace(input));
 
         try

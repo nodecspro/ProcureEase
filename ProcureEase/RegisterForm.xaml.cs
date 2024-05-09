@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Configuration;
+using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -17,11 +18,9 @@ namespace ProcureEase;
 
 public partial class RegisterForm
 {
-    // Строка подключения к БД вынесена в отдельный файл конфигурации
     private static readonly string ConnectionString =
         ConfigurationManager.ConnectionStrings["ProcureEaseDB"].ConnectionString;
 
-    // Store compiled Regex as static to improve performance
     private static readonly Regex EmailRegex = new(
         @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled,
@@ -34,8 +33,6 @@ public partial class RegisterForm
     );
 
     private readonly Brush _defaultBorderBrush = Brushes.Gray;
-
-    // Dialog settings can be a field if they are reused across methods.
     private readonly MetroDialogSettings _dialogSettings = new() { AnimateShow = false, AnimateHide = false };
     private readonly List<Control> _inputControls;
 
@@ -49,13 +46,14 @@ public partial class RegisterForm
             txtFirstName,
             txtLastName,
             txtPhoneNumber,
-            txtEmail
+            txtEmail,
+            txtInviteCode
         };
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
 
-        // Подписка на событие закрытия главного окна
-        if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closed += OnMainWindowClosed;
+        if (Application.Current.MainWindow != null)
+            Application.Current.MainWindow.Closed += OnMainWindowClosed;
     }
 
     private async void BtnRegister_Click(object sender, RoutedEventArgs e)
@@ -66,23 +64,22 @@ public partial class RegisterForm
     private async Task RegisterUserAsync()
     {
         ResetBorders();
-
         var errorMessage = ValidateFields();
+
         if (!string.IsNullOrEmpty(errorMessage))
         {
-            await ShowRegistrationError(errorMessage);
+            await ShowMessageAsync("Ошибка регистрации", errorMessage);
             return;
         }
 
-        var registrationSuccess = await TryRegisterUser();
-        if (registrationSuccess)
+        if (await TryRegisterUser())
         {
-            ClearFields();
             OpenMainForm(txtUsername.Text);
+            ClearFields();
         }
         else
         {
-            await ShowRegistrationError("Регистрация не удалась. Пожалуйста, попробуйте позже.");
+            await ShowMessageAsync("Ошибка регистрации", "Регистрация не удалась. Пожалуйста, попробуйте позже.");
         }
     }
 
@@ -90,44 +87,101 @@ public partial class RegisterForm
     {
         try
         {
-            var rowsAffected = await RegisterUser();
-            return rowsAffected > 0;
+            return await RegisterUser() > 0;
         }
         catch
         {
-            // Log the exception details to a file or other logging infrastructure
-            await ShowRegistrationError("Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            await ShowMessageAsync("Ошибка регистрации",
+                "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
             return false;
         }
     }
 
     private async Task<int> RegisterUser()
     {
+        var inviteData = await ValidateAndFetchInviteData(txtInviteCode.Text);
+        if (inviteData == null)
+        {
+            MessageBox.Show("Неправильный или истекший код приглашения.");
+            return 0;
+        }
+
         await using var connection = new MySqlConnection(ConnectionString);
-        const string query = """
-                             
-                                     INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email)
-                                     VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email)
-                             """;
-
-        await using var command = new MySqlCommand(query, connection);
-        // Assuming HashPassword is a method that hashes the password properly.
-        command.Parameters.AddWithValue("@username", txtUsername.Text);
-        command.Parameters.AddWithValue("@password", HashPassword(txtPassword.Password));
-        command.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
-        command.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
-        command.Parameters.AddWithValue("@patronymic",
-            string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
-        command.Parameters.AddWithValue("@phoneNumber", Regex.Replace(txtPhoneNumber.Text, "[^0-9]", ""));
-        command.Parameters.AddWithValue("@email", txtEmail.Text);
-
         await connection.OpenAsync();
-        return await command.ExecuteNonQueryAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        try
+        {
+            const string userInsertQuery = """
+                                               INSERT INTO users (username, password, first_name, last_name, patronymic, phone_number, email, role_id, organization_id)
+                                               VALUES (@username, @password, @firstName, @lastName, @patronymic, @phoneNumber, @email, @roleId, @organizationId)
+                                           """;
+
+            await using (var userInsertCommand = new MySqlCommand(userInsertQuery, connection))
+            {
+                userInsertCommand.Transaction = transaction;
+                userInsertCommand.Parameters.AddWithValue("@username", txtUsername.Text);
+                userInsertCommand.Parameters.AddWithValue("@password", HashPassword(txtPassword.Password));
+                userInsertCommand.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
+                userInsertCommand.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
+                userInsertCommand.Parameters.AddWithValue("@patronymic",
+                    string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
+                userInsertCommand.Parameters.AddWithValue("@phoneNumber",
+                    Regex.Replace(txtPhoneNumber.Text, "[^0-9]", ""));
+                userInsertCommand.Parameters.AddWithValue("@email", txtEmail.Text);
+                userInsertCommand.Parameters.AddWithValue("@roleId", inviteData.Value.RoleId);
+                userInsertCommand.Parameters.AddWithValue("@organizationId", inviteData.Value.OrganizationId);
+
+                await userInsertCommand.ExecuteNonQueryAsync();
+            }
+
+            const string inviteDeleteQuery = "DELETE FROM invitation_codes WHERE code = @code";
+
+            await using (var inviteDeleteCommand = new MySqlCommand(inviteDeleteQuery, connection))
+            {
+                inviteDeleteCommand.Transaction = transaction;
+                inviteDeleteCommand.Parameters.AddWithValue("@code", txtInviteCode.Text);
+                await inviteDeleteCommand.ExecuteNonQueryAsync();
+            }
+
+            await transaction.CommitAsync();
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            MessageBox.Show($"Ошибка при регистрации: {ex.Message}");
+            return 0;
+        }
     }
 
-    private async Task ShowRegistrationError(string message)
+    private async Task<(int RoleId, int OrganizationId)?> ValidateAndFetchInviteData(string inviteCode)
     {
-        await this.ShowMessageAsync("Ошибка регистрации", message, MessageDialogStyle.Affirmative, _dialogSettings);
+        if (!IsValidInviteCode(inviteCode)) return null;
+
+        await using var connection = new MySqlConnection(ConnectionString);
+        const string inviteQuery =
+            "SELECT role_id, organization_id FROM invitation_codes WHERE code = @code AND (expiration_date IS NULL OR expiration_date > NOW())";
+
+        await using var command = new MySqlCommand(inviteQuery, connection);
+        command.Parameters.AddWithValue("@code", inviteCode);
+
+        await connection.OpenAsync();
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (await reader.ReadAsync())
+        {
+            var roleId = reader.GetInt32("role_id");
+            var organizationId = reader.GetInt32("organization_id");
+            return (roleId, organizationId);
+        }
+
+        return null;
+    }
+
+    private async Task ShowMessageAsync(string title, string message)
+    {
+        await this.ShowMessageAsync(title, message, MessageDialogStyle.Affirmative, _dialogSettings);
     }
 
     private void OpenMainForm(string username)
@@ -140,77 +194,92 @@ public partial class RegisterForm
     private string ValidateFields()
     {
         var errorMessage = new StringBuilder();
-
-        ValidateUsername(errorMessage);
-        ValidatePassword(errorMessage);
+        ValidateField(txtUsername, "Имя пользователя", errorMessage);
+        ValidateField(txtPassword, "Пароль", errorMessage);
         ValidateName(txtFirstName, "Имя", errorMessage);
         ValidateName(txtLastName, "Фамилия", errorMessage);
         ValidatePhoneNumber(errorMessage);
         ValidateEmail(errorMessage);
-
+        ValidateInviteCode(errorMessage);
         return errorMessage.ToString();
     }
 
-    private void ValidateUsername(StringBuilder errorMessage)
+    private void ValidateField(Control control, string fieldName, StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtUsername.Text))
+        if (string.IsNullOrWhiteSpace(control switch
+            {
+                TextBox tb => tb.Text, PasswordBox pb => pb.Password, _ => ""
+            }))
         {
-            errorMessage.AppendLine("Имя пользователя не может быть пустым.");
-            txtUsername.BorderBrush = Brushes.Red;
+            errorMessage.AppendLine($"{fieldName} не может быть пустым.");
+            control.BorderBrush = Brushes.Red;
         }
         else
         {
-            txtUsername.BorderBrush = Brushes.Gray; // Or the default color
-        }
-    }
-
-    private void ValidatePassword(StringBuilder errorMessage)
-    {
-        if (string.IsNullOrWhiteSpace(txtPassword.Password))
-        {
-            errorMessage.AppendLine("Пароль не может быть пустым.");
-            txtPassword.BorderBrush = Brushes.Red;
-        }
-        else
-        {
-            txtPassword.BorderBrush = Brushes.Gray; // Or the default color
+            control.BorderBrush = _defaultBorderBrush;
         }
     }
 
     private static void ValidateName(TextBox textBox, string fieldName, StringBuilder errorMessage)
     {
-        if (!string.IsNullOrWhiteSpace(textBox.Text) && IsValidName(textBox.Text))
+        if (string.IsNullOrWhiteSpace(textBox.Text) || !IsValidName(textBox.Text))
         {
-            textBox.BorderBrush = Brushes.Gray; // Or the default color
-            return;
+            errorMessage.AppendLine($"{fieldName} не может быть пустым и должно содержать только буквы.");
+            textBox.BorderBrush = Brushes.Red;
         }
-
-        errorMessage.AppendLine($"{fieldName} не может быть пустым и должно содержать только буквы.");
-        textBox.BorderBrush = Brushes.Red;
+        else
+        {
+            textBox.BorderBrush = Brushes.Gray;
+        }
     }
 
     private void ValidatePhoneNumber(StringBuilder errorMessage)
     {
-        if (txtPhoneNumber.IsMaskCompleted)
+        if (!txtPhoneNumber.IsMaskCompleted)
         {
-            txtPhoneNumber.BorderBrush = Brushes.Gray; // Or the default color
-            return;
+            errorMessage.AppendLine("Номер телефона не может быть пустым.");
+            txtPhoneNumber.BorderBrush = Brushes.Red;
         }
-
-        errorMessage.AppendLine("Номер телефона не может быть пустым.");
-        txtPhoneNumber.BorderBrush = Brushes.Red;
+        else
+        {
+            txtPhoneNumber.BorderBrush = _defaultBorderBrush;
+        }
     }
 
     private void ValidateEmail(StringBuilder errorMessage)
     {
-        if (IsValidEmail(txtEmail.Text))
+        if (!IsValidEmail(txtEmail.Text))
         {
-            txtEmail.BorderBrush = Brushes.Gray; // Or the default color
-            return;
+            errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
+            txtEmail.BorderBrush = Brushes.Red;
         }
+        else
+        {
+            txtEmail.BorderBrush = _defaultBorderBrush;
+        }
+    }
 
-        errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
-        txtEmail.BorderBrush = Brushes.Red;
+    private void ValidateInviteCode(StringBuilder errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(txtInviteCode.Text))
+        {
+            errorMessage.AppendLine("Поле кода приглашения не может быть пустым.");
+            txtInviteCode.BorderBrush = Brushes.Red;
+        }
+        else if (!IsValidInviteCode(txtInviteCode.Text))
+        {
+            errorMessage.AppendLine("Неправильный код приглашения.");
+            txtInviteCode.BorderBrush = Brushes.Red;
+        }
+        else
+        {
+            txtInviteCode.BorderBrush = _defaultBorderBrush;
+        }
+    }
+
+    private static bool IsValidInviteCode(string code)
+    {
+        return Regex.IsMatch(code, @"^[a-zA-Z0-9]{1,8}$");
     }
 
     private static bool IsValidEmail(string email)
@@ -236,21 +305,18 @@ public partial class RegisterForm
     private void ClearFields()
     {
         foreach (var control in _inputControls.OfType<TextBox>()) control.Clear();
-
-        txtPassword.Clear(); // Assuming txtPassword is a PasswordBox and not included in _inputControls
-        txtPatronymic.Clear(); // Assuming txtPatronymic is a TextBox
     }
 
     private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         var textBox = (TextBox)sender;
-        if (textBox.BorderBrush == Brushes.Red) textBox.BorderBrush = Brushes.Gray;
+        if (textBox.BorderBrush == Brushes.Red) textBox.BorderBrush = _defaultBorderBrush;
     }
 
     private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
         var passwordBox = (PasswordBox)sender;
-        if (passwordBox.BorderBrush == Brushes.Red) passwordBox.BorderBrush = Brushes.Gray;
+        if (passwordBox.BorderBrush == Brushes.Red) passwordBox.BorderBrush = _defaultBorderBrush;
     }
 
     private void Back_Click(object sender, RoutedEventArgs e)

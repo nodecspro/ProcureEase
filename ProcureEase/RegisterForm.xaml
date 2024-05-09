@@ -8,11 +8,10 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Регистрация"
     Width="400"
-    Height="590"
+    Height="640"
     Closed="OnMainWindowClosed"
     Icon="pack://application:,,,/Source/AppIcon.png"
     ResizeMode="NoResize"
-    Style="{DynamicResource MahApps.Metro.Styles.MetroWindow}"
     WindowStartupLocation="CenterScreen"
     WindowTransitionsEnabled="False"
     mc:Ignorable="d">
@@ -96,11 +95,20 @@
                 BorderThickness="1"
                 Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
                 TextChanged="TextBox_TextChanged" />
+
+            <TextBlock Margin="0,6,0,2" Text="Код приглашения:" />
+            <TextBox
+                x:Name="txtInviteCode"
+                Margin="0,4"
+                Padding="4"
+                BorderThickness="1"
+                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                TextChanged="TextBox_TextChanged" />
         </StackPanel>
         <Button
             Grid.Row="1"
             Grid.RowSpan="2"
-            Margin="0,427,0,0"
+            Margin="0,476,0,0"
             Padding="4"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
@@ -113,7 +121,7 @@
             HorizontalAlignment="Center"
             Cursor="Hand"
             FontWeight="Bold"
-            Foreground="#5CA7E5"
+            Foreground="CornflowerBlue"
             MouseLeftButtonDown="Back_Click"
             Text="Назад"
             TextDecorations="Underline" />

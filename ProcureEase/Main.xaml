@@ -114,7 +114,8 @@
                             </DataGridTextColumn>
 
                             <!-- Статус заявки -->
-                            <DataGridTextColumn Binding="{Binding RequestStatus}" Header="Статус" MinWidth="100"
+                            <DataGridTextColumn x:Name="StatusFieldRequestGrid" Binding="{Binding RequestStatus}"
+                                                Header="Статус" MinWidth="100"
                                                 MaxWidth="100">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>

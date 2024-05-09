@@ -65,7 +65,7 @@ public static class RequestRepository
                 FROM requests r
                 JOIN request_type rt ON r.request_type_id = rt.idRequestType
                 JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                WHERE r.user_id = @userId and rs.idRequestStatus = 2
+                WHERE r.user_id = @userId and rs.idRequestStatus = 4
             ";
                 break;
             default:
@@ -287,7 +287,7 @@ public static class RequestRepository
         var affectedRows = await command.ExecuteNonQueryAsync();
         return affectedRows > 0;
     }
-    
+
     public static async Task<bool> ChangeRequestStatusAndReason(int requestId, int newStatusId, string declineReason)
     {
         using (var connection = GetConnection())
@@ -318,7 +318,7 @@ public static class RequestRepository
                 paramRequestId.Value = requestId;
                 command.Parameters.Add(paramRequestId);
 
-                int affectedRows = await command.ExecuteNonQueryAsync();
+                var affectedRows = await command.ExecuteNonQueryAsync();
                 return affectedRows > 0;
             }
         }
