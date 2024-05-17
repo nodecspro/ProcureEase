@@ -9,5 +9,5 @@ public class Supplier
     public string Supervisor { get; set; }
     public string Email { get; set; }
     public string ContactNumber { get; set; }
-    public int? RequestTypeId { get; set; }
+    public string RequestTypeName { get; set; }
 }

@@ -368,7 +368,7 @@ public partial class Main
     private void ShowSingleGrid(UIElement gridToShow)
     {
         var allGrids = new List<UIElement>
-            { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid, OrganizationGrid };
+            { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid, OrganizationGrid, InvitationCodesGrid };
 
         foreach (var grid in allGrids) grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -933,6 +933,23 @@ public partial class Main
     }
 
     private void InvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        ShowSingleGrid(InvitationCodesGrid);
+        DataContext = new InvitationCodesViewModel();
+
+        // Получение ViewModel из DataContext
+        var viewModel = DataContext as InvitationCodesViewModel;
+        if (viewModel != null)
+            // Вы можете вызвать метод или изменить свойство в вашем ViewModel
+            viewModel.LoadData(); // Пример вызова метода в ViewModel
+    }
+
+    private void AddOrganizationButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void AddInvitationCode_OnClick(object sender, RoutedEventArgs e)
     {
         throw new NotImplementedException();
     }
