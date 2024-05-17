@@ -523,7 +523,7 @@ public partial class Main
     {
         if (UserRequestsDataGrid.SelectedItem is Request selectedRequest)
         {
-            RequestsGrid.Visibility = Visibility.Collapsed;
+            RequestsGrid.Visibility = Visibility.Hidden;
             DetailsGrid.Visibility = Visibility.Visible;
             DetailsGrid.DataContext = selectedRequest;
             RefreshFilesListUi();
@@ -602,8 +602,8 @@ public partial class Main
 
     private async void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        // Проверяем, что id текущего пользователя равен 3
-        if (_currentUser.UserId != 3)
+        // Проверяем, что Roleid текущего пользователя равен 3
+        if (_currentUser.RoleId != 3)
         {
             // Показываем сообщение об ошибке
             await ShowErrorMessageAsync("Ошибка", "Вы не являетесь автором этой заявки.");
@@ -616,6 +616,25 @@ public partial class Main
         if (fileName == null)
         {
             await ShowErrorMessageAsync("Ошибка", "Невозможно определить имя файла для удаления.");
+            return;
+        }
+        
+        // Создание и показ диалога для подтверждения
+        var mySettings = new MetroDialogSettings
+        {
+            AffirmativeButtonText = "Да",
+            NegativeButtonText = "Нет",
+            AnimateShow = false,
+            AnimateHide = false
+        };
+
+        var result = await this.ShowMessageAsync("Подтверждение загрузки",
+            $"Вы уверены, что удалить файл {fileName}?",
+            MessageDialogStyle.AffirmativeAndNegative, mySettings);
+
+        // Если пользователь не подтвердил удаление, прерываем выполнение метода
+        if (result != MessageDialogResult.Affirmative)
+        {
             return;
         }
 

@@ -11,9 +11,6 @@ using BCrypt.Net;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using MySql.Data.MySqlClient;
-using System;
-using System.Globalization;
-using System.Text.RegularExpressions;
 
 #endregion
 
