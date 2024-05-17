@@ -53,10 +53,10 @@ public partial class Main
             case 2:
                 // Менеджер
                 YourPurchaseRequestsTextBlock.Text = "Заявки на закупку";
-                CreateRequestButton.Visibility = Visibility.Hidden;
-                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
-                EditButtonDetailsGrid.Visibility = Visibility.Hidden;
-                AddFileButtonDetailsGrid.Visibility = Visibility.Hidden;
+                CreateRequestButton.Visibility = Visibility.Collapsed;
+                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
+                EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
+                AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 AcceptRequestManagerButtonDetailsGrid.Visibility = Visibility.Visible;
                 RejectRequestManagerButtonDetailsGrid.Visibility = Visibility.Visible;
                 UserRequestsDataGrid.Height = 380;
@@ -68,9 +68,9 @@ public partial class Main
             case 4:
                 // Поставщик
                 YourPurchaseRequestsTextBlock.Text = "Доступные заявки на закупку";
-                CreateRequestButton.Visibility = Visibility.Hidden;
-                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
-                EditButtonDetailsGrid.Visibility = Visibility.Hidden;
+                CreateRequestButton.Visibility = Visibility.Collapsed;
+                DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
+                EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 AcceptRequestSuppliersButtonDetailsGrid.Visibility = Visibility.Visible;
                 UserRequestsDataGrid.Height = 380;
                 StatusFieldRequestGrid.MinWidth = 150;
@@ -523,7 +523,7 @@ public partial class Main
     {
         if (UserRequestsDataGrid.SelectedItem is Request selectedRequest)
         {
-            RequestsGrid.Visibility = Visibility.Hidden;
+            RequestsGrid.Visibility = Visibility.Collapsed;
             DetailsGrid.Visibility = Visibility.Visible;
             DetailsGrid.DataContext = selectedRequest;
             RefreshFilesListUi();
@@ -553,8 +553,8 @@ public partial class Main
         AddFileButtonDetailsGrid.Visibility = Visibility.Visible;
 
         // Скрыть кнопки "Изменить" и "Удалить заявку"
-        EditButtonDetailsGrid.Visibility = Visibility.Hidden;
-        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
+        EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
     }
 
     private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -618,7 +618,7 @@ public partial class Main
             await ShowErrorMessageAsync("Ошибка", "Невозможно определить имя файла для удаления.");
             return;
         }
-        
+
         // Создание и показ диалога для подтверждения
         var mySettings = new MetroDialogSettings
         {
@@ -633,10 +633,7 @@ public partial class Main
             MessageDialogStyle.AffirmativeAndNegative, mySettings);
 
         // Если пользователь не подтвердил удаление, прерываем выполнение метода
-        if (result != MessageDialogResult.Affirmative)
-        {
-            return;
-        }
+        if (result != MessageDialogResult.Affirmative) return;
 
         DependencyObject parent = button;
         Request request = null;
@@ -761,9 +758,9 @@ public partial class Main
         SelectedFilesDetailsGrid.Clear();
 
         // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
-        SaveButtonDetailsGrid.Visibility = Visibility.Hidden;
-        CancelButtonDetailsGrid.Visibility = Visibility.Hidden;
-        AddFileButtonDetailsGrid.Visibility = Visibility.Hidden;
+        SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        CancelButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
 
         if (_currentUser.RoleId == 3)
         {
@@ -780,8 +777,8 @@ public partial class Main
         else
         {
             // Показать кнопки "Изменить" и "Удалить заявку"
-            EditButtonDetailsGrid.Visibility = Visibility.Hidden;
-            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Hidden;
+            EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
+            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
         }
     }
 

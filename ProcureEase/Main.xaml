@@ -476,17 +476,17 @@
                             Margin="10">
                     <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Tag="{Binding RequestId}"
                             Content="Взять заявку" Background="Green"
-                            Margin="5,0" Visibility="Hidden" />
+                            Margin="5,0" Visibility="Collapsed" />
                     <Button x:Name="AcceptRequestManagerButtonDetailsGrid" Tag="{Binding RequestId}"
                             Content="Одобрить заявку" Background="Green"
-                            Margin="5,0" Visibility="Hidden" Click="AcceptRequestManagerButtonDetailsGrid_OnClick" />
+                            Margin="5,0" Visibility="Collapsed" Click="AcceptRequestManagerButtonDetailsGrid_OnClick" />
                     <Button x:Name="RejectRequestManagerButtonDetailsGrid" Tag="{Binding RequestId}"
                             Content="Отклонить заявку" Background="Red"
-                            Margin="5,0" Visibility="Hidden" Click="RejectRequestManagerButtonDetailsGrid_OnClick" />
+                            Margin="5,0" Visibility="Collapsed" Click="RejectRequestManagerButtonDetailsGrid_OnClick" />
                 </StackPanel>
             </Grid>
 
-            <!--  New Request Grid (initially hidden)  -->
+            <!--  New Request Grid (initially Collapsed)  -->
             <Grid x:Name="NewRequestGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
