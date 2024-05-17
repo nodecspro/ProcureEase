@@ -820,13 +820,25 @@
                 </DataGrid>
 
                 <!-- Кнопка добавления организации -->
-                <Button x:Name="AddInvitationCode"
-                        Grid.Row="2"
-                        Content="Создать код приглашения"
-                        Margin="0,10"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Bottom"
-                        Click="AddInvitationCode_OnClick" />
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom">
+                    <Button x:Name="AddInvitationCode"
+                            Content="Создать код приглашения"
+                            Margin="0,0,20,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Click="AddInvitationCode_OnClick" />
+                    <Button x:Name="RemoveOldInvitationCode"
+                            Content="Удалить истёкшие коды"
+                            Margin="0,0,20,10"
+                            Background="Red"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            
+                            Click="RemoveOldInvitationCode_OnClick" />
+                </StackPanel>
             </Grid>
 
 

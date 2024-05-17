@@ -3,7 +3,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using MySql.Data.MySqlClient;
 
 #endregion
@@ -12,7 +11,7 @@ namespace ProcureEase.Classes;
 
 public class InvitationCodesViewModel : INotifyPropertyChanged
 {
-    private ObservableCollection<InvitationCode> invitationCodes;
+    private ObservableCollection<InvitationCode> _invitationCodes;
 
     public InvitationCodesViewModel()
     {
@@ -23,15 +22,13 @@ public class InvitationCodesViewModel : INotifyPropertyChanged
 
     public ObservableCollection<InvitationCode> InvitationCodes
     {
-        get { return invitationCodes; }
+        get => _invitationCodes;
         set
         {
-            invitationCodes = value;
+            _invitationCodes = value;
             OnPropertyChanged();
         }
     }
-
-    public ICommand LoadDataCommand { get; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 

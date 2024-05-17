@@ -953,4 +953,9 @@ public partial class Main
     {
         throw new NotImplementedException();
     }
+
+    private void RemoveOldInvitationCode_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
 }
