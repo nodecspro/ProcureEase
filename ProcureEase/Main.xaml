@@ -20,6 +20,7 @@
     <Window.Resources>
         <classes:PathToFilenameConverter x:Key="PathToFilenameConverter" />
     </Window.Resources>
+
     <Grid>
         <!--  Верхняя панель  -->
         <Grid.RowDefinitions>
@@ -50,14 +51,12 @@
                 Text="{Binding UserLogin}"
                 TextAlignment="Right"
                 TextWrapping="NoWrap" />
-            <Image
-                x:Name="UserAvatarImage"
-                Width="34"
-                Margin="4,4,4,4"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                DockPanel.Dock="Right"
-                Source="/UserAvatarDefaultWhite_30x30.png" />
+            <Image Width="34"
+                   Margin="4,4,4,4"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Source="/UserAvatarDefaultWhite_30x30.png"
+                   DockPanel.Dock="Right" />
         </DockPanel>
 
         <!-- Основное содержимое окна -->
@@ -65,7 +64,6 @@
             <!--  Requests Grid  -->
             <Grid x:Name="RequestsGrid">
                 <StackPanel
-                    x:Name="RequestsGridStackPanel"
                     Width="Auto"
                     Height="Auto"
                     VerticalAlignment="Top">
@@ -325,6 +323,14 @@
                     Click="CancelButton_Click"
                     Content="Отменить"
                     Visibility="Collapsed" />
+                <Button
+                    x:Name="ExitButton"
+                    Background="Red"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Content="Выйти из аккаунта"
+                    Margin="74,303,0,0"
+                    Click="ExitButton_OnClick" />
                 <Separator
                     Width="392"
                     Margin="-8,190,0,182"
@@ -353,13 +359,13 @@
 
             <Grid x:Name="DetailsGrid" Visibility="Collapsed" Margin="20">
                 <!-- Заголовок "Заявка №n", центрированный в верхней части грида -->
-                <TextBlock x:Name="IdRequestDetailsGrid" Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
+                <TextBlock Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
                            FontSize="20"
                            HorizontalAlignment="Center" VerticalAlignment="Top"
                            Margin="0,10,0,10" />
 
                 <!-- Кнопка "Назад" слева вверху с меньшей высотой -->
-                <Button x:Name="BackButtonDetailsGrid" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"
+                <Button Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"
                         HorizontalAlignment="Left" VerticalAlignment="Top"
                         FontSize="20" Click="BackButtonDetailsGrid_OnClick"
                         BorderThickness="0" Background="Transparent" Height="30" Width="30" />
@@ -422,12 +428,14 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
                                     <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center"
+                                               d:DataContext="{d:DesignInstance }" />
                                     <Button Visibility="Visible" Content="Удалить" Tag="{Binding FileName}"
                                             FontSize="8" Margin="0,0,0,0"
                                             HorizontalAlignment="Right" Height="20" Width="60" Background="Red"
                                             Click="DeleteFileButtonDetailsGrid_OnClick"
-                                            CommandParameter="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
+                                            CommandParameter="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            d:DataContext="{d:DesignInstance }" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

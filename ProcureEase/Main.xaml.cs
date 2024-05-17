@@ -369,6 +369,7 @@ public partial class Main
         EditButton.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
         SaveButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
         CancelButton.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
+        ExitButton.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private static void SetEditMode(DependencyObject grid, bool isEditing)
@@ -901,5 +902,11 @@ public partial class Main
         {
             await ShowErrorMessageAsync("Исключение", $"Произошла ошибка: {ex.Message}");
         }
+    }
+
+    private void ExitButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        Application.Current.MainWindow?.Show();
+        Hide();
     }
 }
