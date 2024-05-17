@@ -86,8 +86,8 @@
                             <DataGridTextColumn Binding="{Binding RequestId}" Header="ID" MinWidth="50"
                                                 MaxWidth="50">
                                 <DataGridTextColumn.ElementStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -107,8 +107,8 @@
                             <DataGridTextColumn Binding="{Binding RequestType}" Header="Тип заявки" MinWidth="100"
                                                 MaxWidth="100">
                                 <DataGridTextColumn.ElementStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -118,8 +118,9 @@
                                                 Header="Статус" MinWidth="100"
                                                 MaxWidth="100">
                                 <DataGridTextColumn.ElementStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

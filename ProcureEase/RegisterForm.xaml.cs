@@ -11,6 +11,9 @@ using BCrypt.Net;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using MySql.Data.MySqlClient;
+using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 #endregion
 
@@ -39,6 +42,7 @@ public partial class RegisterForm
     public RegisterForm()
     {
         InitializeComponent();
+
         _inputControls = new List<Control>
         {
             txtUsername,
@@ -155,7 +159,7 @@ public partial class RegisterForm
         }
     }
 
-    private async Task<(int RoleId, int OrganizationId)?> ValidateAndFetchInviteData(string inviteCode)
+    private static async Task<(int RoleId, int OrganizationId)?> ValidateAndFetchInviteData(string inviteCode)
     {
         if (!IsValidInviteCode(inviteCode)) return null;
 
@@ -194,8 +198,8 @@ public partial class RegisterForm
     private string ValidateFields()
     {
         var errorMessage = new StringBuilder();
-        ValidateField(txtUsername, "Имя пользователя", errorMessage);
-        ValidateField(txtPassword, "Пароль", errorMessage);
+        ValidateUsername(txtUsername, "Имя пользователя", errorMessage);
+        ValidatePassword(txtPassword, "Пароль", errorMessage);
         ValidateName(txtFirstName, "Имя", errorMessage);
         ValidateName(txtLastName, "Фамилия", errorMessage);
         ValidatePhoneNumber(errorMessage);
@@ -204,14 +208,51 @@ public partial class RegisterForm
         return errorMessage.ToString();
     }
 
-    private void ValidateField(Control control, string fieldName, StringBuilder errorMessage)
+    private void ValidateUsername(Control control, string fieldName, StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(control switch
-            {
-                TextBox tb => tb.Text, PasswordBox pb => pb.Password, _ => ""
-            }))
+        const string pattern = @"^[a-zA-Z0-9]+$";
+        var input = control switch
+        {
+            TextBox tb => tb.Text,
+            PasswordBox pb => pb.Password,
+            _ => ""
+        };
+
+        if (string.IsNullOrWhiteSpace(input))
         {
             errorMessage.AppendLine($"{fieldName} не может быть пустым.");
+            control.BorderBrush = Brushes.Red;
+        }
+        else if (!Regex.IsMatch(input, pattern))
+        {
+            errorMessage.AppendLine($"{fieldName} может содержать только английские буквы.");
+            control.BorderBrush = Brushes.Red;
+        }
+        else
+        {
+            control.BorderBrush = _defaultBorderBrush;
+        }
+    }
+
+    private void ValidatePassword(Control control, string fieldName, StringBuilder errorMessage)
+    {
+        const string pattern = @"^[a-zA-Z0-9!@#$%^&*()_+\-=]+$";
+        var input = control switch
+        {
+            TextBox tb => tb.Text,
+            PasswordBox pb => pb.Password,
+            _ => ""
+        };
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            errorMessage.AppendLine($"{fieldName} не может быть пустым.");
+            control.BorderBrush = Brushes.Red;
+        }
+        else if (!Regex.IsMatch(input, pattern))
+        {
+            errorMessage.AppendLine(
+                $"{fieldName} может содержать только английские буквы, цифры и базовые специальные символы.");
             control.BorderBrush = Brushes.Red;
         }
         else
