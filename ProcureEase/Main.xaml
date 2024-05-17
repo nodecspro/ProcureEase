@@ -38,6 +38,26 @@
                 BorderThickness="0,0,0,1"
                 Background="Transparent"
                 Content="На главную" />
+            <Button
+                x:Name="OrganizationButton"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                BorderThickness="0,0,0,1"
+                Background="Transparent"
+                Visibility="Collapsed"
+                Content="Организации"
+                Click="OrganizationButton_OnClick" />
+            <Button
+                x:Name="InvitationCodeButton"
+                Margin="28,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                BorderThickness="0,0,0,1"
+                Background="Transparent"
+                Visibility="Collapsed"
+                Content="Коды приглашения"
+                Click="InvitationCodeButton_OnClick" />
             <TextBlock
                 x:Name="UsernameTextBlock"
                 Margin="4,4,8,4"
@@ -645,6 +665,134 @@
                         Content="Назад" />
                 </StackPanel>
             </Grid>
+
+            <!-- Отображение организаций -->
+            <Grid>
+                <Grid x:Name="OrganizationGrid" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Надпись над таблицей -->
+                    <TextBlock Grid.Row="0" Text="Список организаций" HorizontalAlignment="Center" FontSize="20"
+                               FontWeight="Bold"
+                               Margin="0,0,0,14" />
+
+                    <!-- DataGrid для отображения данных -->
+                    <DataGrid x:Name="SuppliersDataGrid"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              ItemsSource="{Binding Suppliers}"
+                              Height="300"
+                              Grid.Row="1">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID"
+                                                Binding="{Binding SupplierId}"
+                                                MinWidth="50"
+                                                MaxWidth="50">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="ИНН"
+                                                Binding="{Binding Inn}"
+                                                MinWidth="80"
+                                                MaxWidth="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="КПП"
+                                                Binding="{Binding Kpp}"
+                                                MinWidth="80"
+                                                MaxWidth="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Название"
+                                                Binding="{Binding OrganizationFullName}"
+                                                MinWidth="120"
+                                                MaxWidth="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Руководитель"
+                                                Binding="{Binding Supervisor}"
+                                                MinWidth="120"
+                                                MaxWidth="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Email"
+                                                Binding="{Binding Email}"
+                                                MinWidth="120"
+                                                MaxWidth="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Номер"
+                                                Binding="{Binding ContactNumber}"
+                                                MinWidth="100"
+                                                MaxWidth="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Тип работы"
+                                                Binding="{Binding RequestTypeId}"
+                                                MinWidth="100"
+                                                MaxWidth="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Кнопка добавления организации -->
+                    <Button Grid.Row="2"
+                            Content="Добавить организацию"
+                            Margin="0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom" />
+                </Grid>
+            </Grid>
+
+
+            <!-- Отображение кодов приглашения -->
+
         </Grid>
     </Grid>
 </mah:MetroWindow>

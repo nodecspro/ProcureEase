@@ -48,11 +48,15 @@ public partial class Main
         {
             case 1:
                 // Администратор
-
+                YourPurchaseRequestsTextBlock.Text = "Заявки на закупку";
+                CreateRequestButton.Visibility = Visibility.Collapsed;
+                OrganizationButton.Visibility = Visibility.Visible;
+                InvitationCodeButton.Visibility = Visibility.Visible;
+                UserRequestsDataGrid.Height = 380;
                 break;
             case 2:
                 // Менеджер
-                YourPurchaseRequestsTextBlock.Text = "Заявки на закупку";
+                YourPurchaseRequestsTextBlock.Text = "Заявки ожидающие рассмотрения";
                 CreateRequestButton.Visibility = Visibility.Collapsed;
                 DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
@@ -105,6 +109,11 @@ public partial class Main
         UserRequestsDataGrid.ItemsSource = requests.OrderBy(r => r.RequestId).ToList();
         UserRequestsDataGrid.Items.Refresh();
     }
+
+    // private static async void LoadSuppliersData()
+    // {
+    //     SuppliersViewModel.LoadSuppliers();
+    // }
 
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
@@ -358,7 +367,8 @@ public partial class Main
 
     private void ShowSingleGrid(UIElement gridToShow)
     {
-        var allGrids = new List<UIElement> { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid };
+        var allGrids = new List<UIElement>
+            { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid, OrganizationGrid };
 
         foreach (var grid in allGrids) grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -908,5 +918,22 @@ public partial class Main
     {
         Application.Current.MainWindow?.Show();
         Hide();
+    }
+
+    private void OrganizationButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        ShowSingleGrid(OrganizationGrid);
+        DataContext = new SuppliersViewModel();
+
+        // Получение ViewModel из DataContext
+        var viewModel = DataContext as SuppliersViewModel;
+        if (viewModel != null)
+            // Вы можете вызвать метод или изменить свойство в вашем ViewModel
+            viewModel.LoadSuppliers(); // Пример вызова метода в ViewModel
+    }
+
+    private void InvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }
