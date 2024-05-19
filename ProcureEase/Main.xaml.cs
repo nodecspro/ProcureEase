@@ -12,6 +12,7 @@ using System.Windows.Media;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using ProcureEase.Classes;
 using Xceed.Wpf.AvalonDock.Controls;
 
@@ -941,7 +942,77 @@ public partial class Main
 
     private void AddOrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        // Скрываем основной Grid и показываем Grid для добавления организации
+        InvitationCodesGrid.Visibility = Visibility.Collapsed;
+        AddOrganizationGrid.Visibility = Visibility.Visible;
+    }
+
+    private void CancelOrganizationButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Скрываем Grid для добавления организации и показываем основной Grid
+        AddOrganizationGrid.Visibility = Visibility.Collapsed;
+        InvitationCodesGrid.Visibility = Visibility.Visible;
+    }
+
+    private void SaveOrganizationButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var inn = InnTextBox.Text;
+        var kpp = KppTextBox.Text;
+        var fullName = FullNameTextBox.Text;
+        var supervisor = SupervisorTextBox.Text;
+        var email = EmailTextBox.Text;
+        var contactNumber = ContactNumberTextBox.Text;
+
+        if (string.IsNullOrWhiteSpace(inn) || string.IsNullOrWhiteSpace(kpp) || string.IsNullOrWhiteSpace(fullName) ||
+            string.IsNullOrWhiteSpace(supervisor) || string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(contactNumber))
+        {
+            MessageBox.Show("Пожалуйста, заполните все поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        try
+        {
+            var connectionString = AppSettings.ConnectionString;
+
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                var query = @"
+                INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number)
+                VALUES (@inn, @kpp, @fullName, @supervisor, @contactNumber, @email)";
+
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("@inn", inn);
+                command.Parameters.AddWithValue("@kpp", kpp);
+                command.Parameters.AddWithValue("@fullName", fullName);
+                command.Parameters.AddWithValue("@supervisor", supervisor);
+                command.Parameters.AddWithValue("@contactNumber", contactNumber);
+                command.Parameters.AddWithValue("@email", email);
+                command.ExecuteNonQuery();
+            }
+
+            MessageBox.Show("Организация успешно добавлена", "Информация", MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            // Очистка текстовых полей
+            InnTextBox.Text = string.Empty;
+            KppTextBox.Text = string.Empty;
+            FullNameTextBox.Text = string.Empty;
+            SupervisorTextBox.Text = string.Empty;
+            EmailTextBox.Text = string.Empty;
+            ContactNumberTextBox.Text = string.Empty;
+
+            // Скрытие формы и возврат к основному Grid
+            AddOrganizationGrid.Visibility = Visibility.Collapsed;
+            InvitationCodesGrid.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}", "Ошибка", MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void AddInvitationCodeButton_OnClick(object sender, RoutedEventArgs e)

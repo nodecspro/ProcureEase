@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ProcureEase")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9395faebe3068403a630390a19d22f40f1790777")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6c1127a2b86bef3caf0bc466b07d97c72cdce295")]
 [assembly: System.Reflection.AssemblyProductAttribute("ProcureEase")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ProcureEase")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

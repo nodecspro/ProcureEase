@@ -853,7 +853,37 @@
                 </StackPanel>
             </Grid>
 
+            <Grid x:Name="AddOrganizationGrid" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
+                <TextBlock Grid.Row="0"
+                           Text="Добавить организацию"
+                           HorizontalAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Margin="0,0,0,20" />
+
+                <StackPanel Grid.Row="1" Margin="20">
+                    <TextBox x:Name="InnTextBox" Margin="0, 10" />
+                    <TextBox x:Name="KppTextBox" Margin="0, 10" />
+                    <TextBox x:Name="FullNameTextBox" mah:TextBoxHelper.Watermark="Полное название организации"
+                             Margin="0, 10" />
+                    <TextBox x:Name="SupervisorTextBox" mah:TextBoxHelper.Watermark="Руководитель" Margin="0, 10" />
+                    <TextBox x:Name="EmailTextBox" mah:TextBoxHelper.Watermark="Email" Margin="0, 10" />
+                    <TextBox x:Name="ContactNumberTextBox" mah:TextBoxHelper.Watermark="Контактный номер"
+                             Margin="0, 10" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Сохранить" Click="SaveOrganizationButton_OnClick" Margin="10" />
+                    <Button Content="Отмена" Click="CancelOrganizationButton_OnClick" Margin="10" />
+                </StackPanel>
+            </Grid>
         </Grid>
+
     </Grid>
 </mah:MetroWindow>

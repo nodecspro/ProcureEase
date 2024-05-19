@@ -27,9 +27,7 @@
                 Width="300"
                 Height="30"
                 Padding="5"
-                AutomationProperties.Name="Username"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
-                TextWrapping="Wrap" />
+                mah:TextBoxHelper.Watermark="Логин" />
 
             <!--  Password  -->
             <Label Content="Пароль" />
@@ -38,8 +36,7 @@
                 Width="300"
                 Height="30"
                 Padding="5"
-                AutomationProperties.Name="Password"
-                Style="{DynamicResource MahApps.Metro.Styles.PasswordBox}" />
+                mah:TextBoxHelper.Watermark="Пароль" />
 
             <!--  Register Hyperlink  -->
             <TextBlock FontSize="10">
