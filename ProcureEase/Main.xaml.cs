@@ -12,10 +12,8 @@ using System.Windows.Media;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
-using MySql.Data.MySqlClient;
 using ProcureEase.Classes;
 using Xceed.Wpf.AvalonDock.Controls;
-using MessageBox = System.Windows.MessageBox;
 
 #endregion
 
@@ -36,7 +34,7 @@ public partial class Main
         UsernameTextBlock.Text = login;
         LoadUserData();
         LoadUserRequests();
-        SortDataGribById();
+        SortDataGridById();
         DataContext = this;
     }
 
@@ -85,12 +83,25 @@ public partial class Main
         }
     }
 
-    private void SortDataGribById()
+    private void SortDataGridById()
     {
-        var idColumn = UserRequestsDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "ID");
+        var idColumn = FindIdColumn(UserRequestsDataGrid, "ID");
         if (idColumn != null)
-            UserRequestsDataGrid.Items.SortDescriptions.Add(new SortDescription(idColumn.SortMemberPath,
-                ListSortDirection.Ascending));
+        {
+            ApplySort(UserRequestsDataGrid, idColumn.SortMemberPath, ListSortDirection.Ascending);
+        }
+    }
+
+    private DataGridColumn FindIdColumn(DataGrid dataGrid, string headerName)
+    {
+        return dataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == headerName);
+    }
+
+    private void ApplySort(DataGrid dataGrid, string sortMemberPath, ListSortDirection direction)
+    {
+        dataGrid.Items.SortDescriptions.Clear();
+        dataGrid.Items.SortDescriptions.Add(new SortDescription(sortMemberPath, direction));
+        dataGrid.Items.Refresh();
     }
 
     private void LoadUserData()
@@ -147,47 +158,39 @@ public partial class Main
 // Обработчик события клика по кнопке для открытия файла
     private async void btnOpenFile_Click(object sender, RoutedEventArgs e)
     {
-        // Создание и настройка диалога выбора файлов
-        var openFileDialog = new OpenFileDialog
-        {
-            // Установка фильтра для отображения определённых типов файлов в диалоге
-            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
-            // Разрешение выбора нескольких файлов
-            Multiselect = true
-        };
+        var openFileDialog = CreateOpenFileDialog();
 
-        // Отображение диалога выбора файлов и проверка на успешное закрытие с выбранными файлами
         if (openFileDialog.ShowDialog() != true) return;
 
-        // Создание списка допустимых расширений файлов
-        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
+        var (validFiles, invalidFiles) = ValidateFiles(openFileDialog.FileNames);
 
-        // Разделение выбранных файлов на допустимые и недопустимые по расширению
+        AddValidFiles(validFiles);
+
+        if (invalidFiles.Count > 0)
+        {
+            await ShowInvalidFilesMessageAsync(invalidFiles);
+        }
+    }
+
+    private (List<string> validFiles, List<string> invalidFiles) ValidateFiles(IEnumerable<string> fileNames)
+    {
+        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
         var validFiles = new List<string>();
         var invalidFiles = new List<string>();
 
-        foreach (var filePath in openFileDialog.FileNames)
+        foreach (var filePath in fileNames)
         {
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
             if (validExtensions.Contains(extension))
             {
                 if (SelectedFiles.Contains(filePath))
                 {
-                    // Если файл уже существует, отобразить предупреждение
-                    var result = MessageBox.Show(
-                        $"Файл \"{Path.GetFileName(filePath)}\" уже существует в списке.\n\n" +
-                        "Хотите перезаписать его?",
-                        "Дубликат файла",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
+                    var result = ShowDuplicateFileWarning(filePath);
                     if (result == MessageBoxResult.Yes)
                     {
-                        // Перезаписать файл, удалив предыдущий экземпляр
                         SelectedFiles.Remove(filePath);
                         validFiles.Add(filePath);
                     }
-                    // Если выбрано "No", не добавлять файл
                 }
                 else
                 {
@@ -200,18 +203,31 @@ public partial class Main
             }
         }
 
-        // Добавление допустимых файлов в коллекцию выбранных файлов
+        return (validFiles, invalidFiles);
+    }
+
+    private MessageBoxResult ShowDuplicateFileWarning(string filePath)
+    {
+        return MessageBox.Show(
+            $"Файл \"{Path.GetFileName(filePath)}\" уже существует в списке.\n\n" +
+            "Хотите перезаписать его?",
+            "Дубликат файла",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+    }
+
+    private void AddValidFiles(IEnumerable<string> validFiles)
+    {
         foreach (var validFile in validFiles)
+        {
             SelectedFiles.Add(validFile);
+        }
+    }
 
-        // Если нет недопустимых файлов, прекратить выполнение функции
-        if (invalidFiles.Count == 0) return;
-
-        // Создание сообщения об ошибках для недопустимых файлов
+    private async Task ShowInvalidFilesMessageAsync(IEnumerable<string> invalidFiles)
+    {
         var message =
             $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
-
-        // Отображение сообщения об ошибке
         await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
@@ -248,118 +264,140 @@ public partial class Main
 // Обработчик клика по кнопке "Сохранить заявку"
     private async void SaveRequestButton_Click(object sender, RoutedEventArgs e)
     {
-        // Считывание данных из формы
-        var requestName = RequestNameTextBox.Text; // Имя заявки
-        var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString(); // Тип заявки
-        var requestNotes = RequestNotesTextBox.Text; // Примечания к заявке
+        var (requestName, requestType, requestNotes) = ReadFormData();
 
-        // Валидация введённых данных
         var validationResult = await ValidateInput(requestName, requestType, requestNotes);
-        if (!validationResult.Item1) // Если валидация не пройдена
+        if (!validationResult.Item1)
         {
-            // Отображение сообщения об ошибке
             await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
             return;
         }
 
-        // Проверка наличия данных о текущем пользователе
         if (_currentUser == null)
         {
-            // Отображение ошибки, если пользователь не определён
             await ShowErrorMessageAsync("Ошибка", "Пользователь не определен.");
             return;
         }
 
-        // Создание объекта заявки с данными из формы
-        var request = new Request
+        var request = CreateRequest(requestName, requestType, requestNotes, _currentUser.UserId,
+            await ProcessFileAttachments(SelectedFiles));
+
+        if (await AddRequestWithFiles(request))
+        {
+            SelectedFiles.Clear();
+        }
+        else
+        {
+            await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
+        }
+    }
+
+    private (string requestName, string? requestType, string requestNotes) ReadFormData()
+    {
+        var requestName = RequestNameTextBox.Text;
+        var requestType = (RequestTypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+        var requestNotes = RequestNotesTextBox.Text;
+        return (requestName, requestType, requestNotes);
+    }
+
+    private Request CreateRequest(string requestName, string? requestType, string requestNotes, int userId,
+        ObservableCollection<RequestFile> requestFiles)
+    {
+        return new Request
         {
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = _currentUser.UserId, // ID пользователя
-            RequestFiles = await ProcessFileAttachments(SelectedFiles) // Обработка прикреплённых файлов
+            UserId = userId,
+            RequestFiles = requestFiles
         };
-
-        // Добавление заявки через API или базу данных
-        if (await AddRequestWithFiles(request))
-            // Если процесс добавления успешен, очистка списка выбранных файлов
-            SelectedFiles.Clear();
-        else
-            // Если процесс добавления не успешен, отображение сообщения об ошибке
-            await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
     }
 
 // Асинхронный метод для добавления заявки с файлами
     private async Task<bool> AddRequestWithFiles(Request request)
     {
-        // Добавление заявки в репозиторий и получение её уникального идентификатора (ID)
         var requestId = await RequestRepository.AddRequestAsync(request);
-        // Проверка успешности добавления заявки: если ID меньше или равен 0, возвращаем false
         if (requestId <= 0) return false;
 
-        // Добавление файлов для соответствующей заявки
-        await RequestRepository.AddRequestFilesAsync(requestId, request.RequestFiles);
+        await AddFilesToRequestAsync(requestId, request.RequestFiles);
 
-        // Очистка формы после успешного добавления заявки
-        ClearRequestForm();
-        // Отображение таблицы заявок (переключение видимости элементов интерфейса)
-        ShowSingleGrid(RequestsGrid);
-        // Загрузка и обновление списка заявок
-        LoadUserRequests();
-
-        // Возвращаем true, указывая на успешное выполнение операции
+        PerformPostRequestActions();
         return true;
     }
 
-// Асинхронный метод для обработки прикреплённых файлов
+    private async Task AddFilesToRequestAsync(int requestId, ObservableCollection<RequestFile> requestFiles)
+    {
+        await RequestRepository.AddRequestFilesAsync(requestId, requestFiles);
+    }
+
+    private void PerformPostRequestActions()
+    {
+        ClearRequestForm();
+        ShowSingleGrid(RequestsGrid);
+        LoadUserRequests();
+    }
+
+    // Асинхронный метод для обработки прикреплённых файлов
     private static async Task<ObservableCollection<RequestFile>> ProcessFileAttachments(
         ObservableCollection<string> nameList, int maxDegreeOfParallelism = 4)
     {
-        // Проверка на наличие выбранных файлов
         if (nameList.Count == 0)
-            return new ObservableCollection<RequestFile>(); // Если файлы не выбраны, возвращаем пустой список
+            return new ObservableCollection<RequestFile>();
 
         var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
-        var resultBag = new ConcurrentBag<RequestFile>();
+        var requestFiles = new List<RequestFile>();
 
-        var tasks = nameList.Select(async filePath =>
+        var tasks = nameList.Select(filePath => ProcessFileAsync(filePath, semaphore, requestFiles));
+
+        await Task.WhenAll(tasks);
+
+        return new ObservableCollection<RequestFile>(requestFiles.OrderBy(rf => nameList.IndexOf(rf.FileName)));
+    }
+
+    private static async Task ProcessFileAsync(string filePath, SemaphoreSlim semaphore, List<RequestFile> requestFiles)
+    {
+        await semaphore.WaitAsync();
+        try
         {
-            await semaphore.WaitAsync();
-            try
+            var fileData = await File.ReadAllBytesAsync(filePath);
+            lock (requestFiles)
             {
-                var fileData = await File.ReadAllBytesAsync(filePath);
-                resultBag.Add(new RequestFile
+                requestFiles.Add(new RequestFile
                 {
                     FileName = Path.GetFileName(filePath),
                     FileData = fileData
                 });
             }
-            catch (Exception ex)
-            {
-                // Здесь можно логировать ошибку или предпринять другие действия
-                Console.WriteLine($"Failed to read file {filePath}: {ex.Message}");
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
-
-        return new ObservableCollection<RequestFile>(resultBag.OrderBy(rf => nameList.IndexOf(rf.FileName)));
+        }
+        catch (Exception ex)
+        {
+            // Log the error or handle it appropriately
+            Console.WriteLine($"Failed to read file {filePath}: {ex.Message}");
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
     private static Task<(bool, string)> ValidateInput(string requestName, string? requestType, string requestNotes)
     {
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
+        {
             return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
+        }
 
-        return !IsValidRequestName(requestName)
-            ? Task.FromResult((false, "Название заявки содержит недопустимые символы."))
-            : Task.FromResult(!IsValidRequestNotes(requestNotes)
-                ? (false, "Примечания содержат недопустимые символы.")
-                : (true, ""));
+        if (!IsValidRequestName(requestName))
+        {
+            return Task.FromResult((false, "Название заявки содержит недопустимые символы."));
+        }
+
+        if (!IsValidRequestNotes(requestNotes))
+        {
+            return Task.FromResult((false, "Примечания содержат недопустимые символы."));
+        }
+
+        return Task.FromResult((true, ""));
     }
 
     private void ShowSingleGrid(UIElement gridToShow)
@@ -384,16 +422,26 @@ public partial class Main
 
     private static void SetEditMode(DependencyObject grid, bool isEditing)
     {
+        var borderBrush = isEditing
+            ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
+            : Brushes.Transparent;
+        var borderThickness = isEditing ? new Thickness(0, 0, 0, 1) : new Thickness(0);
+
         foreach (var textBox in grid.FindVisualChildren<TextBox>())
-            // Проверяем Tag перед изменением свойств
+        {
             if (textBox.Tag as string != "NoEdit")
             {
-                textBox.IsReadOnly = !isEditing;
-                textBox.BorderThickness = isEditing ? new Thickness(0, 0, 0, 1) : new Thickness(0);
-                textBox.BorderBrush = isEditing
-                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFABADB3"))
-                    : Brushes.Transparent;
+                SetTextBoxEditMode(textBox, isEditing, borderBrush, borderThickness);
             }
+        }
+    }
+
+    private static void SetTextBoxEditMode(TextBox textBox, bool isEditing, Brush borderBrush,
+        Thickness borderThickness)
+    {
+        textBox.IsReadOnly = !isEditing;
+        textBox.BorderThickness = borderThickness;
+        textBox.BorderBrush = borderBrush;
     }
 
     private void ClearRequestForm()
@@ -405,52 +453,61 @@ public partial class Main
 
     private async void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        var textBlock = (TextBlock)sender;
-        var fileName = textBlock.Text;
-
-        var dataGridRow = FindParent<DataGridRow>(textBlock);
-        if (dataGridRow != null)
+        if (sender is TextBlock textBlock)
         {
-            var request = (Request)dataGridRow.Item;
-            var requestId = request.RequestId;
+            var fileName = textBlock.Text;
+            var dataGridRow = FindParent<DataGridRow>(textBlock);
 
-            // Создание и показ диалога для подтверждения
-            var mySettings = new MetroDialogSettings
+            if (dataGridRow != null && dataGridRow.Item is Request request)
             {
-                AffirmativeButtonText = "Да",
-                NegativeButtonText = "Нет",
-                AnimateShow = false,
-                AnimateHide = false
-            };
-
-            var result = await this.ShowMessageAsync("Подтверждение загрузки",
-                $"Вы уверены, что хотите загрузить {fileName}?",
-                MessageDialogStyle.AffirmativeAndNegative, mySettings);
-
-            if (result == MessageDialogResult.Affirmative)
-            {
-                var fileData = await RequestRepository.GetFileDataByRequestIdAndFileNameAsync(requestId, fileName);
-                if (fileData != null)
+                if (await ConfirmFileDownloadAsync(fileName))
                 {
-                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    var fullFilePath = Path.Combine(desktopPath, fileName);
-
-                    try
-                    {
-                        await File.WriteAllBytesAsync(fullFilePath, fileData);
-                        await ShowErrorMessageAsync("Файл сохранён", $"Файл сохранён: {fullFilePath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        await ShowErrorMessageAsync("Ошибка при сохранении файла", ex.Message);
-                    }
-                }
-                else
-                {
-                    await ShowErrorMessageAsync("Ошибка",
-                        $"Файл {fileName} не найден в базе данных для заявки с ID {requestId}.");
+                    await DownloadFileAsync(request.RequestId, fileName);
                 }
             }
+        }
+    }
+
+    private async Task<bool> ConfirmFileDownloadAsync(string fileName)
+    {
+        var mySettings = new MetroDialogSettings
+        {
+            AffirmativeButtonText = "Да",
+            NegativeButtonText = "Нет",
+            AnimateShow = false,
+            AnimateHide = false
+        };
+
+        var result = await this.ShowMessageAsync("Подтверждение загрузки",
+            $"Вы уверены, что хотите загрузить {fileName}?",
+            MessageDialogStyle.AffirmativeAndNegative, mySettings);
+
+        return result == MessageDialogResult.Affirmative;
+    }
+
+    private async Task DownloadFileAsync(int requestId, string fileName)
+    {
+        var fileData = await RequestRepository.GetFileDataByRequestIdAndFileNameAsync(requestId, fileName);
+
+        if (fileData != null)
+        {
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var fullFilePath = Path.Combine(desktopPath, fileName);
+
+            try
+            {
+                await File.WriteAllBytesAsync(fullFilePath, fileData);
+                await ShowErrorMessageAsync("Файл сохранён", $"Файл сохранён: {fullFilePath}");
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessageAsync("Ошибка при сохранении файла", ex.Message);
+            }
+        }
+        else
+        {
+            await ShowErrorMessageAsync("Ошибка",
+                $"Файл {fileName} не найден в базе данных для заявки с ID {requestId}.");
         }
     }
 
@@ -479,18 +536,30 @@ public partial class Main
             return;
         }
 
+        if (!ValidateUser(userToUpdate)) return;
+
+        await SaveUserAsync(userToUpdate);
+    }
+
+    private bool ValidateUser(User user)
+    {
         var validator = new UserValidator();
-        var validationResults = validator.Validate(userToUpdate);
+        var validationResults = validator.Validate(user);
         if (!validationResults.IsValid)
         {
             HighlightErrors(validationResults.Errors);
-            await ShowErrorMessageAsync("Ошибка", "Введенные данные некорректны.");
-            return;
+            ShowErrorMessageAsync("Ошибка", "Введенные данные некорректны.").ConfigureAwait(false);
+            return false;
         }
 
+        return true;
+    }
+
+    private async Task SaveUserAsync(User user)
+    {
         try
         {
-            await UserRepository.UpdateUser(userToUpdate);
+            await UserRepository.UpdateUser(user);
             ToggleEditing(false);
             await ShowErrorMessageAsync("Успех", "Данные успешно сохранены.");
         }
@@ -509,15 +578,21 @@ public partial class Main
 
     private static FrameworkElement FindControlByName(DependencyObject parent, string name)
     {
-        if (parent is FrameworkElement fe && fe.Name == name)
-            return fe;
+        var queue = new Queue<DependencyObject>();
+        queue.Enqueue(parent);
 
-        for (int i = 0, count = VisualTreeHelper.GetChildrenCount(parent); i < count; i++)
+        while (queue.Count > 0)
         {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            var result = FindControlByName(child, name);
-            if (result != null)
-                return result;
+            var current = queue.Dequeue();
+            if (current is FrameworkElement fe && fe.Name == name)
+            {
+                return fe;
+            }
+
+            for (int i = 0, count = VisualTreeHelper.GetChildrenCount(current); i < count; i++)
+            {
+                queue.Enqueue(VisualTreeHelper.GetChild(current, i));
+            }
         }
 
         return null;
@@ -548,32 +623,50 @@ public partial class Main
 
     private void EnableEditing()
     {
-        // Сохранить исходные данные
+        SaveOriginalData();
+        SetEditableFields(true);
+        ToggleButtonsVisibility(true);
+    }
+
+    private void SaveOriginalData()
+    {
         _originalName = NameTextBox.Text;
         _originalNotes = NotesTextBox.Text;
+    }
 
-        // Сделать поля редактируемыми
-        NameTextBox.IsReadOnly = false;
-        NameTextBox.BorderThickness = new Thickness(0, 0, 0, 1);
-        NotesTextBox.IsReadOnly = false;
-        NotesTextBox.BorderThickness = new Thickness(0, 0, 0, 1);
+    private void SetEditableFields(bool isEditable)
+    {
+        var thickness = isEditable ? new Thickness(0, 0, 0, 1) : new Thickness(0);
+        NameTextBox.IsReadOnly = !isEditable;
+        NameTextBox.BorderThickness = thickness;
+        NotesTextBox.IsReadOnly = !isEditable;
+        NotesTextBox.BorderThickness = thickness;
+    }
 
-        // Показать новые кнопки и скрыть стандартные
-        SaveButtonDetailsGrid.Visibility = Visibility.Visible;
-        CancelButtonDetailsGrid.Visibility = Visibility.Visible;
-        AddFileButtonDetailsGrid.Visibility = Visibility.Visible;
+    private void ToggleButtonsVisibility(bool isEditing)
+    {
+        SaveButtonDetailsGrid.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
+        CancelButtonDetailsGrid.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
+        AddFileButtonDetailsGrid.Visibility = isEditing ? Visibility.Visible : Visibility.Collapsed;
 
-        // Скрыть кнопки "Изменить" и "Удалить заявку"
-        EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        EditButtonDetailsGrid.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
+        DeleteRequestButtonDetailsGrid.Visibility = isEditing ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        var button = (Button)sender;
-        var requestId = int.Parse(button.Tag.ToString());
+        if (sender is Button button && int.TryParse(button.Tag.ToString(), out var requestId))
+        {
+            if (await ConfirmDeletionAsync("Подтверждение удаления",
+                    "Вы уверены, что хотите удалить эту заявку и все связанные файлы?"))
+            {
+                await DeleteRequestAsync(requestId);
+            }
+        }
+    }
 
-        // Определение настроек диалога
+    private async Task<bool> ConfirmDeletionAsync(string title, string message)
+    {
         var mySettings = new MetroDialogSettings
         {
             AffirmativeButtonText = "Да",
@@ -582,24 +675,30 @@ public partial class Main
             AnimateHide = false
         };
 
-        // Диалог подтверждения с пользовательскими настройками
-        var confirmResult = await this.ShowMessageAsync("Подтверждение удаления",
-            "Вы уверены, что хотите удалить эту заявку и все связанные файлы?",
-            MessageDialogStyle.AffirmativeAndNegative, mySettings);
+        var confirmResult =
+            await this.ShowMessageAsync(title, message, MessageDialogStyle.AffirmativeAndNegative, mySettings);
+        return confirmResult == MessageDialogResult.Affirmative;
+    }
 
-        if (confirmResult == MessageDialogResult.Affirmative)
+    private async Task DeleteRequestAsync(int requestId)
+    {
+        try
         {
             var result = await RequestRepository.DeleteRequestWithFilesAsync(requestId);
             if (result)
             {
                 await ShowErrorMessageAsync("Удаление завершено", "Заявка и все связанные файлы успешно удалены.");
-                ShowSingleGrid(RequestsGrid); // Предполагается, что это обновляет или скрывает интерфейс
+                ShowSingleGrid(RequestsGrid); // Обновление или скрытие интерфейса
                 LoadUserRequests(); // Обновление списка заявок
             }
             else
             {
                 await ShowErrorMessageAsync("Ошибка удаления", "Произошла ошибка при удалении заявки.");
             }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync("Ошибка", $"Произошла ошибка: {ex.Message}");
         }
     }
 
@@ -613,24 +712,32 @@ public partial class Main
 
     private async void DeleteFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        // Проверяем, что Roleid текущего пользователя равен 3
         if (_currentUser.RoleId != 3)
         {
-            // Показываем сообщение об ошибке
             await ShowErrorMessageAsync("Ошибка", "Вы не являетесь автором этой заявки.");
-            return; // Прекращаем выполнение метода
+            return;
         }
 
-        var button = sender as Button;
-        var fileName = button?.Tag?.ToString();
-
-        if (fileName == null)
+        if (!(sender is Button button) || button.Tag == null)
         {
             await ShowErrorMessageAsync("Ошибка", "Невозможно определить имя файла для удаления.");
             return;
         }
 
-        // Создание и показ диалога для подтверждения
+        var fileName = button.Tag.ToString();
+
+        if (!await ConfirmFileDeletionAsync(fileName)) return;
+
+        var request = FindParentRequest(button);
+
+        if (request != null)
+            await DeleteFileAsync(request, fileName);
+        else
+            await ShowErrorMessageAsync("Ошибка", "Невозможно определить заявку для удаления файла.");
+    }
+
+    private async Task<bool> ConfirmFileDeletionAsync(string fileName)
+    {
         var mySettings = new MetroDialogSettings
         {
             AffirmativeButtonText = "Да",
@@ -643,38 +750,35 @@ public partial class Main
             $"Вы уверены, что удалить файл {fileName}?",
             MessageDialogStyle.AffirmativeAndNegative, mySettings);
 
-        // Если пользователь не подтвердил удаление, прерываем выполнение метода
-        if (result != MessageDialogResult.Affirmative) return;
+        return result == MessageDialogResult.Affirmative;
+    }
 
-        DependencyObject parent = button;
-        Request request = null;
+    private static Request FindParentRequest(DependencyObject child)
+    {
+        var parent = child;
 
-        // Поднимаемся по дереву элементов, пока не найдем DataContext типа Request
-        while (parent != null && request == null)
+        while (parent != null)
         {
             parent = VisualTreeHelper.GetParent(parent) ?? LogicalTreeHelper.GetParent(parent);
-            if (parent is FrameworkElement frameworkElement)
-                request = frameworkElement.DataContext as Request;
+            if (parent is FrameworkElement frameworkElement && frameworkElement.DataContext is Request request)
+                return request;
         }
 
-        if (request != null)
-        {
-            var requestId = request.RequestId;
-            var fileToRemove = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
+        return null;
+    }
 
-            if (fileToRemove != null && RequestRepository.DeleteFileFromDatabase(requestId, fileName))
-            {
-                request.RequestFiles.Remove(fileToRemove);
-                RefreshFilesListUi();
-            }
-            else
-            {
-                await ShowErrorMessageAsync("Ошибка", "Ошибка при удалении файла из базы данных.");
-            }
+    private async Task DeleteFileAsync(Request request, string fileName)
+    {
+        var fileToRemove = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
+
+        if (fileToRemove != null && RequestRepository.DeleteFileFromDatabase(request.RequestId, fileName))
+        {
+            request.RequestFiles.Remove(fileToRemove);
+            RefreshFilesListUi();
         }
         else
         {
-            await ShowErrorMessageAsync("Ошибка", "Невозможно определить заявку для удаления файла.");
+            await ShowErrorMessageAsync("Ошибка", "Ошибка при удалении файла из базы данных.");
         }
     }
 
@@ -695,64 +799,64 @@ public partial class Main
 
     private async void SaveButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        var button = (Button)sender;
-        var requestId = int.Parse(button.Tag.ToString());
-
-        var requestName = NameTextBox.Text.Trim();
-        var requestType = StatusTextBox.Text;
-        var requestNotes = NotesTextBox.Text.Trim();
-
-        var validationResult = await ValidateInput(requestName, requestType, requestNotes);
-        if (!validationResult.Item1) // Если валидация не пройдена
+        if (sender is Button button && int.TryParse(button.Tag.ToString(), out var requestId))
         {
-            // Отображение сообщения об ошибке
-            await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
-            return;
-        }
+            var requestName = NameTextBox.Text.Trim();
+            var requestType = StatusTextBox.Text;
+            var requestNotes = NotesTextBox.Text.Trim();
 
-        var updatedRequest = new Request
+            var validationResult = await ValidateInput(requestName, requestType, requestNotes);
+            if (!validationResult.Item1)
+            {
+                await ShowErrorMessageAsync("Ошибка", validationResult.Item2);
+                return;
+            }
+
+            var updatedRequest = CreateUpdatedRequest(requestId, requestName, requestType, requestNotes);
+
+            try
+            {
+                await RequestRepository.UpdateRequestAsync(updatedRequest);
+                await HandleFileAttachmentsAsync(requestId);
+                await ShowErrorMessageAsync("Успех", "Изменения успешно сохранены.");
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessageAsync("Ошибка", $"Ошибка при сохранении изменений: {ex.Message}");
+            }
+        }
+    }
+
+    private Request CreateUpdatedRequest(int requestId, string requestName, string requestType, string requestNotes)
+    {
+        return new Request
         {
             RequestId = requestId,
             RequestName = requestName,
             RequestType = requestType,
             Notes = requestNotes,
-            UserId = _currentUser.UserId // ID пользователя
+            UserId = _currentUser.UserId
         };
+    }
 
-        try
+    private async Task HandleFileAttachmentsAsync(int requestId)
+    {
+        if (SelectedFilesDetailsGrid.Count > 0)
         {
-            // Обновляем данные заявки
-            await RequestRepository.UpdateRequestAsync(updatedRequest);
+            var attachedFiles = await ProcessFileAttachments(SelectedFilesDetailsGrid);
 
-            // Проверяем, есть ли выбранные файлы для добавления
-            if (SelectedFilesDetailsGrid.Count > 0)
+            if (attachedFiles.Any())
             {
-                // Обработка прикреплённых файлов
-                var attachedFiles = await ProcessFileAttachments(SelectedFilesDetailsGrid);
+                await RequestRepository.AddRequestFilesAsync(requestId, attachedFiles);
 
-                if (attachedFiles.Any())
+                if (DetailsGrid.DataContext is Request currentRequest)
                 {
-                    // Добавляем новые файлы к заявке
-                    await RequestRepository.AddRequestFilesAsync(requestId, attachedFiles);
+                    foreach (var file in attachedFiles) currentRequest.RequestFiles.Add(file);
 
-                    // Получаем текущий объект заявки из UI
-                    if (DetailsGrid.DataContext is Request currentRequest)
-                    {
-                        // Добавляем файлы в локальный список файлов заявки
-                        foreach (var file in attachedFiles) currentRequest.RequestFiles.Add(file);
-
-                        DisableEditing();
-                        // Обновляем UI
-                        RefreshFilesListUi();
-                    }
+                    DisableEditing();
+                    RefreshFilesListUi();
                 }
             }
-
-            await ShowErrorMessageAsync("Успех", "Изменения успешно сохранены.");
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorMessageAsync("Ошибка", $"Ошибка при сохранении изменений: {ex.Message}");
         }
     }
 
@@ -763,97 +867,108 @@ public partial class Main
 
     private void DisableEditing()
     {
-        // Восстановление исходных значений при отмене редактирования полей
+        RestoreOriginalValues();
+        SetVisibilityForButtons();
+        SetReadOnlyFields(_currentUser.RoleId == 3);
+    }
+
+    private void RestoreOriginalValues()
+    {
         NameTextBox.Text = _originalName;
         NotesTextBox.Text = _originalNotes;
         SelectedFilesDetailsGrid.Clear();
+    }
 
-        // Скрыть кнопки "Сохранить", "Отмена" и "Добавить файл"
+    private void SetVisibilityForButtons()
+    {
         SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
         CancelButtonDetailsGrid.Visibility = Visibility.Collapsed;
         AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
+        EditButtonDetailsGrid.Visibility = _currentUser.RoleId == 3 ? Visibility.Visible : Visibility.Collapsed;
+        DeleteRequestButtonDetailsGrid.Visibility =
+            _currentUser.RoleId == 3 ? Visibility.Visible : Visibility.Collapsed;
+    }
 
-        if (_currentUser.RoleId == 3)
-        {
-            // Вернуть поля в неизменяемое состояние
-            NameTextBox.IsReadOnly = true;
-            NameTextBox.BorderThickness = new Thickness(0);
-            NotesTextBox.IsReadOnly = false;
-            NotesTextBox.BorderThickness = new Thickness(0);
+    private void SetReadOnlyFields(bool isReadOnly)
+    {
+        NameTextBox.IsReadOnly = isReadOnly;
+        NameTextBox.BorderThickness = new Thickness(0);
 
-            // Показать кнопки "Изменить" и "Удалить заявку"
-            EditButtonDetailsGrid.Visibility = Visibility.Visible;
-            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            // Показать кнопки "Изменить" и "Удалить заявку"
-            EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
-            DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        }
+        NotesTextBox.IsReadOnly = !isReadOnly;
+        NotesTextBox.BorderThickness = new Thickness(0);
     }
 
     private async void AddFileButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
-        // Создание и настройка диалога выбора файлов
-        var openFileDialog = new OpenFileDialog
+        var openFileDialog = CreateOpenFileDialog();
+        if (openFileDialog.ShowDialog() != true) return;
+
+        var (validFiles, invalidFiles) = FilterFilesByExtension(openFileDialog.FileNames);
+
+        AddValidFilesToCollection(validFiles);
+
+        if (invalidFiles.Any())
+        {
+            var message = CreateInvalidFilesMessage(invalidFiles);
+            await ShowErrorMessageAsync("Недопустимые файлы", message);
+        }
+    }
+
+    private OpenFileDialog CreateOpenFileDialog()
+    {
+        return new OpenFileDialog
         {
             Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
             Multiselect = true
         };
+    }
 
-        // Отображение диалога выбора файлов и проверка на успешное закрытие с выбранными файлами
-        if (openFileDialog.ShowDialog() != true) return;
-
-        // Создание списка допустимых расширений файлов
+    private (List<string> validFiles, List<string> invalidFiles) FilterFilesByExtension(IEnumerable<string> fileNames)
+    {
         var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
-
-        // Разделение выбранных файлов на допустимые и недопустимые по расширению
-        var validFiles = openFileDialog.FileNames
+        var validFiles = fileNames
             .Where(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant())).ToList();
-        var invalidFiles = openFileDialog.FileNames.Except(validFiles).ToList();
+        var invalidFiles = fileNames.Except(validFiles).ToList();
+        return (validFiles, invalidFiles);
+    }
 
-        // Добавление допустимых файлов в коллекцию выбранных файлов
+    private void AddValidFilesToCollection(IEnumerable<string> validFiles)
+    {
         foreach (var validFile in validFiles) SelectedFilesDetailsGrid.Add(validFile);
+    }
 
-        // Если нет недопустимых файлов, прекратить выполнение функции
-        if (invalidFiles.Count == 0) return;
-
-        // Создание сообщения об ошибках для недопустимых файлов
-        var message =
+    private string CreateInvalidFilesMessage(IEnumerable<string> invalidFiles)
+    {
+        return
             $"Следующие файлы имеют недопустимое расширение и не были добавлены:\n\n{string.Join("\n", invalidFiles.Select(Path.GetFileName))}";
-        // Отображение сообщения об ошибке
-        await ShowErrorMessageAsync("Недопустимые файлы", message);
     }
 
     private async void AcceptRequestManagerButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         const int acceptedStatusId = 4;
 
-        if (sender is not Button button)
+        if (sender is not Button button || !int.TryParse(button.Tag.ToString(), out var requestId))
         {
-            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события.");
+            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события или некорректный идентификатор заявки.");
             return;
         }
 
-        if (!int.TryParse(button.Tag.ToString(), out var requestId))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Некорректный идентификатор заявки.");
-            return;
-        }
+        await UpdateRequestStatusAsync(requestId, acceptedStatusId, "Заявка принята!", "Заявка не найдена!");
+    }
 
+    private async Task UpdateRequestStatusAsync(int requestId, int statusId, string successMessage,
+        string notFoundMessage)
+    {
         try
         {
-            var isUpdated = await RequestRepository.ChangeRequestStatus(requestId, acceptedStatusId);
+            var isUpdated = await RequestRepository.ChangeRequestStatus(requestId, statusId);
+            var message = isUpdated ? successMessage : notFoundMessage;
+            await ShowErrorMessageAsync(isUpdated ? "Успех" : "Ошибка", message);
+
             if (isUpdated)
             {
-                await ShowErrorMessageAsync("Успех", "Заявка принята!");
                 ShowSingleGrid(RequestsGrid);
                 LoadUserRequests();
-            }
-            else
-            {
-                await ShowErrorMessageAsync("Ошибка", "Заявка не найдена!");
             }
         }
         catch (Exception ex)
@@ -868,19 +983,13 @@ public partial class Main
         const string dialogTitle = "Причина отклонения";
         const string dialogMessage = "Введите причину отклонения заявки:";
 
-        if (!(sender is Button button))
+        if (!(sender is Button button) || !int.TryParse(button.Tag.ToString(), out var requestId))
         {
-            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события.");
+            await ShowErrorMessageAsync("Ошибка", "Ошибка в источнике события или некорректный идентификатор заявки.");
             return;
         }
 
-        if (!int.TryParse(button.Tag.ToString(), out var requestId))
-        {
-            await ShowErrorMessageAsync("Ошибка", "Некорректный идентификатор заявки.");
-            return;
-        }
-
-        string input = null;
+        string input;
         do
         {
             input = await this.ShowInputAsync(dialogTitle, dialogMessage, new MetroDialogSettings
@@ -892,21 +1001,22 @@ public partial class Main
                 DefaultButtonFocus = MessageDialogResult.Affirmative
             });
 
-            // Если пользователь нажал "Отмена" или закрыл окно
-            if (input == null) return; // Просто выходим из метода, ничего не делаем
+            if (input == null) return;
 
             if (string.IsNullOrWhiteSpace(input))
                 await ShowErrorMessageAsync("Ошибка", "Поле причины отклонения не может быть пустым.");
         } while (string.IsNullOrWhiteSpace(input));
 
+        await UpdateRequestStatusAsync(requestId, rejectedStatusId, input);
+    }
+
+    private async Task UpdateRequestStatusAsync(int requestId, int statusId, string reason)
+    {
         try
         {
-            // Обновляем статус и причину отклонения заявки в базе данных
-            var isUpdated = await RequestRepository.ChangeRequestStatusAndReason(requestId, rejectedStatusId, input);
-            if (isUpdated)
-                await ShowErrorMessageAsync("Успех", "Заявка успешно отклонена.");
-            else
-                await ShowErrorMessageAsync("Ошибка", "Заявка не найдена.");
+            var isUpdated = await RequestRepository.ChangeRequestStatusAndReason(requestId, statusId, reason);
+            var message = isUpdated ? "Заявка успешно отклонена." : "Заявка не найдена.";
+            await ShowErrorMessageAsync(isUpdated ? "Успех" : "Ошибка", message);
         }
         catch (Exception ex)
         {
@@ -925,28 +1035,20 @@ public partial class Main
         LoadOrganizationGrid();
     }
 
-    private void LoadOrganizationGrid()
+    private async void LoadOrganizationGrid()
     {
         ShowSingleGrid(OrganizationGrid);
-        DataContext = new SuppliersViewModel();
-
-        // Получение ViewModel из DataContext
-        var viewModel = DataContext as SuppliersViewModel;
-        if (viewModel != null)
-            // Вы можете вызвать метод или изменить свойство в вашем ViewModel
-            viewModel.LoadSuppliers(); // Пример вызова метода в ViewModel
+        var viewModel = new SuppliersViewModel();
+        DataContext = viewModel;
+        viewModel.LoadSuppliers();
     }
 
-    private void InvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
+    private async void InvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
     {
         ShowSingleGrid(InvitationCodesGrid);
-        DataContext = new InvitationCodesViewModel();
-
-        // Получение ViewModel из DataContext
-        var viewModel = DataContext as InvitationCodesViewModel;
-        if (viewModel != null)
-            // Вы можете вызвать метод или изменить свойство в вашем ViewModel
-            viewModel.LoadData(); // Пример вызова метода в ViewModel
+        var viewModel = new InvitationCodesViewModel();
+        DataContext = viewModel;
+        viewModel.LoadData();
     }
 
     private void AddOrganizationButton_OnClick(object sender, RoutedEventArgs e)
@@ -963,63 +1065,35 @@ public partial class Main
 
     private void SaveOrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
-        var inn = InnTextBox.Text;
-        var kpp = KppTextBox.Text;
-        var fullName = FullNameTextBox.Text;
-        var supervisor = SupervisorTextBox.Text;
-        var email = EmailTextBox.Text;
-        var contactNumber = ContactNumberTextBox.Text;
+        var fields = new Dictionary<string, string>
+        {
+            { "INN", InnTextBox.Text },
+            { "KPP", KppTextBox.Text },
+            { "FullName", FullNameTextBox.Text.Trim() },
+            { "Supervisor", SupervisorTextBox.Text.Trim() },
+            { "Email", EmailTextBox.Text },
+            { "ContactNumber", new string(ContactNumberTextBox.Text.Where(char.IsDigit).ToArray()) }
+        };
 
-        if (string.IsNullOrWhiteSpace(inn) || string.IsNullOrWhiteSpace(kpp) || string.IsNullOrWhiteSpace(fullName) ||
-            string.IsNullOrWhiteSpace(supervisor) || string.IsNullOrWhiteSpace(email) ||
-            string.IsNullOrWhiteSpace(contactNumber))
+        if (fields.Values.Any(string.IsNullOrWhiteSpace))
         {
             MessageBox.Show("Пожалуйста, заполните все поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
-        try
-        {
-            var connectionString = AppSettings.ConnectionString;
+        SuppliersRepository.SaveOrganizationToDatabase(
+            fields["INN"], fields["KPP"], fields["FullName"], fields["Supervisor"], fields["ContactNumber"],
+            fields["Email"]
+        );
 
-            using (var connection = new MySqlConnection(connectionString))
-            {
-                connection.Open();
+        ClearTextBoxes(InnTextBox, KppTextBox, FullNameTextBox, SupervisorTextBox, EmailTextBox, ContactNumberTextBox);
 
-                var query = @"
-                INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number)
-                VALUES (@inn, @kpp, @fullName, @supervisor, @contactNumber, @email)";
+        LoadOrganizationGrid();
+    }
 
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("@inn", inn);
-                command.Parameters.AddWithValue("@kpp", kpp);
-                command.Parameters.AddWithValue("@fullName", fullName);
-                command.Parameters.AddWithValue("@supervisor", supervisor);
-                command.Parameters.AddWithValue("@contactNumber", contactNumber);
-                command.Parameters.AddWithValue("@email", email);
-                command.ExecuteNonQuery();
-            }
-
-            MessageBox.Show("Организация успешно добавлена", "Информация", MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            // Очистка текстовых полей
-            InnTextBox.Text = string.Empty;
-            KppTextBox.Text = string.Empty;
-            FullNameTextBox.Text = string.Empty;
-            SupervisorTextBox.Text = string.Empty;
-            EmailTextBox.Text = string.Empty;
-            ContactNumberTextBox.Text = string.Empty;
-
-            // Скрытие формы и возврат к основному Grid
-            AddOrganizationGrid.Visibility = Visibility.Collapsed;
-            InvitationCodesGrid.Visibility = Visibility.Visible;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}", "Ошибка", MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
+    private static void ClearTextBoxes(params TextBox[] textBoxes)
+    {
+        foreach (var textBox in textBoxes) textBox.Clear();
     }
 
     private void AddInvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
@@ -1046,35 +1120,35 @@ public partial class Main
 
     private void DataGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
     {
-        var dataGrid = sender as DataGrid;
-        if (dataGrid != null)
+        if (sender is DataGrid dataGrid)
         {
             var hitTestResult = VisualTreeHelper.HitTest(dataGrid, e.GetPosition(dataGrid));
-            if (hitTestResult != null)
-            {
-                var dataGridCell = FindVisualParent<DataGridCell>(hitTestResult.VisualHit);
-                if (dataGridCell != null)
-                {
-                    dataGridCell.Focus(); // Устанавливаем фокус на ячейку
+            var dataGridCell = hitTestResult?.VisualHit as DataGridCell ??
+                               FindVisualParent<DataGridCell>(hitTestResult.VisualHit);
 
-                    var contextMenu = dataGrid.ContextMenu;
-                    if (contextMenu != null)
-                    {
-                        contextMenu.PlacementTarget = dataGrid;
-                        contextMenu.IsOpen = true;
-                    }
-                }
+            if (dataGridCell == null) return;
+
+            dataGridCell.Focus(); // Устанавливаем фокус на ячейку
+            var contextMenu = dataGrid.ContextMenu;
+            if (contextMenu != null)
+            {
+                contextMenu.PlacementTarget = dataGrid;
+                contextMenu.IsOpen = true;
             }
         }
     }
 
     private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
     {
-        var parentObject = VisualTreeHelper.GetParent(child);
-        if (parentObject == null) return null;
+        var parentObject = child;
 
-        var parent = parentObject as T;
-        return parent ?? FindVisualParent<T>(parentObject);
+        while (parentObject != null)
+        {
+            parentObject = VisualTreeHelper.GetParent(parentObject);
+            if (parentObject is T parent) return parent;
+        }
+
+        return null;
     }
 
     private void CopyMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1083,8 +1157,8 @@ public partial class Main
         if (dataGrid.CurrentCell != null)
         {
             var cellInfo = dataGrid.CurrentCell;
-            var cellContent = cellInfo.Column.GetCellContent(cellInfo.Item) as TextBlock;
-            if (cellContent != null) Clipboard.SetText(cellContent.Text);
+            if (cellInfo.Column?.GetCellContent(cellInfo.Item) is TextBlock cellContent)
+                Clipboard.SetText(cellContent.Text);
         }
     }
 
