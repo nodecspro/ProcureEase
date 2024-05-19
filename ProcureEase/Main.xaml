@@ -26,6 +26,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="xctk:MaskedTextBox" BasedOn="{StaticResource {x:Type TextBox}}" />
     </Window.Resources>
 
     <Grid>
@@ -104,12 +105,13 @@
                         Text="Ваши заявки на закупку" />
 
                     <!-- Список заявок пользователя -->
-                    <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Height="300"
+                    <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
                               MouseDoubleClick="UserRequestsDataGrid_OnMouseDoubleClick">
                         <DataGrid.Columns>
                             <!-- ID -->
-                            <DataGridTextColumn Binding="{Binding RequestId}" Header="ID" MinWidth="50"
-                                                MaxWidth="50">
+                            <DataGridTextColumn Binding="{Binding RequestId}" Header="ID" MinWidth="50" MaxWidth="50">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Center" />
@@ -119,7 +121,7 @@
 
                             <!-- Название заявки -->
                             <DataGridTextColumn Header="Название" Binding="{Binding RequestName}" MinWidth="100"
-                                                MaxWidth="150">
+                                                Width="*">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Left" />
@@ -140,8 +142,7 @@
 
                             <!-- Статус заявки -->
                             <DataGridTextColumn x:Name="StatusFieldRequestGrid" Binding="{Binding RequestStatus}"
-                                                Header="Статус" MinWidth="100"
-                                                MaxWidth="100">
+                                                Header="Статус" MinWidth="100" MaxWidth="100">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Center" />
@@ -152,7 +153,7 @@
 
                             <!-- Примечание к заявке -->
                             <DataGridTextColumn Header="Примечания" Binding="{Binding Notes}" MinWidth="150"
-                                                Width="200" MaxWidth="250">
+                                                Width="*">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Left" />
@@ -162,7 +163,7 @@
                             </DataGridTextColumn>
 
                             <!-- Прикреплённые файлы к заявке -->
-                            <DataGridTemplateColumn Header="Файлы" MinWidth="150" Width="200" MaxWidth="250">
+                            <DataGridTemplateColumn Header="Файлы" MinWidth="150" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ItemsControl ItemsSource="{Binding RequestFiles}"
@@ -859,31 +860,81 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0"
-                           Text="Добавить организацию"
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                           Text="Заполните поля"
                            HorizontalAlignment="Center"
                            FontSize="20"
                            FontWeight="Bold"
                            Margin="0,0,0,20" />
 
-                <StackPanel Grid.Row="1" Margin="20">
-                    <TextBox x:Name="InnTextBox" Margin="0, 10" />
-                    <TextBox x:Name="KppTextBox" Margin="0, 10" />
-                    <TextBox x:Name="FullNameTextBox" mah:TextBoxHelper.Watermark="Полное название организации"
-                             Margin="0, 10" />
-                    <TextBox x:Name="SupervisorTextBox" mah:TextBoxHelper.Watermark="Руководитель" Margin="0, 10" />
-                    <TextBox x:Name="EmailTextBox" mah:TextBoxHelper.Watermark="Email" Margin="0, 10" />
-                    <TextBox x:Name="ContactNumberTextBox" mah:TextBoxHelper.Watermark="Контактный номер"
+                <StackPanel Grid.Row="1" Grid.Column="0"
+                            Margin="20"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <xctk:MaskedTextBox x:Name="InnTextBox"
+                                        Mask="0000000000"
+                                        BorderThickness="0,0,0,1"
+                                        Margin="0, 10"
+                                        mah:TextBoxHelper.Watermark="ИНН организации"
+                                        mah:TextBoxHelper.ClearTextButton="True"
+                                        mah:TextBoxHelper.UseFloatingWatermark="True" />
+                    <xctk:MaskedTextBox x:Name="KppTextBox"
+                                        Mask="000000000"
+                                        BorderThickness="0,0,0,1"
+                                        Margin="0, 10"
+                                        mah:TextBoxHelper.Watermark="КПП организации"
+                                        mah:TextBoxHelper.ClearTextButton="True"
+                                        mah:TextBoxHelper.UseFloatingWatermark="True" />
+                    <TextBox x:Name="FullNameTextBox"
+                             BorderThickness="0,0,0,1"
+                             mah:TextBoxHelper.Watermark="Полное название организации"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
                              Margin="0, 10" />
                 </StackPanel>
 
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Сохранить" Click="SaveOrganizationButton_OnClick" Margin="10" />
-                    <Button Content="Отмена" Click="CancelOrganizationButton_OnClick" Margin="10" />
+                <StackPanel Grid.Row="1" Grid.Column="1"
+                            Margin="20"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <TextBox x:Name="SupervisorTextBox"
+                             BorderThickness="0,0,0,1"
+                             mah:TextBoxHelper.Watermark="Руководитель организации"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             Margin="0, 10" />
+                    <TextBox x:Name="EmailTextBox"
+                             BorderThickness="0,0,0,1"
+                             mah:TextBoxHelper.Watermark="E-mail организации"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             Margin="0, 10" />
+                    <xctk:MaskedTextBox x:Name="ContactNumberTextBox"
+                                        Mask="+7(000)000-00-00"
+                                        BorderThickness="0,0,0,1"
+                                        Margin="0, 10"
+                                        mah:TextBoxHelper.Watermark="Контактный номер организации"
+                                        mah:TextBoxHelper.ClearTextButton="True"
+                                        mah:TextBoxHelper.UseFloatingWatermark="True" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0" Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <Button Content="Добавить"
+                            Click="SaveOrganizationButton_OnClick"
+                            Margin="10" />
+                    <Button Content="Назад"
+                            Background="Red"
+                            Click="CancelOrganizationButton_OnClick"
+                            Margin="10" />
                 </StackPanel>
             </Grid>
-        </Grid>
 
+        </Grid>
     </Grid>
 </mah:MetroWindow>

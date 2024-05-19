@@ -15,6 +15,7 @@ using Microsoft.Win32;
 using MySql.Data.MySqlClient;
 using ProcureEase.Classes;
 using Xceed.Wpf.AvalonDock.Controls;
+using MessageBox = System.Windows.MessageBox;
 
 #endregion
 
@@ -364,7 +365,10 @@ public partial class Main
     private void ShowSingleGrid(UIElement gridToShow)
     {
         var allGrids = new List<UIElement>
-            { RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid, OrganizationGrid, InvitationCodesGrid };
+        {
+            RequestsGrid, UserDataGrid, NewRequestGrid, DetailsGrid, OrganizationGrid, InvitationCodesGrid,
+            AddOrganizationGrid
+        };
 
         foreach (var grid in allGrids) grid.Visibility = grid == gridToShow ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -918,6 +922,11 @@ public partial class Main
 
     private void OrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
+        LoadOrganizationGrid();
+    }
+
+    private void LoadOrganizationGrid()
+    {
         ShowSingleGrid(OrganizationGrid);
         DataContext = new SuppliersViewModel();
 
@@ -943,15 +952,13 @@ public partial class Main
     private void AddOrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
         // Скрываем основной Grid и показываем Grid для добавления организации
-        InvitationCodesGrid.Visibility = Visibility.Collapsed;
-        AddOrganizationGrid.Visibility = Visibility.Visible;
+        ShowSingleGrid(AddOrganizationGrid);
     }
 
     private void CancelOrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
         // Скрываем Grid для добавления организации и показываем основной Grid
-        AddOrganizationGrid.Visibility = Visibility.Collapsed;
-        InvitationCodesGrid.Visibility = Visibility.Visible;
+        LoadOrganizationGrid();
     }
 
     private void SaveOrganizationButton_OnClick(object sender, RoutedEventArgs e)

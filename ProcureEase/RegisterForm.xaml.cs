@@ -42,13 +42,13 @@ public partial class RegisterForm
 
         _inputControls = new List<Control>
         {
-            txtUsername,
-            txtPassword,
-            txtFirstName,
-            txtLastName,
-            txtPhoneNumber,
-            txtEmail,
-            txtInviteCode
+            TxtUsername,
+            TxtPassword,
+            TxtFirstName,
+            TxtLastName,
+            TxtPhoneNumber,
+            TxtEmail,
+            TxtInviteCode
         };
         ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         ThemeManager.Current.SyncTheme();
@@ -75,7 +75,7 @@ public partial class RegisterForm
 
         if (await TryRegisterUser())
         {
-            OpenMainForm(txtUsername.Text);
+            OpenMainForm(TxtUsername.Text);
             ClearFields();
         }
         else
@@ -100,7 +100,7 @@ public partial class RegisterForm
 
     private async Task<int> RegisterUser()
     {
-        var inviteData = await ValidateAndFetchInviteData(txtInviteCode.Text);
+        var inviteData = await ValidateAndFetchInviteData(TxtInviteCode.Text);
         if (inviteData == null)
         {
             MessageBox.Show("Неправильный или истекший код приглашения.");
@@ -121,15 +121,15 @@ public partial class RegisterForm
             await using (var userInsertCommand = new MySqlCommand(userInsertQuery, connection))
             {
                 userInsertCommand.Transaction = transaction;
-                userInsertCommand.Parameters.AddWithValue("@username", txtUsername.Text);
-                userInsertCommand.Parameters.AddWithValue("@password", HashPassword(txtPassword.Password));
-                userInsertCommand.Parameters.AddWithValue("@firstName", txtFirstName.Text.Trim());
-                userInsertCommand.Parameters.AddWithValue("@lastName", txtLastName.Text.Trim());
+                userInsertCommand.Parameters.AddWithValue("@username", TxtUsername.Text);
+                userInsertCommand.Parameters.AddWithValue("@password", HashPassword(TxtPassword.Password));
+                userInsertCommand.Parameters.AddWithValue("@firstName", TxtFirstName.Text.Trim());
+                userInsertCommand.Parameters.AddWithValue("@lastName", TxtLastName.Text.Trim());
                 userInsertCommand.Parameters.AddWithValue("@patronymic",
-                    string.IsNullOrWhiteSpace(txtPatronymic.Text) ? DBNull.Value : txtPatronymic.Text.Trim());
+                    string.IsNullOrWhiteSpace(TxtPatronymic.Text) ? DBNull.Value : TxtPatronymic.Text.Trim());
                 userInsertCommand.Parameters.AddWithValue("@phoneNumber",
-                    Regex.Replace(txtPhoneNumber.Text, "[^0-9]", ""));
-                userInsertCommand.Parameters.AddWithValue("@email", txtEmail.Text);
+                    Regex.Replace(TxtPhoneNumber.Text, "[^0-9]", ""));
+                userInsertCommand.Parameters.AddWithValue("@email", TxtEmail.Text);
                 userInsertCommand.Parameters.AddWithValue("@roleId", inviteData.Value.RoleId);
                 userInsertCommand.Parameters.AddWithValue("@organizationId", inviteData.Value.OrganizationId);
 
@@ -141,7 +141,7 @@ public partial class RegisterForm
             await using (var inviteDeleteCommand = new MySqlCommand(inviteDeleteQuery, connection))
             {
                 inviteDeleteCommand.Transaction = transaction;
-                inviteDeleteCommand.Parameters.AddWithValue("@code", txtInviteCode.Text);
+                inviteDeleteCommand.Parameters.AddWithValue("@code", TxtInviteCode.Text);
                 await inviteDeleteCommand.ExecuteNonQueryAsync();
             }
 
@@ -195,10 +195,10 @@ public partial class RegisterForm
     private string ValidateFields()
     {
         var errorMessage = new StringBuilder();
-        ValidateUsername(txtUsername, "Имя пользователя", errorMessage);
-        ValidatePassword(txtPassword, "Пароль", errorMessage);
-        ValidateName(txtFirstName, "Имя", errorMessage);
-        ValidateName(txtLastName, "Фамилия", errorMessage);
+        ValidateUsername(TxtUsername, "Имя пользователя", errorMessage);
+        ValidatePassword(TxtPassword, "Пароль", errorMessage);
+        ValidateName(TxtFirstName, "Имя", errorMessage);
+        ValidateName(TxtLastName, "Фамилия", errorMessage);
         ValidatePhoneNumber(errorMessage);
         ValidateEmail(errorMessage);
         ValidateInviteCode(errorMessage);
@@ -273,45 +273,45 @@ public partial class RegisterForm
 
     private void ValidatePhoneNumber(StringBuilder errorMessage)
     {
-        if (!txtPhoneNumber.IsMaskCompleted)
+        if (!TxtPhoneNumber.IsMaskCompleted)
         {
             errorMessage.AppendLine("Номер телефона не может быть пустым.");
-            txtPhoneNumber.BorderBrush = Brushes.Red;
+            TxtPhoneNumber.BorderBrush = Brushes.Red;
         }
         else
         {
-            txtPhoneNumber.BorderBrush = _defaultBorderBrush;
+            TxtPhoneNumber.BorderBrush = _defaultBorderBrush;
         }
     }
 
     private void ValidateEmail(StringBuilder errorMessage)
     {
-        if (!IsValidEmail(txtEmail.Text))
+        if (!IsValidEmail(TxtEmail.Text))
         {
             errorMessage.AppendLine("Неправильный формат адреса электронной почты.");
-            txtEmail.BorderBrush = Brushes.Red;
+            TxtEmail.BorderBrush = Brushes.Red;
         }
         else
         {
-            txtEmail.BorderBrush = _defaultBorderBrush;
+            TxtEmail.BorderBrush = _defaultBorderBrush;
         }
     }
 
     private void ValidateInviteCode(StringBuilder errorMessage)
     {
-        if (string.IsNullOrWhiteSpace(txtInviteCode.Text))
+        if (string.IsNullOrWhiteSpace(TxtInviteCode.Text))
         {
             errorMessage.AppendLine("Поле кода приглашения не может быть пустым.");
-            txtInviteCode.BorderBrush = Brushes.Red;
+            TxtInviteCode.BorderBrush = Brushes.Red;
         }
-        else if (!IsValidInviteCode(txtInviteCode.Text))
+        else if (!IsValidInviteCode(TxtInviteCode.Text))
         {
             errorMessage.AppendLine("Неправильный код приглашения.");
-            txtInviteCode.BorderBrush = Brushes.Red;
+            TxtInviteCode.BorderBrush = Brushes.Red;
         }
         else
         {
-            txtInviteCode.BorderBrush = _defaultBorderBrush;
+            TxtInviteCode.BorderBrush = _defaultBorderBrush;
         }
     }
 
