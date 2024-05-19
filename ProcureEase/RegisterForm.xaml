@@ -15,6 +15,10 @@
     WindowStartupLocation="CenterScreen"
     WindowTransitionsEnabled="False"
     mc:Ignorable="d">
+    <Window.Resources>
+        <Style TargetType="xctk:MaskedTextBox" BasedOn="{StaticResource {x:Type TextBox}}" />
+    </Window.Resources>
+
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -37,8 +41,9 @@
                 x:Name="txtUsername"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Логин"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Пароль:" />
@@ -46,17 +51,19 @@
                 x:Name="txtPassword"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                PasswordChanged="PasswordBox_PasswordChanged"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}" />
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Пароль"
+                Controls:TextBoxHelper.ClearTextButton="True"
+                PasswordChanged="PasswordBox_PasswordChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Имя:" />
             <TextBox
                 x:Name="txtFirstName"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Имя"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Фамилия:" />
@@ -64,8 +71,9 @@
                 x:Name="txtLastName"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Фамилия"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Отчество (если есть):" />
@@ -73,8 +81,9 @@
                 x:Name="txtPatronymic"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Отчество"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Номер телефона:" />
@@ -82,18 +91,20 @@
                 x:Name="txtPhoneNumber"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
+                BorderThickness="0,0,0,1"
                 Mask="+7(000)000-00-00"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
+
 
             <TextBlock Margin="0,6,0,2" Text="Почта:" />
             <TextBox
                 x:Name="txtEmail"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Почта"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
             <TextBlock Margin="0,6,0,2" Text="Код приглашения:" />
@@ -101,8 +112,9 @@
                 x:Name="txtInviteCode"
                 Margin="0,4"
                 Padding="4"
-                BorderThickness="1"
-                Style="{DynamicResource MahApps.Metro.Styles.TextBox}"
+                BorderThickness="0,0,0,1"
+                Controls:TextBoxHelper.Watermark="Код приглашения"
+                Controls:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
         </StackPanel>
         <Button
