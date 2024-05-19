@@ -782,12 +782,17 @@
                            FontWeight="Bold"
                            Margin="0,0,0,20" />
                 <DataGrid Grid.Row="1"
+                          Name="InvitationCodesDataGrid"
                           ItemsSource="{Binding InvitationCodes}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
-                          RowStyle="{StaticResource ExpiredRowStyle}">
+                          RowStyle="{StaticResource ExpiredRowStyle}"
+                          SelectionMode="Extended"
+                          SelectionUnit="Cell"
+                          ClipboardCopyMode="ExcludeHeader"
+                          MouseRightButtonUp="DataGrid_MouseRightButtonUp">
                     <DataGrid.Resources>
                         <Style x:Key="WrapTextStyle" TargetType="TextBlock">
                             <Setter Property="TextWrapping" Value="Wrap" />
@@ -817,6 +822,14 @@
                                             Width="*"
                                             ElementStyle="{StaticResource WrapTextStyle}" />
                     </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Копировать"
+                                      Click="CopyMenuItem_Click" />
+                            <MenuItem Header="Удалить"
+                                      Click="DeleteMenuItem_Click" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                 </DataGrid>
 
                 <!-- Кнопка добавления организации -->
@@ -824,20 +837,19 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom">
-                    <Button x:Name="AddInvitationCode"
+                    <Button x:Name="AddInvitationCodeButton"
                             Content="Создать код приглашения"
                             Margin="0,0,20,10"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
-                            Click="AddInvitationCode_OnClick" />
-                    <Button x:Name="RemoveOldInvitationCode"
+                            Click="AddInvitationCodeButton_OnClick" />
+                    <Button x:Name="RemoveOldInvitationCodeButton"
                             Content="Удалить истёкшие коды"
                             Margin="0,0,20,10"
                             Background="Red"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Bottom"
-                            
-                            Click="RemoveOldInvitationCode_OnClick" />
+                            Click="RemoveOldInvitationCodeButton_OnClick" />
                 </StackPanel>
             </Grid>
 

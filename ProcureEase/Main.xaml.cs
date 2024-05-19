@@ -110,11 +110,6 @@ public partial class Main
         UserRequestsDataGrid.Items.Refresh();
     }
 
-    // private static async void LoadSuppliersData()
-    // {
-    //     SuppliersViewModel.LoadSuppliers();
-    // }
-
     private void UsernameTextBlock_Click(object sender, RoutedEventArgs e)
     {
         DisableEditing();
@@ -949,13 +944,79 @@ public partial class Main
         throw new NotImplementedException();
     }
 
-    private void AddInvitationCode_OnClick(object sender, RoutedEventArgs e)
+    private void AddInvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var addWindow = new AddInvitationCodeWindow
+        {
+            DataContext = new AddInvitationCodeViewModel()
+        };
+
+        if (addWindow.ShowDialog() == true)
+        {
+            // Обновить коды приглашений после добавления нового
+            var viewModel = DataContext as InvitationCodesViewModel;
+            if (viewModel != null)
+                viewModel.LoadData();
+        }
     }
 
-    private void RemoveOldInvitationCode_OnClick(object sender, RoutedEventArgs e)
+    private void RemoveOldInvitationCodeButton_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var viewModel = DataContext as InvitationCodesViewModel;
+        if (viewModel != null) viewModel.RemoveOldInvitationCodes();
+    }
+
+    private void DataGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        var dataGrid = sender as DataGrid;
+        if (dataGrid != null)
+        {
+            var hitTestResult = VisualTreeHelper.HitTest(dataGrid, e.GetPosition(dataGrid));
+            if (hitTestResult != null)
+            {
+                var dataGridCell = FindVisualParent<DataGridCell>(hitTestResult.VisualHit);
+                if (dataGridCell != null)
+                {
+                    dataGridCell.Focus(); // Устанавливаем фокус на ячейку
+
+                    var contextMenu = dataGrid.ContextMenu;
+                    if (contextMenu != null)
+                    {
+                        contextMenu.PlacementTarget = dataGrid;
+                        contextMenu.IsOpen = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        var parentObject = VisualTreeHelper.GetParent(child);
+        if (parentObject == null) return null;
+
+        var parent = parentObject as T;
+        return parent ?? FindVisualParent<T>(parentObject);
+    }
+
+    private void CopyMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var dataGrid = InvitationCodesDataGrid;
+        if (dataGrid.CurrentCell != null)
+        {
+            var cellInfo = dataGrid.CurrentCell;
+            var cellContent = cellInfo.Column.GetCellContent(cellInfo.Item) as TextBlock;
+            if (cellContent != null) Clipboard.SetText(cellContent.Text);
+        }
+    }
+
+    private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var dataGrid = InvitationCodesDataGrid;
+        if (dataGrid.CurrentCell != null && dataGrid.CurrentCell.Item is InvitationCode selectedCode)
+        {
+            var viewModel = DataContext as InvitationCodesViewModel;
+            if (viewModel != null) viewModel.DeleteInvitationCode(selectedCode);
+        }
     }
 }

@@ -179,3 +179,6 @@ D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\r
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\bin\Debug\net8.0-windows\Wpf.Ui.dll
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
 D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\ProcureEase_MarkupCompile.lref
+D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\AddInvitationCodeWindow.g.cs
+D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\obj\Debug\net8.0-windows\AddInvitationCodeWindow.baml
+D:\JetBrains Rider 2024.1.1\RiderProjects\ProcureEase\bin\Debug\net8.0-windows\FontAwesome.WPF.dll

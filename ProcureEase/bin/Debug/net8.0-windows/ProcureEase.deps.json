@@ -10,6 +10,7 @@
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
           "Extended.Wpf.Toolkit": "4.6.0",
+          "FontAwesome.WPF": "4.7.0.9",
           "MahApps.Metro": "2.4.10",
           "Microsoft.Extensions.Configuration.UserSecrets": "6.0.1",
           "MvvmLightLibs": "5.4.1.1",
@@ -120,6 +121,14 @@
           },
           "lib/net5.0/zh-Hans/Xceed.Wpf.AvalonDock.NET5.resources.dll": {
             "locale": "zh-Hans"
+          }
+        }
+      },
+      "FontAwesome.WPF/4.7.0.9": {
+        "runtime": {
+          "lib/net40/FontAwesome.WPF.dll": {
+            "assemblyVersion": "4.7.0.37774",
+            "fileVersion": "4.7.0.9"
           }
         }
       },
@@ -1763,6 +1772,13 @@
       "sha512": "sha512-W67USjczMau4R5g8aU9/knYpCqnFurZ/kmzXnSvqxhC9YR3KaUTT2L+95WWoL1u9qlQ48U6ORP9s6I6x9/yW4Q==",
       "path": "extended.wpf.toolkit/4.6.0",
       "hashPath": "extended.wpf.toolkit.4.6.0.nupkg.sha512"
+    },
+    "FontAwesome.WPF/4.7.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SXE080rnyWMm9Dt0BZzMxh89/o9teuSaqL1N+0O/XM/F/HU8JuZA4XaEKxjBigwZPHHU3/udTa0QMYCHkmH43Q==",
+      "path": "fontawesome.wpf/4.7.0.9",
+      "hashPath": "fontawesome.wpf.4.7.0.9.nupkg.sha512"
     },
     "Google.Protobuf/3.25.1": {
       "type": "package",
