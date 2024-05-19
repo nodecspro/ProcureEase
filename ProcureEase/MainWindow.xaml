@@ -17,27 +17,32 @@
     <Grid>
         <StackPanel
             Width="300"
-            Margin="0,48,0,0"
             HorizontalAlignment="Center"
-            VerticalAlignment="Top">
+            VerticalAlignment="Center">
+
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,0,0,24">
+                <TextBlock.Inlines>
+                    <Run FontWeight="Bold" FontSize="20" Text="Авторизация" />
+                </TextBlock.Inlines>
+            </TextBlock>
             <!--  Username  -->
-            <Label Content="Имя пользователя" />
             <TextBox
                 x:Name="txtUsername"
-                Width="300"
-                Height="30"
-                Padding="5"
+                BorderThickness="0,0,0,1"
+                Margin="0,0,0,20"
                 mah:TextBoxHelper.Watermark="Логин"
+                mah:TextBoxHelper.UseFloatingWatermark="True"
                 mah:TextBoxHelper.ClearTextButton="True" />
 
             <!--  Password  -->
-            <Label Content="Пароль" />
             <PasswordBox
                 x:Name="txtPassword"
-                Width="300"
-                Height="30"
-                Padding="5"
+                BorderThickness="0,0,0,1"
+                Margin="0,0,0,5"
                 mah:TextBoxHelper.Watermark="Пароль"
+                mah:TextBoxHelper.UseFloatingWatermark="True"
                 mah:TextBoxHelper.ClearTextButton="True" />
 
             <!--  Register Hyperlink  -->
@@ -50,7 +55,7 @@
 
             <!--  Login Button  -->
             <Button
-                Margin="0,12,0,0"
+                Margin="0,20,0,0"
                 Click="BtnLogin_Click"
                 Content="Войти"
                 IsDefault="True" />
