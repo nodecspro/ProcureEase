@@ -1,6 +1,5 @@
 ﻿#region
 
-using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -86,10 +85,7 @@ public partial class Main
     private void SortDataGridById()
     {
         var idColumn = FindIdColumn(UserRequestsDataGrid, "ID");
-        if (idColumn != null)
-        {
-            ApplySort(UserRequestsDataGrid, idColumn.SortMemberPath, ListSortDirection.Ascending);
-        }
+        if (idColumn != null) ApplySort(UserRequestsDataGrid, idColumn.SortMemberPath, ListSortDirection.Ascending);
     }
 
     private DataGridColumn FindIdColumn(DataGrid dataGrid, string headerName)
@@ -166,10 +162,7 @@ public partial class Main
 
         AddValidFiles(validFiles);
 
-        if (invalidFiles.Count > 0)
-        {
-            await ShowInvalidFilesMessageAsync(invalidFiles);
-        }
+        if (invalidFiles.Count > 0) await ShowInvalidFilesMessageAsync(invalidFiles);
     }
 
     private (List<string> validFiles, List<string> invalidFiles) ValidateFiles(IEnumerable<string> fileNames)
@@ -218,10 +211,7 @@ public partial class Main
 
     private void AddValidFiles(IEnumerable<string> validFiles)
     {
-        foreach (var validFile in validFiles)
-        {
-            SelectedFiles.Add(validFile);
-        }
+        foreach (var validFile in validFiles) SelectedFiles.Add(validFile);
     }
 
     private async Task ShowInvalidFilesMessageAsync(IEnumerable<string> invalidFiles)
@@ -283,13 +273,9 @@ public partial class Main
             await ProcessFileAttachments(SelectedFiles));
 
         if (await AddRequestWithFiles(request))
-        {
             SelectedFiles.Clear();
-        }
         else
-        {
             await ShowErrorMessageAsync("Ошибка", "Не удалось добавить заявку. Пожалуйста, попробуйте еще раз.");
-        }
     }
 
     private (string requestName, string? requestType, string requestNotes) ReadFormData()
@@ -383,19 +369,13 @@ public partial class Main
     private static Task<(bool, string)> ValidateInput(string requestName, string? requestType, string requestNotes)
     {
         if (string.IsNullOrWhiteSpace(requestName) || string.IsNullOrWhiteSpace(requestType))
-        {
             return Task.FromResult((false, "Пожалуйста, заполните все обязательные поля."));
-        }
 
         if (!IsValidRequestName(requestName))
-        {
             return Task.FromResult((false, "Название заявки содержит недопустимые символы."));
-        }
 
         if (!IsValidRequestNotes(requestNotes))
-        {
             return Task.FromResult((false, "Примечания содержат недопустимые символы."));
-        }
 
         return Task.FromResult((true, ""));
     }
@@ -428,12 +408,8 @@ public partial class Main
         var borderThickness = isEditing ? new Thickness(0, 0, 0, 1) : new Thickness(0);
 
         foreach (var textBox in grid.FindVisualChildren<TextBox>())
-        {
             if (textBox.Tag as string != "NoEdit")
-            {
                 SetTextBoxEditMode(textBox, isEditing, borderBrush, borderThickness);
-            }
-        }
     }
 
     private static void SetTextBoxEditMode(TextBox textBox, bool isEditing, Brush borderBrush,
@@ -459,12 +435,8 @@ public partial class Main
             var dataGridRow = FindParent<DataGridRow>(textBlock);
 
             if (dataGridRow != null && dataGridRow.Item is Request request)
-            {
                 if (await ConfirmFileDownloadAsync(fileName))
-                {
                     await DownloadFileAsync(request.RequestId, fileName);
-                }
-            }
         }
     }
 
@@ -585,15 +557,10 @@ public partial class Main
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
-            if (current is FrameworkElement fe && fe.Name == name)
-            {
-                return fe;
-            }
+            if (current is FrameworkElement fe && fe.Name == name) return fe;
 
             for (int i = 0, count = VisualTreeHelper.GetChildrenCount(current); i < count; i++)
-            {
                 queue.Enqueue(VisualTreeHelper.GetChild(current, i));
-            }
         }
 
         return null;
@@ -657,13 +624,9 @@ public partial class Main
     private async void DeleteRequestButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && int.TryParse(button.Tag.ToString(), out var requestId))
-        {
             if (await ConfirmDeletionAsync("Подтверждение удаления",
                     "Вы уверены, что хотите удалить эту заявку и все связанные файлы?"))
-            {
                 await DeleteRequestAsync(requestId);
-            }
-        }
     }
 
     private async Task<bool> ConfirmDeletionAsync(string title, string message)
@@ -853,9 +816,8 @@ public partial class Main
                 await RequestRepository.AddRequestFilesAsync(requestId, attachedFiles);
 
                 if (DetailsGrid.DataContext is Request currentRequest)
-                {
-                    foreach (var file in attachedFiles) currentRequest.RequestFiles.Add(file);
-                }
+                    foreach (var file in attachedFiles)
+                        currentRequest.RequestFiles.Add(file);
             }
         }
 
@@ -1068,7 +1030,7 @@ public partial class Main
         LoadOrganizationGrid();
     }
 
-    private void SaveOrganizationButton_OnClick(object sender, RoutedEventArgs e)
+    private async void SaveOrganizationButton_OnClick(object sender, RoutedEventArgs e)
     {
         var fields = new Dictionary<string, string>
         {
@@ -1086,14 +1048,32 @@ public partial class Main
             return;
         }
 
-        SuppliersRepository.SaveOrganizationToDatabase(
-            fields["INN"], fields["KPP"], fields["FullName"], fields["Supervisor"], fields["ContactNumber"],
-            fields["Email"]
-        );
+        if (WorkTypeComboBox.SelectedItem == null)
+        {
+            MessageBox.Show("Пожалуйста, выберите тип работы", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
 
-        ClearTextBoxes(InnTextBox, KppTextBox, FullNameTextBox, SupervisorTextBox, EmailTextBox, ContactNumberTextBox);
+        var selectedWorkType = (WorkType)WorkTypeComboBox.SelectedItem;
 
-        LoadOrganizationGrid();
+        try
+        {
+            await SuppliersRepository.SaveOrganizationToDatabaseAsync(
+                fields["INN"], fields["KPP"], fields["FullName"], fields["Supervisor"], fields["ContactNumber"],
+                fields["Email"], selectedWorkType.Id
+            );
+
+            ClearTextBoxes(InnTextBox, KppTextBox, FullNameTextBox, SupervisorTextBox, EmailTextBox,
+                ContactNumberTextBox);
+
+            LoadOrganizationGrid();
+            MessageBox.Show("Организация успешно добавлена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}", "Ошибка", MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private static void ClearTextBoxes(params TextBox[] textBoxes)

@@ -13,25 +13,30 @@ public class SuppliersRepository
         return new MySqlConnection(AppSettings.ConnectionString);
     }
 
-    public static void SaveOrganizationToDatabase(string inn, string kpp, string fullName, string supervisor,
-        string contactNumber, string email)
+    public static async Task SaveOrganizationToDatabaseAsync(string inn, string kpp, string fullName, string supervisor,
+        string contactNumber, string email, int requestTypeId)
     {
-        using var connection = GetConnection();
-        connection.Open();
+        var connectionString = AppSettings.ConnectionString;
 
-        const string query = @"
-            INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number)
-            VALUES (@inn, @kpp, @fullName, @supervisor, @email, @contactNumber)";
-
-        using (var command = new MySqlCommand(query, connection))
+        using (var conn = new MySqlConnection(connectionString))
         {
-            command.Parameters.Add("@inn", MySqlDbType.VarChar).Value = inn;
-            command.Parameters.Add("@kpp", MySqlDbType.VarChar).Value = kpp;
-            command.Parameters.Add("@fullName", MySqlDbType.VarChar).Value = fullName;
-            command.Parameters.Add("@supervisor", MySqlDbType.VarChar).Value = supervisor;
-            command.Parameters.Add("@contactNumber", MySqlDbType.VarChar).Value = contactNumber;
-            command.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
-            command.ExecuteNonQuery();
+            await conn.OpenAsync();
+
+            const string query = @"
+            INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number, request_type_id)
+            VALUES (@inn, @kpp, @fullName, @supervisor, @email, @contactNumber, @requestTypeId)";
+
+            using (var command = new MySqlCommand(query, conn))
+            {
+                command.Parameters.Add("@inn", MySqlDbType.VarChar).Value = inn;
+                command.Parameters.Add("@kpp", MySqlDbType.VarChar).Value = kpp;
+                command.Parameters.Add("@fullName", MySqlDbType.VarChar).Value = fullName;
+                command.Parameters.Add("@supervisor", MySqlDbType.VarChar).Value = supervisor;
+                command.Parameters.Add("@contactNumber", MySqlDbType.VarChar).Value = contactNumber;
+                command.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
+                command.Parameters.Add("@requestTypeId", MySqlDbType.Int32).Value = requestTypeId;
+                await command.ExecuteNonQueryAsync();
+            }
         }
     }
 }

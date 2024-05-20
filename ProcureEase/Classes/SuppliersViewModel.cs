@@ -11,13 +11,28 @@ namespace ProcureEase.Classes;
 
 public class SuppliersViewModel : INotifyPropertyChanged
 {
+    private WorkType _selectedWorkType;
+
     public SuppliersViewModel()
     {
         Suppliers = new ObservableCollection<Supplier>();
+        WorkTypes = new ObservableCollection<WorkType>();
         LoadSuppliers();
+        LoadWorkTypes();
     }
 
     public ObservableCollection<Supplier> Suppliers { get; set; }
+    public ObservableCollection<WorkType> WorkTypes { get; set; }
+
+    public WorkType SelectedWorkType
+    {
+        get => _selectedWorkType;
+        set
+        {
+            _selectedWorkType = value;
+            OnPropertyChanged();
+        }
+    }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -87,5 +102,35 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
         Suppliers.Clear();
         foreach (var supplier in suppliers) Suppliers.Add(supplier);
+    }
+
+    private async Task LoadWorkTypes()
+    {
+        var connectionString = AppSettings.ConnectionString;
+        var workTypes = new List<WorkType>();
+
+        using (var conn = new MySqlConnection(connectionString))
+        {
+            await conn.OpenAsync(); // Асинхронное открытие соединения
+
+            var query = "SELECT idRequestType, name FROM request_type";
+            var cmd = new MySqlCommand(query, conn);
+
+            using (var reader = await cmd.ExecuteReaderAsync()) // Асинхронное чтение данных
+            {
+                while (await reader.ReadAsync())
+                {
+                    var workType = new WorkType
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("idRequestType")),
+                        Name = reader.GetString(reader.GetOrdinal("name"))
+                    };
+                    workTypes.Add(workType);
+                }
+            }
+        }
+
+        WorkTypes.Clear();
+        foreach (var workType in workTypes) WorkTypes.Add(workType);
     }
 }

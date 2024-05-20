@@ -92,7 +92,7 @@
                 Margin="0,4"
                 Padding="4"
                 BorderThickness="0,0,0,1"
-                Mask="+7(000)000-00-00"
+                Mask="+7 (000) 000-00-00"
                 mah:TextBoxHelper.ClearTextButton="True"
                 TextChanged="TextBox_TextChanged" />
 
