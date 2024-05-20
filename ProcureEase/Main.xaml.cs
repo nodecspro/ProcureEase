@@ -1044,13 +1044,13 @@ public partial class Main
 
         if (fields.Values.Any(string.IsNullOrWhiteSpace))
         {
-            MessageBox.Show("Пожалуйста, заполните все поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            await ShowErrorMessageAsync("Ошибка", "Пожалуйста, заполните все поля");
             return;
         }
 
         if (WorkTypeComboBox.SelectedItem == null)
         {
-            MessageBox.Show("Пожалуйста, выберите тип работы", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            await ShowErrorMessageAsync("Ошибка", "Пожалуйста, выберите тип работы");
             return;
         }
 
@@ -1067,12 +1067,11 @@ public partial class Main
                 ContactNumberTextBox);
 
             LoadOrganizationGrid();
-            MessageBox.Show("Организация успешно добавлена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            await ShowErrorMessageAsync("Успех", "Организация успешно добавлена");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка при добавлении организации: {ex.Message}", "Ошибка", MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            await ShowErrorMessageAsync("Ошибка", $"Ошибка при добавлении организации: {ex.Message}");
         }
     }
 
