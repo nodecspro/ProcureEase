@@ -1020,6 +1020,8 @@ public partial class Main
             var isUpdated = await RequestRepository.ChangeRequestStatusAndReason(requestId, statusId, reason);
             var message = isUpdated ? "Заявка успешно отклонена." : "Заявка не найдена.";
             await ShowErrorMessageAsync(isUpdated ? "Успех" : "Ошибка", message);
+            LoadUserRequests();
+            ShowSingleGrid(RequestsGrid);
         }
         catch (Exception ex)
         {
