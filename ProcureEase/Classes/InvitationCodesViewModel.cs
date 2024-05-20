@@ -11,6 +11,11 @@ namespace ProcureEase.Classes;
 
 public class InvitationCodesViewModel : INotifyPropertyChanged
 {
+    private static MySqlConnection GetConnection()
+    {
+        return new MySqlConnection(AppSettings.ConnectionString);
+    }
+
     private ObservableCollection<InvitationCode> _invitationCodes;
 
     public InvitationCodesViewModel()
@@ -34,12 +39,9 @@ public class InvitationCodesViewModel : INotifyPropertyChanged
 
     public void LoadData()
     {
-        // Очищаем коллекцию перед загрузкой
         InvitationCodes.Clear();
 
-        var connectionString = AppSettings.ConnectionString;
-
-        using (var connection = new MySqlConnection(connectionString))
+        using (var connection = GetConnection())
         {
             connection.Open();
 
@@ -72,9 +74,7 @@ public class InvitationCodesViewModel : INotifyPropertyChanged
             .Where(code => code.ExpirationDate.HasValue && code.ExpirationDate.Value < DateTime.Now).ToList();
         if (expiredCodes.Count > 0)
         {
-            var connectionString = AppSettings.ConnectionString;
-
-            using (var connection = new MySqlConnection(connectionString))
+            using (var connection = GetConnection())
             {
                 connection.Open();
 
@@ -93,9 +93,7 @@ public class InvitationCodesViewModel : INotifyPropertyChanged
 
     public void DeleteInvitationCode(InvitationCode code)
     {
-        var connectionString = AppSettings.ConnectionString;
-
-        using (var connection = new MySqlConnection(connectionString))
+        using (var connection = GetConnection())
         {
             connection.Open();
 

@@ -252,7 +252,6 @@
                         <TextBox
                             Grid.Row="1"
                             Grid.Column="1"
-                            Name="Email"
                             TextChanged="TextBox_TextChanged"
                             BorderThickness="0"
                             IsReadOnly="True"
@@ -266,7 +265,6 @@
                         <TextBox
                             Grid.Row="2"
                             Grid.Column="1"
-                            Name="FirstName"
                             BorderThickness="0"
                             IsReadOnly="True"
                             TextChanged="TextBox_TextChanged"
@@ -280,7 +278,6 @@
                         <TextBox
                             Grid.Row="3"
                             Grid.Column="1"
-                            Name="LastName"
                             BorderThickness="0"
                             TextChanged="TextBox_TextChanged"
                             IsReadOnly="True"
@@ -294,7 +291,6 @@
                         <TextBox
                             Grid.Row="4"
                             Grid.Column="1"
-                            Name="Patronymic"
                             BorderThickness="0"
                             IsReadOnly="True"
                             TextChanged="TextBox_TextChanged"
@@ -309,10 +305,9 @@
                             Grid.Row="5"
                             Grid.Column="1"
                             BorderThickness="0"
-                            Name="PhoneNumber"
                             IsReadOnly="True"
                             VerticalContentAlignment="Center"
-                            Mask="+7 (000) 000-00-00"
+                            Mask="+7(000)000-00-00"
                             Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
                 </StackPanel>
@@ -757,6 +752,12 @@
                                                 Width="*"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
                         </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Копировать" Click="CopyMenuOrganizationDataGridItem_ClickClick" />
+                                <MenuItem Header="Удалить" Click="DeleteOrganizationMenuItem_ClickClick" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                     </DataGrid>
 
                     <!-- Кнопка добавления организации -->
@@ -907,7 +908,7 @@
                               Margin="0, 10"
                               BorderThickness="0,0,0,1"
                               mah:TextBoxHelper.Watermark="Выберите тип работы"
-                              mah:TextBoxHelper.UseFloatingWatermark="True"/>
+                              mah:TextBoxHelper.UseFloatingWatermark="True" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Grid.Column="1"

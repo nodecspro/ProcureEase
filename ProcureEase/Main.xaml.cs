@@ -1138,10 +1138,14 @@ public partial class Main
 
     private void CopyMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        var dataGrid = InvitationCodesDataGrid;
-        if (dataGrid.CurrentCell != null)
+        CopyDataGridCellInfo(InvitationCodesDataGrid);
+    }
+
+    private static void CopyDataGridCellInfo(DataGrid datagrid)
+    {
+        if (datagrid.CurrentCell != null)
         {
-            var cellInfo = dataGrid.CurrentCell;
+            var cellInfo = datagrid.CurrentCell;
             if (cellInfo.Column?.GetCellContent(cellInfo.Item) is TextBlock cellContent)
                 Clipboard.SetText(cellContent.Text);
         }
@@ -1155,5 +1159,20 @@ public partial class Main
             var viewModel = DataContext as InvitationCodesViewModel;
             if (viewModel != null) viewModel.DeleteInvitationCode(selectedCode);
         }
+    }
+
+    private async void DeleteOrganizationMenuItem_ClickClick(object sender, RoutedEventArgs e)
+    {
+        var dataGrid = SuppliersDataGrid;
+        if (dataGrid.CurrentCell != null && dataGrid.CurrentCell.Item is Supplier selectedSupplier)
+        {
+            var viewModel = DataContext as SuppliersViewModel;
+            if (viewModel != null) await viewModel.DeleteOrganizationAsync(selectedSupplier.SupplierId);
+        }
+    }
+
+    private void CopyMenuOrganizationDataGridItem_ClickClick(object sender, RoutedEventArgs e)
+    {
+        CopyDataGridCellInfo(SuppliersDataGrid);
     }
 }

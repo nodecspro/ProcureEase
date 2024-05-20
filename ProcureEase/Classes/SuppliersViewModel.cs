@@ -18,7 +18,7 @@ public class SuppliersViewModel : INotifyPropertyChanged
         Suppliers = new ObservableCollection<Supplier>();
         WorkTypes = new ObservableCollection<WorkType>();
         LoadSuppliers();
-        LoadWorkTypes();
+        _ = LoadWorkTypes();
     }
 
     public ObservableCollection<Supplier> Suppliers { get; set; }
@@ -36,6 +36,11 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    private static MySqlConnection GetConnection()
+    {
+        return new MySqlConnection(AppSettings.ConnectionString);
+    }
+
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -43,12 +48,10 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
     public void LoadSuppliers()
     {
-        var connectionString = AppSettings.ConnectionString;
-
         var suppliers = new List<Supplier>();
         var requestTypes = new Dictionary<int, string>();
 
-        using (var conn = new MySqlConnection(connectionString))
+        using (var conn = GetConnection())
         {
             conn.Open();
 
@@ -106,10 +109,9 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
     private async Task LoadWorkTypes()
     {
-        var connectionString = AppSettings.ConnectionString;
         var workTypes = new List<WorkType>();
 
-        using (var conn = new MySqlConnection(connectionString))
+        using (var conn = GetConnection())
         {
             await conn.OpenAsync(); // Асинхронное открытие соединения
 
@@ -132,5 +134,24 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
         WorkTypes.Clear();
         foreach (var workType in workTypes) WorkTypes.Add(workType);
+    }
+
+    public async Task DeleteOrganizationAsync(int supplierId)
+    {
+        using (var conn = GetConnection())
+        {
+            await conn.OpenAsync();
+
+            const string query = "DELETE FROM suppliers WHERE supplier_id = @supplierId";
+
+            using (var command = new MySqlCommand(query, conn))
+            {
+                command.Parameters.Add("@supplierId", MySqlDbType.Int32).Value = supplierId;
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        var supplierToRemove = Suppliers.FirstOrDefault(s => s.SupplierId == supplierId);
+        if (supplierToRemove != null) Suppliers.Remove(supplierToRemove);
     }
 }
