@@ -530,6 +530,7 @@ public partial class Main
 
     private async void SaveButton_OnClick(object sender, RoutedEventArgs e)
     {
+        LoadUserData();
         if (!(DataContext is User userToUpdate))
         {
             await ShowErrorMessageAsync("Ошибка", "Данные пользователя не загружены.");
