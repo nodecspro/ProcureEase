@@ -817,6 +817,8 @@ public partial class Main
             try
             {
                 await RequestRepository.UpdateRequestAsync(updatedRequest);
+                _originalName = requestName;
+                _originalNotes = requestNotes;
                 await HandleFileAttachmentsAsync(requestId);
                 await ShowErrorMessageAsync("Успех", "Изменения успешно сохранены.");
             }
@@ -852,12 +854,12 @@ public partial class Main
                 if (DetailsGrid.DataContext is Request currentRequest)
                 {
                     foreach (var file in attachedFiles) currentRequest.RequestFiles.Add(file);
-
-                    DisableEditing();
-                    RefreshFilesListUi();
                 }
             }
         }
+
+        DisableEditing();
+        RefreshFilesListUi();
     }
 
     private void CancelButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
@@ -894,7 +896,7 @@ public partial class Main
         NameTextBox.IsReadOnly = isReadOnly;
         NameTextBox.BorderThickness = new Thickness(0);
 
-        NotesTextBox.IsReadOnly = !isReadOnly;
+        NotesTextBox.IsReadOnly = isReadOnly;
         NotesTextBox.BorderThickness = new Thickness(0);
     }
 

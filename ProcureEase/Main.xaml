@@ -108,6 +108,8 @@
                     <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
+                              Height="300"
+                              Margin="0,0,0,10"
                               MouseDoubleClick="UserRequestsDataGrid_OnMouseDoubleClick">
                         <DataGrid.Columns>
                             <!-- ID -->
