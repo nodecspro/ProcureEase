@@ -12,6 +12,7 @@ using ControlzEx.Theming;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using ProcureEase.Classes;
+using Xceed.Words.NET;
 using Xceed.Wpf.AvalonDock.Controls;
 
 #endregion
@@ -24,7 +25,6 @@ public partial class Main
     private User? _currentUser;
     private string? _originalName;
     private string? _originalNotes;
-    private string? _originalStatus;
 
     public Main(string login)
     {
@@ -77,6 +77,7 @@ public partial class Main
                 DeleteRequestButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 AcceptRequestSuppliersButtonDetailsGrid.Visibility = Visibility.Visible;
+                RejectRequestSuppliersButtonDetailsGrid.Visibility = Visibility.Visible;
                 UserRequestsDataGrid.Height = 380;
                 StatusFieldRequestGrid.MinWidth = 150;
                 StatusFieldRequestGrid.MaxWidth = 150;
@@ -87,7 +88,7 @@ public partial class Main
     private void SortDataGridById()
     {
         var idColumn = FindIdColumn(UserRequestsDataGrid, "ID");
-        if (idColumn != null) ApplySort(UserRequestsDataGrid, idColumn.SortMemberPath, ListSortDirection.Ascending);
+        ApplySort(UserRequestsDataGrid, idColumn.SortMemberPath, ListSortDirection.Ascending);
     }
 
     private DataGridColumn FindIdColumn(DataGrid dataGrid, string headerName)
@@ -95,7 +96,7 @@ public partial class Main
         return dataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == headerName);
     }
 
-    private void ApplySort(DataGrid dataGrid, string sortMemberPath, ListSortDirection direction)
+    private static void ApplySort(ItemsControl dataGrid, string sortMemberPath, ListSortDirection direction)
     {
         dataGrid.Items.SortDescriptions.Clear();
         dataGrid.Items.SortDescriptions.Add(new SortDescription(sortMemberPath, direction));
@@ -1178,5 +1179,79 @@ public partial class Main
     private void CopyMenuOrganizationDataGridItem_ClickClick(object sender, RoutedEventArgs e)
     {
         CopyDataGridCellInfo(SuppliersDataGrid);
+    }
+
+
+    private void CreateDocx(Request request, Supplier supplier)
+    {
+        try
+        {
+            var outputDocxPath = GetOutputDocxPath();
+            var templateDocxPath = GetTemplateDocxPath();
+
+            if (!File.Exists(templateDocxPath))
+            {
+                MessageBox.Show($"Шаблон DOCX не найден по пути: {templateDocxPath}");
+                return;
+            }
+
+            FillTemplateAndSave(templateDocxPath, outputDocxPath, request, supplier);
+            MessageBox.Show($"Документ успешно создан: {outputDocxPath}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка при создании документа: {ex.Message}");
+        }
+    }
+
+    private static string GetOutputDocxPath()
+    {
+        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        var outputFileName = $"Договор {DateTime.Now:yyyy-MM-dd HH-mm-ss}.docx";
+        return Path.Combine(desktopPath, outputFileName);
+    }
+
+    private static string GetTemplateDocxPath()
+    {
+        var projectDirectory = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+        return Path.Combine(projectDirectory, "Source", "dogovorTemplate.docx");
+    }
+
+    private static void FillTemplateAndSave(string templatePath, string outputPath, Request request, Supplier supplier)
+    {
+        using (var document = DocX.Load(templatePath))
+        {
+            ReplacePlaceholders(document, request, supplier);
+            document.SaveAs(outputPath);
+        }
+    }
+
+    private static void ReplacePlaceholders(DocX document, Request request, Supplier supplier)
+    {
+        var placeholders = new Dictionary<string, string>
+        {
+            { "{RequestId}", request.RequestId.ToString() },
+            { "{RequestName}", request.RequestName },
+            { "{OrganizationFullName}", supplier.OrganizationFullName },
+            { "{Inn}", supplier.Inn },
+            { "{Kpp}", supplier.Kpp },
+            { "{Supervisor}", supplier.Supervisor },
+            { "{Email}", supplier.Email },
+            { "{ContactNumber}", supplier.ContactNumber }
+        };
+
+        foreach (var placeholder in placeholders) document.ReplaceText(placeholder.Key, placeholder.Value);
+    }
+
+    private void AcceptRequestSuppliersButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Получаем текущую заявку из DataContext
+        var request = DetailsGrid.DataContext as Request;
+        // Предположим, что у вас есть поле `_currentUser`, содержащее данные текущего пользователя
+        var currentUser = _currentUser;
+        // Получаем данные поставщика на основе пользователя
+        var supplier = SuppliersRepository.GetSupplierByUserId(currentUser.UserId);
+        // Создание PDF файла
+        CreateDocx(request, supplier);
     }
 }

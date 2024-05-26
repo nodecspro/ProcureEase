@@ -16,7 +16,6 @@ public class Request : INotifyPropertyChanged
     public string RequestType { get; set; }
     public string RequestStatus { get; set; }
     public string Notes { get; set; }
-    
     public string DeclineReason { get; set; }
     public int UserId { get; set; }
 

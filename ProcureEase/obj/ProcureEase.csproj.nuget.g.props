@@ -22,5 +22,6 @@
     <PkgMahApps_Metro Condition=" '$(PkgMahApps_Metro)' == '' ">C:\Users\node\.nuget\packages\mahapps.metro\2.4.10</PkgMahApps_Metro>
     <PkgFontAwesome_WPF Condition=" '$(PkgFontAwesome_WPF)' == '' ">C:\Users\node\.nuget\packages\fontawesome.wpf\4.7.0.9</PkgFontAwesome_WPF>
     <PkgExtended_Wpf_Toolkit Condition=" '$(PkgExtended_Wpf_Toolkit)' == '' ">C:\Users\node\.nuget\packages\extended.wpf.toolkit\4.6.0</PkgExtended_Wpf_Toolkit>
+    <PkgDocX Condition=" '$(PkgDocX)' == '' ">C:\Users\node\.nuget\packages\docx\3.0.0</PkgDocX>
   </PropertyGroup>
 </Project>

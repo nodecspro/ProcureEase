@@ -550,8 +550,13 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                             Margin="10">
-                    <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Tag="{Binding RequestId}"
+                    <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid"
+                            Click="AcceptRequestSuppliersButtonDetailsGrid_OnClick" Tag="{Binding RequestId}"
                             Content="Взять заявку" Background="Green"
+                            Margin="5,0" Visibility="Collapsed" />
+                    <Button x:Name="RejectRequestSuppliersButtonDetailsGrid"
+                            Click="RejectRequestManagerButtonDetailsGrid_OnClick" Tag="{Binding RequestId}"
+                            Content="Отклонить заявку" Background="Red"
                             Margin="5,0" Visibility="Collapsed" />
                     <Button x:Name="AcceptRequestManagerButtonDetailsGrid" Tag="{Binding RequestId}"
                             Content="Одобрить заявку" Background="Green"

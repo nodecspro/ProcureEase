@@ -45,6 +45,14 @@
               "target": "Package",
               "version": "[4.0.3, )"
             },
+            "BouncyCastle.NetCore": {
+              "target": "Package",
+              "version": "[2.2.1, )"
+            },
+            "DocX": {
+              "target": "Package",
+              "version": "[3.0.0, )"
+            },
             "Extended.Wpf.Toolkit": {
               "target": "Package",
               "version": "[4.6.0, )"
@@ -80,6 +88,18 @@
             "WPF-UI": {
               "target": "Package",
               "version": "[3.0.4, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "itext7.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "itext7.pdfhtml": {
+              "target": "Package",
+              "version": "[5.0.4, )"
             }
           },
           "imports": [

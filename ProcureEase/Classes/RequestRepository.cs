@@ -58,14 +58,30 @@ public static class RequestRepository
                         """;
                 break;
             case 4:
-                // Для ролей 3 и 4 возвращаем заявки конкретного пользователя
                 query = """
-                                SELECT r.request_id, r.request_name, rt.name as request_type,
-                                       rs.name as request_status, r.notes, r.decline_reason
-                                FROM requests r
-                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                                WHERE r.user_id = @userId and rs.idRequestStatus = 4
+                        SELECT
+                            r.request_id,
+                            r.request_name,
+                            rt.name AS request_type,
+                            rs.name AS request_status,
+                            r.notes,
+                            r.decline_reason
+                        FROM
+                            requests r
+                                JOIN
+                            request_type rt ON r.request_type_id = rt.idRequestType
+                                JOIN
+                            request_status rs ON r.request_status_id = rs.idRequestStatus
+                        WHERE
+                            r.request_type_id = (SELECT
+                                    s.request_type_id
+                                FROM
+                                    suppliers s
+                                        JOIN
+                                    users u ON u.organization_id = s.supplier_id
+                                WHERE
+                                    u.user_id = @userId)
+                                AND r.request_status_id = 4;
                         """;
                 break;
             default:

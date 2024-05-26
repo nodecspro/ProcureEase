@@ -16,27 +16,67 @@ public class SuppliersRepository
     public static async Task SaveOrganizationToDatabaseAsync(string inn, string kpp, string fullName, string supervisor,
         string contactNumber, string email, int requestTypeId)
     {
-        var connectionString = AppSettings.ConnectionString;
+        await using var conn = GetConnection();
+        await conn.OpenAsync();
 
-        using (var conn = new MySqlConnection(connectionString))
-        {
-            await conn.OpenAsync();
-
-            const string query = @"
+        const string query = @"
             INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number, request_type_id)
             VALUES (@inn, @kpp, @fullName, @supervisor, @email, @contactNumber, @requestTypeId)";
 
+        await using var command = new MySqlCommand(query, conn);
+        command.Parameters.Add("@inn", MySqlDbType.VarChar).Value = inn;
+        command.Parameters.Add("@kpp", MySqlDbType.VarChar).Value = kpp;
+        command.Parameters.Add("@fullName", MySqlDbType.VarChar).Value = fullName;
+        command.Parameters.Add("@supervisor", MySqlDbType.VarChar).Value = supervisor;
+        command.Parameters.Add("@contactNumber", MySqlDbType.VarChar).Value = contactNumber;
+        command.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
+        command.Parameters.Add("@requestTypeId", MySqlDbType.Int32).Value = requestTypeId;
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public static Supplier GetSupplierByUserId(int userId)
+    {
+        Supplier supplier = null;
+        var query = @"
+        SELECT 
+            s.supplier_id,
+            s.inn,
+            s.kpp,
+            s.organization_full_name,
+            s.supervisor,
+            s.email,
+            s.contact_number
+        FROM 
+            suppliers s
+        JOIN 
+            users u ON u.organization_id = s.supplier_id
+        WHERE 
+            u.user_id = @userId";
+
+        using (var conn = GetConnection())
+        {
             using (var command = new MySqlCommand(query, conn))
             {
-                command.Parameters.Add("@inn", MySqlDbType.VarChar).Value = inn;
-                command.Parameters.Add("@kpp", MySqlDbType.VarChar).Value = kpp;
-                command.Parameters.Add("@fullName", MySqlDbType.VarChar).Value = fullName;
-                command.Parameters.Add("@supervisor", MySqlDbType.VarChar).Value = supervisor;
-                command.Parameters.Add("@contactNumber", MySqlDbType.VarChar).Value = contactNumber;
-                command.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
-                command.Parameters.Add("@requestTypeId", MySqlDbType.Int32).Value = requestTypeId;
-                await command.ExecuteNonQueryAsync();
+                command.Parameters.AddWithValue("@userId", userId);
+                conn.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                        supplier = new Supplier
+                        {
+                            SupplierId = reader.GetInt32(reader.GetOrdinal("supplier_id")),
+                            Inn = reader.GetString(reader.GetOrdinal("inn")),
+                            Kpp = reader.GetString(reader.GetOrdinal("kpp")),
+                            OrganizationFullName = reader.GetString(reader.GetOrdinal("organization_full_name")),
+                            Supervisor = reader.GetString(reader.GetOrdinal("supervisor")),
+                            Email = reader.GetString(reader.GetOrdinal("email")),
+                            ContactNumber = reader.GetString(reader.GetOrdinal("contact_number"))
+                        };
+                }
             }
         }
+
+        return supplier;
     }
 }
