@@ -28,45 +28,45 @@ public static class RequestRepository
         {
             case 1:
                 // Для роли 1 возвращаем все заявки
-                query = @"
-                SELECT r.request_id, r.request_name, rt.name as request_type,
-                       rs.name as request_status, r.notes
-                FROM requests r
-                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-            ";
+                query = """
+                                SELECT r.request_id, r.request_name, rt.name as request_type,
+                                       rs.name as request_status, r.notes, r.decline_reason
+                                FROM requests r
+                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                        """;
                 break;
             case 2:
                 // Для роли 2 возвращаем заявки, где idRequestStatus = 2
-                query = @"
-                SELECT r.request_id, r.request_name, rt.name as request_type,
-                       rs.name as request_status, r.notes
-                FROM requests r
-                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                WHERE rs.idRequestStatus = 2
-            ";
+                query = """
+                                SELECT r.request_id, r.request_name, rt.name as request_type,
+                                       rs.name as request_status, r.notes, r.decline_reason
+                                FROM requests r
+                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                                WHERE rs.idRequestStatus = 2
+                        """;
                 break;
             case 3:
-                query = @"
-                SELECT r.request_id, r.request_name, rt.name as request_type,
-                       rs.name as request_status, r.notes
-                FROM requests r
-                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                WHERE r.user_id = @userId
-            ";
+                query = """
+                                SELECT r.request_id, r.request_name, rt.name as request_type,
+                                       rs.name as request_status, r.notes, r.decline_reason
+                                FROM requests r
+                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                                WHERE r.user_id = @userId
+                        """;
                 break;
             case 4:
                 // Для ролей 3 и 4 возвращаем заявки конкретного пользователя
-                query = @"
-                SELECT r.request_id, r.request_name, rt.name as request_type,
-                       rs.name as request_status, r.notes
-                FROM requests r
-                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                WHERE r.user_id = @userId and rs.idRequestStatus = 4
-            ";
+                query = """
+                                SELECT r.request_id, r.request_name, rt.name as request_type,
+                                       rs.name as request_status, r.notes, r.decline_reason
+                                FROM requests r
+                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                                WHERE r.user_id = @userId and rs.idRequestStatus = 4
+                        """;
                 break;
             default:
                 // Для неопределенных ролей возвращаем пустой список
@@ -79,6 +79,7 @@ public static class RequestRepository
         if (user.RoleId == 3 || user.RoleId == 4) command.Parameters.AddWithValue("@userId", user.UserId);
 
         await using var reader = await command.ExecuteReaderAsync();
+
         while (await reader.ReadAsync())
         {
             var fileList = await GetRequestFilesAsync(reader.GetInt32("request_id"));
@@ -89,6 +90,9 @@ public static class RequestRepository
                 RequestType = reader.GetString("request_type"),
                 RequestStatus = reader.GetString("request_status"),
                 Notes = reader.GetString("notes"),
+                DeclineReason = reader.IsDBNull(reader.GetOrdinal("decline_reason"))
+                    ? null
+                    : reader.GetString("decline_reason"), // Чтение decline_reason
                 RequestFiles = new ObservableCollection<RequestFile>(fileList)
             };
             requests.Add(request);
@@ -254,13 +258,23 @@ public static class RequestRepository
         await using var connection = GetConnection();
         await connection.OpenAsync();
 
-        const string query =
-            " UPDATE requests SET request_name = @RequestName, notes = @Notes WHERE request_id = @RequestId ";
+        // Обновление запроса, чтобы включить изменение статуса
+        const string query = """
+                                             UPDATE requests
+                                             SET request_name = @RequestName,
+                                                 notes = @Notes,
+                                                 request_status_id = IF(request_status_id = @DeclinedStatus, @InProcessStatus, request_status_id)
+                                             WHERE request_id = @RequestId
+                             """;
 
         await using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@RequestId", request.RequestId);
         command.Parameters.AddWithValue("@RequestName", request.RequestName);
         command.Parameters.AddWithValue("@Notes", request.Notes ?? (object)DBNull.Value);
+
+        // Добавьте параметры для статусов
+        command.Parameters.AddWithValue("@DeclinedStatus", 3); // Предполагая, что 4 - это "Отклонена"
+        command.Parameters.AddWithValue("@InProcessStatus", 2); // Предполагая, что 2 - это "В обработке"
 
         await command.ExecuteNonQueryAsync();
     }

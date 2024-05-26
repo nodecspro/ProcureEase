@@ -11,11 +11,6 @@ namespace ProcureEase.Classes;
 
 public class InvitationCodesViewModel : INotifyPropertyChanged
 {
-    private static MySqlConnection GetConnection()
-    {
-        return new MySqlConnection(AppSettings.ConnectionString);
-    }
-
     private ObservableCollection<InvitationCode> _invitationCodes;
 
     public InvitationCodesViewModel()
@@ -36,6 +31,11 @@ public class InvitationCodesViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private static MySqlConnection GetConnection()
+    {
+        return new MySqlConnection(AppSettings.ConnectionString);
+    }
 
     public void LoadData()
     {

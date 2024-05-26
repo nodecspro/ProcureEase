@@ -30,9 +30,8 @@ public class PhoneMaskConverter : IValueConverter
         var digits = new string(phone.Where(char.IsDigit).ToArray());
 
         if (digits.Length == 11)
-        {
-            return $"+{digits[0]} ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits.Substring(7, 2)}-{digits.Substring(9, 2)}";
-        }
+            return
+                $"+{digits[0]} ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits.Substring(7, 2)}-{digits.Substring(9, 2)}";
 
         return phone;
     }

@@ -24,6 +24,7 @@ public partial class Main
     private User? _currentUser;
     private string? _originalName;
     private string? _originalNotes;
+    private string? _originalStatus;
 
     public Main(string login)
     {
@@ -51,6 +52,7 @@ public partial class Main
                 CreateRequestButton.Visibility = Visibility.Collapsed;
                 OrganizationButton.Visibility = Visibility.Visible;
                 InvitationCodeButton.Visibility = Visibility.Visible;
+                EditButtonDetailsGrid.Visibility = Visibility.Collapsed;
                 UserRequestsDataGrid.Height = 380;
                 break;
             case 2:
@@ -849,9 +851,12 @@ public partial class Main
         SaveButtonDetailsGrid.Visibility = Visibility.Collapsed;
         CancelButtonDetailsGrid.Visibility = Visibility.Collapsed;
         AddFileButtonDetailsGrid.Visibility = Visibility.Collapsed;
-        EditButtonDetailsGrid.Visibility = _currentUser.RoleId == 3 ? Visibility.Visible : Visibility.Collapsed;
-        DeleteRequestButtonDetailsGrid.Visibility =
-            _currentUser.RoleId == 3 ? Visibility.Visible : Visibility.Collapsed;
+        EditButtonDetailsGrid.Visibility = _currentUser.RoleId == 3
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        DeleteRequestButtonDetailsGrid.Visibility = _currentUser.RoleId == 1 || _currentUser.RoleId == 3
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void SetReadOnlyFields(bool isReadOnly)

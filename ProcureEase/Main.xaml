@@ -7,6 +7,7 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:classes="clr-namespace:ProcureEase.Classes"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     x:Name="MetroWindow"
     Title="ProcureEase"
     Width="800"
@@ -29,14 +30,12 @@
         </Style>
         <Style TargetType="xctk:MaskedTextBox" BasedOn="{StaticResource {x:Type TextBox}}" />
     </Window.Resources>
-
     <Grid>
         <!--  Верхняя панель  -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
         <!--  Top Panel  -->
         <DockPanel Grid.Row="0">
             <Button
@@ -87,7 +86,6 @@
                    Source="/UserAvatarDefaultWhite_30x30.png"
                    DockPanel.Dock="Right" />
         </DockPanel>
-
         <!-- Основное содержимое окна -->
         <Grid Grid.Row="1">
             <!--  Requests Grid  -->
@@ -104,7 +102,6 @@
                         FontSize="20"
                         FontWeight="Bold"
                         Text="Ваши заявки на закупку" />
-
                     <!-- Список заявок пользователя -->
                     <DataGrid x:Name="UserRequestsDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
                               HorizontalAlignment="Stretch"
@@ -121,7 +118,6 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
                             <!-- Название заявки -->
                             <DataGridTextColumn Header="Название" Binding="{Binding RequestName}" MinWidth="100"
                                                 Width="*">
@@ -132,7 +128,6 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
                             <!-- Тип заявки -->
                             <DataGridTextColumn Binding="{Binding RequestType}" Header="Тип заявки" MinWidth="100"
                                                 MaxWidth="100">
@@ -142,7 +137,6 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
                             <!-- Статус заявки -->
                             <DataGridTextColumn x:Name="StatusFieldRequestGrid" Binding="{Binding RequestStatus}"
                                                 Header="Статус" MinWidth="100" MaxWidth="100">
@@ -153,7 +147,6 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
                             <!-- Примечание к заявке -->
                             <DataGridTextColumn Header="Примечания" Binding="{Binding Notes}" MinWidth="150"
                                                 Width="*">
@@ -164,7 +157,6 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
                             <!-- Прикреплённые файлы к заявке -->
                             <DataGridTemplateColumn Header="Файлы" MinWidth="150" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -190,7 +182,6 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-
                     <!-- Кнопка "Создать заявку" -->
                     <Button
                         x:Name="CreateRequestButton"
@@ -201,7 +192,6 @@
                         Content="Создать заявку" />
                 </StackPanel>
             </Grid>
-
             <!--  User Data Grid  -->
             <Grid
                 x:Name="UserDataGrid"
@@ -243,7 +233,6 @@
                             IsReadOnly="True"
                             Tag="NoEdit"
                             Text="{Binding Username}" />
-
                         <!-- Электронная почта -->
                         <Label
                             Grid.Row="1"
@@ -256,7 +245,6 @@
                             BorderThickness="0"
                             IsReadOnly="True"
                             Text="{Binding Email}" />
-
                         <!-- Имя -->
                         <Label
                             Grid.Row="2"
@@ -269,7 +257,6 @@
                             IsReadOnly="True"
                             TextChanged="TextBox_TextChanged"
                             Text="{Binding FirstName}" />
-
                         <!-- Фамилия -->
                         <Label
                             Grid.Row="3"
@@ -282,7 +269,6 @@
                             TextChanged="TextBox_TextChanged"
                             IsReadOnly="True"
                             Text="{Binding LastName}" />
-
                         <!-- Отчество -->
                         <Label
                             Grid.Row="4"
@@ -295,7 +281,6 @@
                             IsReadOnly="True"
                             TextChanged="TextBox_TextChanged"
                             Text="{Binding Patronymic}" />
-
                         <!-- Номер телефона -->
                         <Label
                             Grid.Row="5"
@@ -382,20 +367,17 @@
                     FontSize="18"
                     FontWeight="Bold" />
             </Grid>
-
             <Grid x:Name="DetailsGrid" Visibility="Collapsed" Margin="20">
                 <!-- Заголовок "Заявка №n", центрированный в верхней части грида -->
                 <TextBlock Text="{Binding Path=RequestId, StringFormat='Заявка №{0}'}"
                            FontSize="20"
                            HorizontalAlignment="Center" VerticalAlignment="Top"
                            Margin="0,10,0,10" />
-
                 <!-- Кнопка "Назад" слева вверху с меньшей высотой -->
                 <Button Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"
                         HorizontalAlignment="Left" VerticalAlignment="Top"
                         FontSize="20" Click="BackButtonDetailsGrid_OnClick"
                         BorderThickness="0" Background="Transparent" Height="30" Width="30" />
-
                 <!-- Контент, выравниваемый по левому краю -->
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,50,0,0">
                     <!-- Используем Grid для более точного контроля расположения элементов -->
@@ -404,17 +386,20 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-
                         <Label Content="Название заявки:" VerticalAlignment="Center" HorizontalAlignment="Right"
                                Grid.Column="0" />
-
-                        <TextBox x:Name="NameTextBox" VerticalAlignment="Center" HorizontalAlignment="Left"
+                        <TextBox x:Name="NameTextBox"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Left"
                                  Text="{Binding RequestName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  IsReadOnly="True"
-                                 MinWidth="100" MaxWidth="250" TextWrapping="Wrap"
-                                 BorderThickness="0" Grid.Column="1" />
+                                 MinWidth="100"
+                                 MaxWidth="250"
+                                 TextWrapping="Wrap"
+                                 BorderThickness="0"
+                                 Grid.Column="1"
+                                 MaxLength="48" />
                     </Grid>
-
                     <Grid Margin="0,5,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -427,69 +412,127 @@
                                  IsReadOnly="True" Width="180"
                                  BorderThickness="0" Grid.Column="1" />
                     </Grid>
-
                     <Grid Margin="0,5,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-
                         <Label Content="Примечание:" VerticalAlignment="Center" HorizontalAlignment="Right"
                                Grid.Column="0" />
-
-                        <TextBox x:Name="NotesTextBox" VerticalAlignment="Center" HorizontalAlignment="Left"
+                        <TextBox x:Name="NotesTextBox"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Left"
                                  Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 IsReadOnly="True" MinWidth="100" MaxWidth="250" TextWrapping="Wrap"
-                                 BorderThickness="0" Grid.Column="1" />
+                                 IsReadOnly="True"
+                                 MinWidth="100"
+                                 MaxWidth="250"
+                                 MaxHeight="60"
+                                 TextWrapping="Wrap"
+                                 BorderThickness="0"
+                                 Grid.Column="1"
+                                 MaxLength="512" />
                     </Grid>
-
+                    <Grid Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label x:Name="DeclineReasonLabel"
+                               Content="Причина отклонения:"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Grid.Column="0" />
+                        <TextBox x:Name="DeclineReasonTextBox"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Left"
+                                 Text="{Binding DeclineReason, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 IsReadOnly="True"
+                                 MinWidth="100"
+                                 MaxWidth="250"
+                                 MaxHeight="60"
+                                 TextWrapping="Wrap"
+                                 BorderThickness="0"
+                                 Grid.Column="1" />
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RequestStatus}" Value="Отклонена">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeclineReason}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeclineReason}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeclineReason}" Value="{x:Static sys:String.Empty}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding RequestStatus}" Value="В обработке">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding RequestStatus}" Value="Отправлена поставщикам">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding RequestStatus}" Value="Завершена">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                    </Grid>
                     <!-- Label перед списком файлов -->
                     <TextBlock Text="Файлы:" FontSize="16" Margin="0,10,0,0" />
-
                     <!-- Вывод файлов в виде маркированного списка с меньшим расстоянием между элементами -->
-                    <ItemsControl x:Name="RequestFilesDetailsGrid"
-                                  ItemsSource="{Binding RequestFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="20,5,0,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
-                                    <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding FileName}" Margin="5,0,5,0" VerticalAlignment="Center"
-                                               d:DataContext="{d:DesignInstance }" />
-                                    <Button Visibility="Visible" Content="Удалить" Tag="{Binding FileName}"
-                                            FontSize="8" Margin="0,0,0,0"
-                                            HorizontalAlignment="Right" Height="20" Width="60" Background="Red"
-                                            Click="DeleteFileButtonDetailsGrid_OnClick"
-                                            CommandParameter="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                                            d:DataContext="{d:DesignInstance }" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <ItemsControl
-                        DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
-                        ItemsSource="{Binding SelectedFilesDetailsGrid}"
-                        Margin="20,0,0,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,2">
-                                    <TextBlock Text="•" FontSize="20" Margin="0,0,2,0" VerticalAlignment="Center" />
-                                    <TextBlock
-                                        Text="{Binding Path=., Converter={StaticResource PathToFilenameConverter}}"
-                                        Margin="5,0,5,0" VerticalAlignment="Center" />
-                                    <Button Content="Удалить"
-                                            FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
-                                            Height="20" Width="60" Background="Red"
-                                            Click="DeleteNewFileButtonDetailsGrid_OnClick" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="100">
+                        <StackPanel>
+                            <ItemsControl x:Name="RequestFilesDetailsGrid"
+                                          ItemsSource="{Binding RequestFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Margin="20,5,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"
+                                                    Margin="0,2,0,2">
+                                            <TextBlock Text="•" FontSize="20" Margin="0,0,2,0"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding FileName}" Margin="5,0,5,0"
+                                                       VerticalAlignment="Center" d:DataContext="{d:DesignInstance }" />
+                                            <Button Visibility="Visible" Content="Удалить" Tag="{Binding FileName}"
+                                                    FontSize="8" Margin="0,0,0,0"
+                                                    HorizontalAlignment="Right" Height="20" Width="60" Background="Red"
+                                                    Click="DeleteFileButtonDetailsGrid_OnClick"
+                                                    d:DataContext="{d:DesignInstance }" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl
+                                DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                                ItemsSource="{Binding SelectedFilesDetailsGrid}"
+                                Margin="20,0,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"
+                                                    Margin="0,2,0,2">
+                                            <TextBlock Text="•" FontSize="20" Margin="0,0,2,0"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock
+                                                Text="{Binding Path=., Converter={StaticResource PathToFilenameConverter}}"
+                                                Margin="5,0,5,0" VerticalAlignment="Center" />
+                                            <Button Content="Удалить"
+                                                    FontSize="8" Margin="0,0,0,0" HorizontalAlignment="Right"
+                                                    Height="20" Width="60" Background="Red"
+                                                    Click="DeleteNewFileButtonDetailsGrid_OnClick" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
                     <Button x:Name="AddFileButtonDetailsGrid" VerticalAlignment="Center" HorizontalAlignment="Center"
                             Content="Добавить файл"
                             Click="AddFileButtonDetailsGrid_OnClick" Margin="0,10,0,0" Visibility="Collapsed" />
                 </StackPanel>
-
                 <!-- Кнопки, центрированные в нижней части грида -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                             Margin="10">
@@ -505,7 +548,6 @@
                             Click="CancelButtonDetailsGrid_OnClick"
                             Margin="5,0" Visibility="Collapsed" />
                 </StackPanel>
-
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                             Margin="10">
                     <Button x:Name="AcceptRequestSuppliersButtonDetailsGrid" Tag="{Binding RequestId}"
@@ -519,7 +561,6 @@
                             Margin="5,0" Visibility="Collapsed" Click="RejectRequestManagerButtonDetailsGrid_OnClick" />
                 </StackPanel>
             </Grid>
-
             <!--  New Request Grid (initially Collapsed)  -->
             <Grid x:Name="NewRequestGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
@@ -527,7 +568,6 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
                 <TextBlock
                     Grid.Row="0"
                     Margin="0,0,0,20"
@@ -535,7 +575,6 @@
                     FontSize="24"
                     FontWeight="Bold"
                     Text="Новая заявка" />
-
                 <Grid
                     Grid.Row="1"
                     Grid.RowSpan="2"
@@ -550,7 +589,6 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-
                     <!-- Название -->
                     <TextBlock
                         Grid.Row="0"
@@ -566,7 +604,6 @@
                         Margin="0,0,0,10"
                         VerticalContentAlignment="Center"
                         MaxLength="48" />
-
                     <!-- Тип заявки -->
                     <TextBlock
                         Grid.Row="1"
@@ -585,7 +622,6 @@
                         <ComboBoxItem Content="Услуга" />
                         <ComboBoxItem Content="Работа" />
                     </ComboBox>
-
                     <!-- Примечания -->
                     <TextBlock
                         Grid.Row="2"
@@ -604,7 +640,6 @@
                         MaxLength="512"
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
-
                     <!--  Файл  -->
                     <TextBlock
                         Grid.Row="3"
@@ -653,7 +688,6 @@
                         </ScrollViewer>
                     </Grid>
                 </Grid>
-
                 <StackPanel
                     Grid.Row="2"
                     Margin="0,20"
@@ -671,7 +705,6 @@
                         Content="Назад" />
                 </StackPanel>
             </Grid>
-
             <!-- Отображение организаций -->
             <Grid>
                 <Grid x:Name="OrganizationGrid" Visibility="Collapsed">
@@ -680,7 +713,6 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-
                     <!-- Надпись над таблицей -->
                     <TextBlock Grid.Row="0"
                                Text="Список организаций"
@@ -688,7 +720,6 @@
                                FontSize="20"
                                FontWeight="Bold"
                                Margin="0,0,0,20" />
-
                     <!-- DataGrid для отображения данных об организациях -->
                     <DataGrid x:Name="SuppliersDataGrid"
                               IsReadOnly="True"
@@ -709,43 +740,36 @@
                                                 MinWidth="50"
                                                 MaxWidth="50"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="ИНН"
                                                 Binding="{Binding Inn}"
                                                 MinWidth="80"
                                                 MaxWidth="80"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="КПП"
                                                 Binding="{Binding Kpp}"
                                                 MinWidth="80"
                                                 MaxWidth="80"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="Название"
                                                 Binding="{Binding OrganizationFullName}"
                                                 MinWidth="140"
                                                 Width="*"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="Руководитель"
                                                 Binding="{Binding Supervisor}"
                                                 MinWidth="120"
                                                 Width="*"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="Email"
                                                 Binding="{Binding Email}"
                                                 MinWidth="120"
                                                 Width="*"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="Номер"
                                                 Binding="{Binding ContactNumber, Converter={StaticResource PhoneMaskConverter}}"
                                                 MinWidth="110"
                                                 Width="*"
                                                 ElementStyle="{StaticResource WrapTextStyle}" />
-
                             <DataGridTextColumn Header="Тип работы"
                                                 Binding="{Binding RequestTypeName}"
                                                 MinWidth="80"
@@ -759,7 +783,6 @@
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                     </DataGrid>
-
                     <!-- Кнопка добавления организации -->
                     <Button x:Name="AddOrganizationButton"
                             Grid.Row="2"
@@ -770,8 +793,6 @@
                             Click="AddOrganizationButton_OnClick" />
                 </Grid>
             </Grid>
-
-
             <!-- Отображение кодов приглашения -->
             <Grid x:Name="InvitationCodesGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
@@ -836,7 +857,6 @@
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
-
                 <!-- Кнопка добавления организации -->
                 <StackPanel Grid.Row="2"
                             Orientation="Horizontal"
@@ -857,7 +877,6 @@
                             Click="RemoveOldInvitationCodeButton_OnClick" />
                 </StackPanel>
             </Grid>
-
             <Grid x:Name="AddOrganizationGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -868,14 +887,12 @@
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-
                 <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
                            Text="Заполните поля"
                            HorizontalAlignment="Center"
                            FontSize="20"
                            FontWeight="Bold"
                            Margin="0,0,0,20" />
-
                 <StackPanel Grid.Row="1" Grid.Column="0"
                             Margin="20"
                             VerticalAlignment="Center"
@@ -910,7 +927,6 @@
                               mah:TextBoxHelper.Watermark="Выберите тип работы"
                               mah:TextBoxHelper.UseFloatingWatermark="True" />
                 </StackPanel>
-
                 <StackPanel Grid.Row="1" Grid.Column="1"
                             Margin="20"
                             VerticalAlignment="Center"
@@ -935,7 +951,6 @@
                                         mah:TextBoxHelper.ClearTextButton="True"
                                         mah:TextBoxHelper.UseFloatingWatermark="True" />
                 </StackPanel>
-
                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0" Orientation="Horizontal"
                             HorizontalAlignment="Center">
                     <Button Content="Добавить"
@@ -947,7 +962,6 @@
                             Margin="10" />
                 </StackPanel>
             </Grid>
-
         </Grid>
     </Grid>
 </mah:MetroWindow>
