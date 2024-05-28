@@ -29,59 +29,78 @@ public static class RequestRepository
             case 1:
                 // Для роли 1 возвращаем все заявки
                 query = """
-                                SELECT r.request_id, r.request_name, rt.name as request_type,
-                                       rs.name as request_status, r.notes, r.decline_reason
-                                FROM requests r
-                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                        SELECT
+                          r.request_id,
+                          r.request_name,
+                          rt.name as request_type,
+                          rs.name as request_status,
+                          r.notes,
+                          r.decline_reason
+                        FROM
+                          requests r
+                          JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                          JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
                         """;
                 break;
             case 2:
                 // Для роли 2 возвращаем заявки, где idRequestStatus = 2
                 query = """
-                                SELECT r.request_id, r.request_name, rt.name as request_type,
-                                       rs.name as request_status, r.notes, r.decline_reason
-                                FROM requests r
-                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                                WHERE rs.idRequestStatus = 2
+                        SELECT
+                          r.request_id,
+                          r.request_name,
+                          rt.name as request_type,
+                          rs.name as request_status,
+                          r.notes,
+                          r.decline_reason
+                        FROM
+                          requests r
+                          JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                          JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                        WHERE
+                          rs.idRequestStatus = 2
                         """;
                 break;
             case 3:
                 query = """
-                                SELECT r.request_id, r.request_name, rt.name as request_type,
-                                       rs.name as request_status, r.notes, r.decline_reason
-                                FROM requests r
-                                JOIN request_type rt ON r.request_type_id = rt.idRequestType
-                                JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
-                                WHERE r.user_id = @userId
+                        SELECT
+                          r.request_id,
+                          r.request_name,
+                          rt.name as request_type,
+                          rs.name as request_status,
+                          r.notes,
+                          r.decline_reason
+                        FROM
+                          requests r
+                          JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                          JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
+                        WHERE
+                          r.user_id = @userId
                         """;
                 break;
             case 4:
                 query = """
                         SELECT
-                            r.request_id,
-                            r.request_name,
-                            rt.name AS request_type,
-                            rs.name AS request_status,
-                            r.notes,
-                            r.decline_reason
+                          r.request_id,
+                          r.request_name,
+                          rt.name AS request_type,
+                          rs.name AS request_status,
+                          r.notes,
+                          r.decline_reason
                         FROM
-                            requests r
-                                JOIN
-                            request_type rt ON r.request_type_id = rt.idRequestType
-                                JOIN
-                            request_status rs ON r.request_status_id = rs.idRequestStatus
+                          requests r
+                          JOIN request_type rt ON r.request_type_id = rt.idRequestType
+                          JOIN request_status rs ON r.request_status_id = rs.idRequestStatus
                         WHERE
-                            r.request_type_id = (SELECT
-                                    s.request_type_id
-                                FROM
-                                    suppliers s
-                                        JOIN
-                                    users u ON u.organization_id = s.supplier_id
-                                WHERE
-                                    u.user_id = @userId)
-                                AND r.request_status_id = 4;
+                          r.request_type_id = (
+                            SELECT
+                              s.request_type_id
+                            FROM
+                              suppliers s
+                              JOIN users u ON u.organization_id = s.supplier_id
+                            WHERE
+                              u.user_id = @userId
+                          )
+                          AND r.request_status_id = 4;
                         """;
                 break;
             default:
@@ -143,9 +162,17 @@ public static class RequestRepository
         await connection.OpenAsync();
 
         const string query = """
-                                         INSERT INTO requests (request_name, notes, user_id, request_status_id, request_type_id)
-                                         VALUES (@RequestName, @Notes, @UserId, @RequestStatusId, @RequestTypeId);
-                                         SELECT LAST_INSERT_ID();
+                             INSERT INTO requests (
+                               request_name, notes, user_id, request_status_id,
+                               request_type_id
+                             )
+                             VALUES
+                               (
+                                 @RequestName, @Notes, @UserId, @RequestStatusId,
+                                 @RequestTypeId
+                               );
+                             SELECT
+                               LAST_INSERT_ID();
                              """;
 
         await using var command = new MySqlCommand(query, connection);
@@ -201,72 +228,79 @@ public static class RequestRepository
 
     public static async Task<byte[]> GetFileDataByRequestIdAndFileNameAsync(int requestId, string fileName)
     {
-        await using var connection = GetConnection();
-        await connection.OpenAsync();
-        var query = "SELECT file_data FROM request_files WHERE request_id = @requestId AND file_name = @fileName";
-        await using var command = new MySqlCommand(query, connection);
-        command.Parameters.AddWithValue("@requestId", requestId);
-        command.Parameters.AddWithValue("@fileName", fileName);
-        var result = await command.ExecuteScalarAsync();
-        return result as byte[];
+        try
+        {
+            await using var connection = GetConnection();
+            await connection.OpenAsync();
+            const string query =
+                "SELECT file_data FROM request_files WHERE request_id = @RequestId AND file_name = @FileName";
+            await using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@RequestId", requestId);
+            command.Parameters.AddWithValue("@FileName", fileName);
+
+            var result = await command.ExecuteScalarAsync();
+            return result as byte[] ?? Array.Empty<byte>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+            return Array.Empty<byte>();
+        }
     }
 
-    public static bool DeleteFileFromDatabase(int requestId, string fileName)
+    public static async Task<bool> DeleteFileFromDatabaseAsync(int requestId, string fileName)
     {
         try
         {
-            using var connection = GetConnection();
-            connection.Open();
-            var query = "DELETE FROM request_files WHERE request_id = @RequestId AND file_name = @FileName";
-            using var command = new MySqlCommand(query, connection);
+            await using var connection = GetConnection();
+            await connection.OpenAsync();
+            const string query = "DELETE FROM request_files WHERE request_id = @RequestId AND file_name = @FileName";
+            await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@RequestId", requestId);
             command.Parameters.AddWithValue("@FileName", fileName);
 
             // Execute the command and check if any rows were affected
-            var affectedRows = command.ExecuteNonQuery();
+            var affectedRows = await command.ExecuteNonQueryAsync();
             return affectedRows > 0; // Return true if one or more rows were affected
         }
-        catch
+        catch (Exception ex)
         {
-            return false; // Return false if an error occurred
+            Console.WriteLine($"Ошибка: {ex.Message}");
+            return false;
         }
     }
 
     public static async Task<bool> DeleteRequestWithFilesAsync(int requestId)
     {
-        using (var connection = GetConnection())
+        await using var connection = GetConnection();
+        await connection.OpenAsync();
+
+        await using var transaction = await connection.BeginTransactionAsync();
+        try
         {
-            await connection.OpenAsync();
+            const string deleteFilesQuery = "DELETE FROM request_files WHERE request_id = @RequestId";
+            const string deleteRequestQuery = "DELETE FROM requests WHERE request_id = @RequestId";
 
-            using (var transaction = await connection.BeginTransactionAsync())
-            {
-                try
-                {
-                    var deleteFilesQuery = "DELETE FROM request_files WHERE request_id = @RequestId";
-                    using (var deleteFilesCommand = new MySqlCommand(deleteFilesQuery, connection, transaction))
-                    {
-                        deleteFilesCommand.Parameters.AddWithValue("@RequestId", requestId);
-                        await deleteFilesCommand.ExecuteNonQueryAsync();
-                    }
+            await ExecuteDeleteCommandAsync(deleteFilesQuery, requestId, connection, transaction);
+            await ExecuteDeleteCommandAsync(deleteRequestQuery, requestId, connection, transaction);
 
-                    var deleteRequestQuery = "DELETE FROM requests WHERE request_id = @RequestId";
-                    using (var deleteRequestCommand = new MySqlCommand(deleteRequestQuery, connection, transaction))
-                    {
-                        deleteRequestCommand.Parameters.AddWithValue("@RequestId", requestId);
-                        await deleteRequestCommand.ExecuteNonQueryAsync();
-                    }
-
-                    await transaction.CommitAsync();
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    Console.WriteLine("Error occurred: " + ex.Message);
-                    return false;
-                }
-            }
+            await transaction.CommitAsync();
+            return true;
         }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"Ошибка: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static async Task ExecuteDeleteCommandAsync(string query, int requestId, MySqlConnection connection,
+        MySqlTransaction transaction)
+    {
+        await using var command = new MySqlCommand(query, connection, transaction);
+        command.Parameters.AddWithValue("@RequestId", requestId);
+        await command.ExecuteNonQueryAsync();
     }
 
     public static async Task UpdateRequestAsync(Request request)
@@ -276,11 +310,17 @@ public static class RequestRepository
 
         // Обновление запроса, чтобы включить изменение статуса
         const string query = """
-                                             UPDATE requests
-                                             SET request_name = @RequestName,
-                                                 notes = @Notes,
-                                                 request_status_id = IF(request_status_id = @DeclinedStatus, @InProcessStatus, request_status_id)
-                                             WHERE request_id = @RequestId
+                             UPDATE
+                               requests
+                             SET
+                               request_name = @RequestName,
+                               notes = @Notes,
+                               request_status_id = IF(
+                                 request_status_id = @DeclinedStatus,
+                                 @InProcessStatus, request_status_id
+                               )
+                             WHERE
+                               request_id = @RequestId
                              """;
 
         await using var command = new MySqlCommand(query, connection);
@@ -299,58 +339,36 @@ public static class RequestRepository
     {
         await using var connection = GetConnection();
         await connection.OpenAsync();
+
         const string query = "UPDATE requests SET request_status_id = @NewStatus WHERE request_id = @RequestId";
+        await using var command = new MySqlCommand(query, connection);
 
-        await using var command = connection.CreateCommand();
-        command.CommandText = query;
+        command.Parameters.AddWithValue("@NewStatus", newStatusId);
+        command.Parameters.AddWithValue("@RequestId", requestId);
 
-        var paramNewStatus = command.CreateParameter();
-        paramNewStatus.ParameterName = "@NewStatus";
-        paramNewStatus.Value = newStatusId;
-        command.Parameters.Add(paramNewStatus);
-
-        var paramRequestId = command.CreateParameter();
-        paramRequestId.ParameterName = "@RequestId";
-        paramRequestId.Value = requestId;
-        command.Parameters.Add(paramRequestId);
-
-        var affectedRows = await command.ExecuteNonQueryAsync();
-        return affectedRows > 0;
+        return await command.ExecuteNonQueryAsync() > 0;
     }
 
     public static async Task<bool> ChangeRequestStatusAndReason(int requestId, int newStatusId, string declineReason)
     {
-        using (var connection = GetConnection())
-        {
-            await connection.OpenAsync();
-            var query = @"
-                UPDATE requests 
-                SET request_status_id = @NewStatus, 
-                    decline_reason = @DeclineReason
-                WHERE request_id = @RequestId";
+        await using var connection = GetConnection();
+        await connection.OpenAsync();
 
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = query;
+        const string query = """
+                             UPDATE
+                               requests
+                             SET
+                               request_status_id = @NewStatus,
+                               decline_reason = @DeclineReason
+                             WHERE
+                               request_id = @RequestId
+                             """;
 
-                var paramNewStatus = command.CreateParameter();
-                paramNewStatus.ParameterName = "@NewStatus";
-                paramNewStatus.Value = newStatusId;
-                command.Parameters.Add(paramNewStatus);
+        await using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@NewStatus", newStatusId);
+        command.Parameters.AddWithValue("@DeclineReason", declineReason);
+        command.Parameters.AddWithValue("@RequestId", requestId);
 
-                var paramDeclineReason = command.CreateParameter();
-                paramDeclineReason.ParameterName = "@DeclineReason";
-                paramDeclineReason.Value = declineReason;
-                command.Parameters.Add(paramDeclineReason);
-
-                var paramRequestId = command.CreateParameter();
-                paramRequestId.ParameterName = "@RequestId";
-                paramRequestId.Value = requestId;
-                command.Parameters.Add(paramRequestId);
-
-                var affectedRows = await command.ExecuteNonQueryAsync();
-                return affectedRows > 0;
-            }
-        }
+        return await command.ExecuteNonQueryAsync() > 0;
     }
 }

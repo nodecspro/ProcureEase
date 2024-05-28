@@ -19,9 +19,18 @@ public class SuppliersRepository
         await using var conn = GetConnection();
         await conn.OpenAsync();
 
-        const string query = @"
-            INSERT INTO suppliers (inn, kpp, organization_full_name, supervisor, email, contact_number, request_type_id)
-            VALUES (@inn, @kpp, @fullName, @supervisor, @email, @contactNumber, @requestTypeId)";
+        const string query = """
+                             INSERT INTO suppliers (
+                               inn, kpp, organization_full_name, 
+                               supervisor, email, contact_number, 
+                               request_type_id
+                             ) 
+                             VALUES 
+                               (
+                                 @inn, @kpp, @fullName, @supervisor, 
+                                 @email, @contactNumber, @requestTypeId
+                               )
+                             """;
 
         await using var command = new MySqlCommand(query, conn);
         command.Parameters.Add("@inn", MySqlDbType.VarChar).Value = inn;
@@ -34,49 +43,52 @@ public class SuppliersRepository
         await command.ExecuteNonQueryAsync();
     }
 
-    public static Supplier GetSupplierByUserId(int userId)
+    public static async Task<Supplier> GetSupplierByUserIdAsync(int userId)
     {
-        Supplier supplier = null;
-        var query = @"
-        SELECT 
-            s.supplier_id,
-            s.inn,
-            s.kpp,
-            s.organization_full_name,
-            s.supervisor,
-            s.email,
-            s.contact_number
-        FROM 
-            suppliers s
-        JOIN 
-            users u ON u.organization_id = s.supplier_id
-        WHERE 
-            u.user_id = @userId";
+        const string query = """
+                             SELECT
+                               s.supplier_id,
+                               s.inn,
+                               s.kpp,
+                               s.organization_full_name,
+                               s.supervisor,
+                               s.email,
+                               s.contact_number
+                             FROM
+                               suppliers s
+                               JOIN users u ON u.organization_id = s.supplier_id
+                             WHERE
+                               u.user_id = @userId
+                             """;
 
-        using (var conn = GetConnection())
+        try
         {
-            using (var command = new MySqlCommand(query, conn))
-            {
-                command.Parameters.AddWithValue("@userId", userId);
-                conn.Open();
+            await using var conn = GetConnection();
+            await conn.OpenAsync();
 
-                using (var reader = command.ExecuteReader())
+            await using var command = new MySqlCommand(query, conn);
+            command.Parameters.AddWithValue("@userId", userId);
+
+            await using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Supplier
                 {
-                    if (reader.Read())
-                        supplier = new Supplier
-                        {
-                            SupplierId = reader.GetInt32(reader.GetOrdinal("supplier_id")),
-                            Inn = reader.GetString(reader.GetOrdinal("inn")),
-                            Kpp = reader.GetString(reader.GetOrdinal("kpp")),
-                            OrganizationFullName = reader.GetString(reader.GetOrdinal("organization_full_name")),
-                            Supervisor = reader.GetString(reader.GetOrdinal("supervisor")),
-                            Email = reader.GetString(reader.GetOrdinal("email")),
-                            ContactNumber = reader.GetString(reader.GetOrdinal("contact_number"))
-                        };
-                }
+                    SupplierId = reader.GetInt32(reader.GetOrdinal("supplier_id")),
+                    Inn = reader.GetString(reader.GetOrdinal("inn")),
+                    Kpp = reader.GetString(reader.GetOrdinal("kpp")),
+                    OrganizationFullName = reader.GetString(reader.GetOrdinal("organization_full_name")),
+                    Supervisor = reader.GetString(reader.GetOrdinal("supervisor")),
+                    Email = reader.GetString(reader.GetOrdinal("email")),
+                    ContactNumber = reader.GetString(reader.GetOrdinal("contact_number"))
+                };
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error occurred: {ex.Message}");
+        }
 
-        return supplier;
+        return null;
     }
 }

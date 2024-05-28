@@ -738,14 +738,23 @@ public partial class Main
     {
         var fileToRemove = request.RequestFiles.FirstOrDefault(f => f.FileName == fileName);
 
-        if (fileToRemove != null && RequestRepository.DeleteFileFromDatabase(request.RequestId, fileName))
+        if (fileToRemove != null)
         {
-            request.RequestFiles.Remove(fileToRemove);
-            RefreshFilesListUi();
+            var isDeleted = await RequestRepository.DeleteFileFromDatabaseAsync(request.RequestId, fileName);
+
+            if (isDeleted)
+            {
+                request.RequestFiles.Remove(fileToRemove);
+                RefreshFilesListUi();
+            }
+            else
+            {
+                await ShowErrorMessageAsync("Ошибка", "Ошибка при удалении файла из базы данных.");
+            }
         }
         else
         {
-            await ShowErrorMessageAsync("Ошибка", "Ошибка при удалении файла из базы данных.");
+            await ShowErrorMessageAsync("Ошибка", "Файл не найден.");
         }
     }
 
@@ -1181,22 +1190,17 @@ public partial class Main
         CopyDataGridCellInfo(SuppliersDataGrid);
     }
 
-
-    private void CreateDocx(Request request, Supplier supplier)
+    private static async void CreateDocx(Request request, Supplier supplier)
     {
         try
         {
             var outputDocxPath = GetOutputDocxPath();
             var templateDocxPath = GetTemplateDocxPath();
-
-            if (!File.Exists(templateDocxPath))
-            {
-                MessageBox.Show($"Шаблон DOCX не найден по пути: {templateDocxPath}");
-                return;
-            }
-
             FillTemplateAndSave(templateDocxPath, outputDocxPath, request, supplier);
             MessageBox.Show($"Документ успешно создан: {outputDocxPath}");
+
+            // Сохранение файла в базу данных
+            await SaveFileToDatabaseAsync(request.RequestId, outputDocxPath);
         }
         catch (Exception ex)
         {
@@ -1219,11 +1223,9 @@ public partial class Main
 
     private static void FillTemplateAndSave(string templatePath, string outputPath, Request request, Supplier supplier)
     {
-        using (var document = DocX.Load(templatePath))
-        {
-            ReplacePlaceholders(document, request, supplier);
-            document.SaveAs(outputPath);
-        }
+        using var document = DocX.Load(templatePath);
+        ReplacePlaceholders(document, request, supplier);
+        document.SaveAs(outputPath);
     }
 
     private static void ReplacePlaceholders(DocX document, Request request, Supplier supplier)
@@ -1243,15 +1245,39 @@ public partial class Main
         foreach (var placeholder in placeholders) document.ReplaceText(placeholder.Key, placeholder.Value);
     }
 
-    private void AcceptRequestSuppliersButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
+    private async void AcceptRequestSuppliersButtonDetailsGrid_OnClick(object sender, RoutedEventArgs e)
     {
         // Получаем текущую заявку из DataContext
         var request = DetailsGrid.DataContext as Request;
         // Предположим, что у вас есть поле `_currentUser`, содержащее данные текущего пользователя
         var currentUser = _currentUser;
         // Получаем данные поставщика на основе пользователя
-        var supplier = SuppliersRepository.GetSupplierByUserId(currentUser.UserId);
+        var supplier = await SuppliersRepository.GetSupplierByUserIdAsync(currentUser.UserId);
         // Создание PDF файла
         CreateDocx(request, supplier);
+    }
+
+    private static async Task SaveFileToDatabaseAsync(int requestId, string filePath)
+    {
+        try
+        {
+            var fileData = await File.ReadAllBytesAsync(filePath);
+            var fileName = Path.GetFileName(filePath);
+
+            var requestFile = new RequestFile
+            {
+                FileName = fileName,
+                FileData = fileData
+            };
+
+            var requestFiles = new ObservableCollection<RequestFile> { requestFile };
+
+            await RequestRepository.AddRequestFilesAsync(requestId, requestFiles);
+            await RequestRepository.ChangeRequestStatus(requestId, 1);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка при сохранении файла в базу данных: {ex.Message}");
+        }
     }
 }
