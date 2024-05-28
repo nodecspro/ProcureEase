@@ -21,13 +21,13 @@ public class SuppliersRepository
 
         const string query = """
                              INSERT INTO suppliers (
-                               inn, kpp, organization_full_name, 
-                               supervisor, email, contact_number, 
+                               inn, kpp, organization_full_name,
+                               supervisor, email, contact_number,
                                request_type_id
-                             ) 
-                             VALUES 
+                             )
+                             VALUES
                                (
-                                 @inn, @kpp, @fullName, @supervisor, 
+                                 @inn, @kpp, @fullName, @supervisor,
                                  @email, @contactNumber, @requestTypeId
                                )
                              """;
@@ -71,7 +71,6 @@ public class SuppliersRepository
 
             await using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
-            {
                 return new Supplier
                 {
                     SupplierId = reader.GetInt32(reader.GetOrdinal("supplier_id")),
@@ -82,7 +81,6 @@ public class SuppliersRepository
                     Email = reader.GetString(reader.GetOrdinal("email")),
                     ContactNumber = reader.GetString(reader.GetOrdinal("contact_number"))
                 };
-            }
         }
         catch (Exception ex)
         {

@@ -1190,21 +1190,21 @@ public partial class Main
         CopyDataGridCellInfo(SuppliersDataGrid);
     }
 
-    private static async void CreateDocx(Request request, Supplier supplier)
+    private async void CreateDocx(Request request, Supplier supplier)
     {
         try
         {
             var outputDocxPath = GetOutputDocxPath();
             var templateDocxPath = GetTemplateDocxPath();
             FillTemplateAndSave(templateDocxPath, outputDocxPath, request, supplier);
-            MessageBox.Show($"Документ успешно создан: {outputDocxPath}");
+            await ShowErrorMessageAsync("Документ создан", $"Документ успешно создан: {outputDocxPath}");
 
             // Сохранение файла в базу данных
             await SaveFileToDatabaseAsync(request.RequestId, outputDocxPath);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка при создании документа: {ex.Message}");
+            await ShowErrorMessageAsync("Ошибка", $"Ошибка при создании документа: {ex.Message}");
         }
     }
 
@@ -1257,7 +1257,7 @@ public partial class Main
         CreateDocx(request, supplier);
     }
 
-    private static async Task SaveFileToDatabaseAsync(int requestId, string filePath)
+    private async Task SaveFileToDatabaseAsync(int requestId, string filePath)
     {
         try
         {
@@ -1277,7 +1277,7 @@ public partial class Main
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка при сохранении файла в базу данных: {ex.Message}");
+            await ShowErrorMessageAsync("Ошибка", $"Ошибка при сохранении файла в базу данных: {ex.Message}");
         }
     }
 }
