@@ -36,7 +36,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--  Top Panel  -->
         <DockPanel Grid.Row="0">
             <Button
                 Margin="10,0,0,0"
@@ -495,7 +494,12 @@
                                                     Margin="0,2,0,2">
                                             <TextBlock Text="•" FontSize="20" Margin="0,0,2,0"
                                                        VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding FileName}" Margin="5,0,5,0"
+                                            <TextBlock Text="{Binding FileName}" 
+                                                       Margin="5,0,5,0"
+                                                       Foreground="CornflowerBlue"
+                                                       TextDecorations="Underline"
+                                                       Cursor="Hand"
+                                                       PreviewMouseLeftButtonDown="TextBlock_PreviewMouseLeftButtonDown"
                                                        VerticalAlignment="Center" d:DataContext="{d:DesignInstance }" />
                                             <Button Visibility="Visible" Content="Удалить" Tag="{Binding FileName}"
                                                     FontSize="8" Margin="0,0,0,0"

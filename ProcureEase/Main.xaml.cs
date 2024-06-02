@@ -170,7 +170,11 @@ public partial class Main
 
     private (List<string> validFiles, List<string> invalidFiles) ValidateFiles(IEnumerable<string> fileNames)
     {
-        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
+        var validExtensions = new HashSet<string>
+        {
+            ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf", ".m3d", ".a3d", ".stp", ".png", ".jpeg", ".jpg",
+            ".sldprt", ".cdw"
+        };
         var validFiles = new List<string>();
         var invalidFiles = new List<string>();
 
@@ -202,7 +206,7 @@ public partial class Main
         return (validFiles, invalidFiles);
     }
 
-    private MessageBoxResult ShowDuplicateFileWarning(string filePath)
+    private static MessageBoxResult ShowDuplicateFileWarning(string filePath)
     {
         return MessageBox.Show(
             $"Файл \"{Path.GetFileName(filePath)}\" уже существует в списке.\n\n" +
@@ -898,14 +902,23 @@ public partial class Main
     {
         return new OpenFileDialog
         {
-            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx;|Text Files|*.txt|Drawings|*.dwg;*.dxf|All Files|*.*",
+            Filter = "Office Files|*.doc;*.docx;*.xls;*.xlsx|" +
+                     "Text Files|*.txt|" +
+                     "Drawings|*.dwg;*.dxf|" +
+                     "3D Files|*.m3d;*.a3d;*.stp;*.sldprt;*.cdw|" +
+                     "Image Files|*.png;*.jpeg;*.jpg|" +
+                     "All Files|*.*",
             Multiselect = true
         };
     }
 
     private (List<string> validFiles, List<string> invalidFiles) FilterFilesByExtension(IEnumerable<string> fileNames)
     {
-        var validExtensions = new HashSet<string> { ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf" };
+        var validExtensions = new HashSet<string>
+        {
+            ".doc", ".docx", ".xls", ".xlsx", ".txt", ".dwg", ".dxf",
+            ".m3d", ".a3d", ".stp", ".png", ".jpeg", ".jpg", ".sldprt", ".cdw"
+        };
         var validFiles = fileNames
             .Where(filePath => validExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant())).ToList();
         var invalidFiles = fileNames.Except(validFiles).ToList();
@@ -1278,6 +1291,26 @@ public partial class Main
         catch (Exception ex)
         {
             await ShowErrorMessageAsync("Ошибка", $"Ошибка при сохранении файла в базу данных: {ex.Message}");
+        }
+    }
+
+    private async void TextBlock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is TextBlock textBlock)
+        {
+            var fileName = textBlock.Text;
+            // Получаем элемент данных, связанный с этим TextBlock
+            if (textBlock.DataContext is RequestFile requestFile)
+            {
+                // Находим родительский элемент Request
+                var request = FindParentRequest(textBlock);
+                if (request != null)
+                {
+                    var requestId = request.RequestId;
+
+                    if (await ConfirmFileDownloadAsync(fileName)) await DownloadFileAsync(requestId, fileName);
+                }
+            }
         }
     }
 }
